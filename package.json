@@ -1,0 +1,18 @@
+{
+  "name": "conway",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "@x402/core": "^2.5.0",
+    "@x402/evm": "^2.5.0",
+    "@x402/hono": "^2.5.0",
+    "hono": "^4.12.3"
+  }
+}
