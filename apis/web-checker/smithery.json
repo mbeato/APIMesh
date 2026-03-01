@@ -1,0 +1,16 @@
+{
+  "name": "web-checker",
+  "description": "web-checker API",
+  "url": "https://check.apimesh.xyz",
+  "protocol": "x402",
+  "tools": [
+    {
+      "name": "web-checker",
+      "description": "web-checker API",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    }
+  ]
+}

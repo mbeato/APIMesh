@@ -1,0 +1,16 @@
+{
+  "name": "swagger-docs-creator",
+  "description": "Generates basic Swagger documentation for a provided API endpoint or path.",
+  "url": "https://swagger-docs-creator.apimesh.xyz",
+  "protocol": "x402",
+  "tools": [
+    {
+      "name": "swagger-docs-creator",
+      "description": "Generates basic Swagger documentation for a provided API endpoint or path.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    }
+  ]
+}

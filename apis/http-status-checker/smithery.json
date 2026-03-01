@@ -1,0 +1,16 @@
+{
+  "name": "http-status-checker",
+  "description": "Checks the HTTP status of a given URL to ensure it is accessible and returns the expected response code.",
+  "url": "https://http-status-checker.apimesh.xyz",
+  "protocol": "x402",
+  "tools": [
+    {
+      "name": "http-status-checker",
+      "description": "Checks the HTTP status of a given URL to ensure it is accessible and returns the expected response code.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    }
+  ]
+}

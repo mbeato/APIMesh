@@ -1,0 +1,16 @@
+{
+  "name": "microservice-health-check",
+  "description": "Monitors the health status of microservices by checking their response times and availability.",
+  "url": "https://microservice-health-check.apimesh.xyz",
+  "protocol": "x402",
+  "tools": [
+    {
+      "name": "microservice-health-check",
+      "description": "Monitors the health status of microservices by checking their response times and availability.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    }
+  ]
+}

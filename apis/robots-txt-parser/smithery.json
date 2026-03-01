@@ -1,0 +1,16 @@
+{
+  "name": "robots-txt-parser",
+  "description": "Parses and analyzes the robots.txt of a given website, providing insights into crawlers access.",
+  "url": "https://robots-txt-parser.apimesh.xyz",
+  "protocol": "x402",
+  "tools": [
+    {
+      "name": "robots-txt-parser",
+      "description": "Parses and analyzes the robots.txt of a given website, providing insights into crawlers access.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "name": "yaml-validator",
+  "description": "Validates YAML syntax and structure, helping developers ensure their configuration files are correctly formatted.",
+  "url": "https://yaml-validator.apimesh.xyz",
+  "protocol": "x402",
+  "tools": [
+    {
+      "name": "yaml-validator",
+      "description": "Validates YAML syntax and structure, helping developers ensure their configuration files are correctly formatted.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    }
+  ]
+}

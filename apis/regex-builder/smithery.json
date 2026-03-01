@@ -1,0 +1,16 @@
+{
+  "name": "regex-builder",
+  "description": "Provides a simple interface to construct and test regular expressions, helping developers build and validate regex patterns quickly.",
+  "url": "https://regex-builder.apimesh.xyz",
+  "protocol": "x402",
+  "tools": [
+    {
+      "name": "regex-builder",
+      "description": "Provides a simple interface to construct and test regular expressions, helping developers build and validate regex patterns quickly.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    }
+  ]
+}

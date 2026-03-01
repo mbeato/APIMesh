@@ -1,0 +1,16 @@
+{
+  "name": "mock-jwt-generator",
+  "description": "Generates mock JSON Web Tokens (JWTs) for local development and testing of microservices.",
+  "url": "https://mock-jwt-generator.apimesh.xyz",
+  "protocol": "x402",
+  "tools": [
+    {
+      "name": "mock-jwt-generator",
+      "description": "Generates mock JSON Web Tokens (JWTs) for local development and testing of microservices.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    }
+  ]
+}

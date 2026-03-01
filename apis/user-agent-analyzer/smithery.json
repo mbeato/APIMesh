@@ -1,0 +1,16 @@
+{
+  "name": "user-agent-analyzer",
+  "description": "Analyzes and returns details of a user-agent string to provide insights on browser type and operating system.",
+  "url": "https://user-agent-analyzer.apimesh.xyz",
+  "protocol": "x402",
+  "tools": [
+    {
+      "name": "user-agent-analyzer",
+      "description": "Analyzes and returns details of a user-agent string to provide insights on browser type and operating system.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    }
+  ]
+}
