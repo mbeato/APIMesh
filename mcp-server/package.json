@@ -1,11 +1,20 @@
 {
-  "name": "@apimesh/mcp-server",
+  "name": "@mbeato/apimesh-mcp-server",
   "version": "1.0.0",
-  "description": "MCP server for APIMesh — 12 x402-payable API tools",
+  "description": "MCP server for APIMesh — 12 x402-payable API tools for AI agents. HTTP status checker, regex builder, YAML validator, JWT generator, robots.txt parser, and more. Pay per call with USDC on Base via x402.",
+  "mcpName": "io.github.mbeato/apimesh",
   "main": "index.ts",
   "bin": { "apimesh-mcp": "./index.ts" },
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mbeato/conway",
+    "directory": "mcp-server"
+  },
+  "keywords": ["mcp", "mcp-server", "x402", "api", "micropayments", "usdc", "base", "ai-agent"],
+  "license": "MIT",
   "dependencies": {
-    "@modelcontextprotocol/sdk": "latest"
+    "@modelcontextprotocol/sdk": "^1.27.1",
+    "zod": "^3.24.0"
   }
 }
