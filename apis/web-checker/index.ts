@@ -15,6 +15,9 @@ app.use("*", cors({
   allowHeaders: ["Content-Type", "X-PAYMENT", "payment-signature"],
 }));
 
+// Health check — before rate limiter for localhost monitoring
+app.get("/health", (c) => c.json({ status: "ok" }));
+
 // Rate limit: 20/min for /check (each spawns 9 outbound calls), 60/min global
 app.use("/check", rateLimit("web-checker-check", 20, 60_000));
 app.use("*", rateLimit("web-checker", 60, 60_000));
