@@ -34,6 +34,30 @@ app.get("/", c => c.json({
   usage: "POST /check with { services: [ array of URLs ] }"
 }));
 
+// Free preview — check 1 service health (no payment required)
+app.get("/preview", rateLimit("microservice-health-preview", 15, 60_000), async (c) => {
+  const url = c.req.query("url");
+  if (!url) {
+    return c.json({ error: "Provide ?url= parameter" }, 400);
+  }
+
+  const check = validateExternalUrl(url);
+  if ("error" in check) {
+    return c.json({ error: `Invalid URL: ${check.error}` }, 400);
+  }
+
+  try {
+    const report = await checkServicesHealth([url]);
+    return c.json({
+      ...report,
+      preview: true,
+      note: "Preview checks 1 service. Pay via x402 to check up to 10 services in parallel.",
+    });
+  } catch {
+    return c.json({ error: "Error checking service health" }, 500);
+  }
+});
+
 app.use(
   paymentMiddleware(
     {

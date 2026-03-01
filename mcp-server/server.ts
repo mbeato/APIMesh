@@ -87,19 +87,19 @@ function qs(params: Record<string, string | number | undefined>): string {
 export function createServer(): McpServer {
   const server = new McpServer({
     name: "apimesh",
-    version: "1.0.0",
+    version: "1.1.0",
   });
 
   server.tool(
     "web_checker",
-    "Check brand/product name availability across domains, social media, and package registries",
+    "Check if a brand name is available across 5 domain TLDs (.com, .io, .xyz, .dev, .ai), GitHub, npm, PyPI, and Reddit in one call. Free preview: GET https://check.apimesh.xyz/preview?name=... returns .com availability only",
     { name: z.string().describe("The brand or product name to check") },
     async ({ name }) => callApi(`https://check.apimesh.xyz/check${qs({ name })}`),
   );
 
   server.tool(
     "http_status_checker",
-    "Check the HTTP status code of a URL, optionally verifying against an expected status",
+    "Check the live HTTP status of any URL, optionally verify against an expected code. Useful for uptime monitoring, redirect validation, and link checking",
     {
       url: z.string().describe("The URL to check"),
       expected: z.number().optional().describe("Expected HTTP status code"),
@@ -110,7 +110,7 @@ export function createServer(): McpServer {
 
   server.tool(
     "favicon_checker",
-    "Check whether a URL has a favicon and retrieve its details",
+    "Check whether a website has a favicon and get its URL, format, and status. Useful for link previews and site branding validation",
     { url: z.string().describe("The URL to check for a favicon") },
     async ({ url }) =>
       callApi(`https://favicon-checker.apimesh.xyz/check${qs({ url })}`),
@@ -118,7 +118,7 @@ export function createServer(): McpServer {
 
   server.tool(
     "microservice_health_check",
-    "Check the health status of multiple service URLs simultaneously",
+    "Check health and response times of up to 10 service URLs in parallel. Free preview: GET https://microservice-health-check.apimesh.xyz/preview?url=... checks 1 service for free",
     {
       services: z.array(z.string()).describe("Array of service URLs to health-check"),
     },
@@ -131,103 +131,11 @@ export function createServer(): McpServer {
   );
 
   server.tool(
-    "status_code_checker",
-    "Check the HTTP status code returned by a URL",
-    { url: z.string().describe("The URL to check") },
-    async ({ url }) =>
-      callApi(`https://status-code-checker.apimesh.xyz/check${qs({ url })}`),
-  );
-
-  server.tool(
-    "regex_builder",
-    "Build and validate a regular expression pattern with optional flags",
-    {
-      pattern: z.string().describe("The regex pattern to build"),
-      flags: z.string().optional().describe("Regex flags (e.g. 'gi')"),
-    },
-    async ({ pattern, flags }) =>
-      callApi("https://regex-builder.apimesh.xyz/build", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ pattern, flags }),
-      }),
-  );
-
-  server.tool(
-    "regex_tester",
-    "Test a regular expression against a string and return matches",
-    {
-      pattern: z.string().describe("The regex pattern to test"),
-      testString: z.string().describe("The string to test against"),
-      flags: z.string().optional().describe("Regex flags (e.g. 'gi')"),
-    },
-    async ({ pattern, testString, flags }) =>
-      callApi("https://regex-builder.apimesh.xyz/test", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ pattern, testString, flags }),
-      }),
-  );
-
-  server.tool(
-    "user_agent_analyzer",
-    "Parse and analyze a user-agent string to extract browser, OS, and device info",
-    { ua: z.string().describe("The user-agent string to analyze") },
-    async ({ ua }) =>
-      callApi(`https://user-agent-analyzer.apimesh.xyz/analyze${qs({ ua })}`),
-  );
-
-  server.tool(
     "robots_txt_parser",
-    "Fetch and analyze the robots.txt file of a website",
-    { url: z.string().describe("The website URL whose robots.txt to analyze") },
+    "Fetch and parse a website's robots.txt into structured rules, sitemaps, and crawl directives",
+    { url: z.string().describe("The website URL whose robots.txt to parse") },
     async ({ url }) =>
       callApi(`https://robots-txt-parser.apimesh.xyz/analyze${qs({ url })}`),
-  );
-
-  server.tool(
-    "mock_jwt_generator",
-    "Generate a mock JSON Web Token (JWT) for testing purposes",
-    {
-      payload: z.record(z.unknown()).describe("The JWT payload as a JSON object"),
-      secret: z.string().describe("The secret key to sign the JWT"),
-      expiresInSeconds: z.number().optional().describe("Token expiration time in seconds"),
-    },
-    async ({ payload, secret, expiresInSeconds }) =>
-      callApi("https://mock-jwt-generator.apimesh.xyz/generate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ payload, secret, expiresInSeconds }),
-      }),
-  );
-
-  server.tool(
-    "yaml_validator",
-    "Validate YAML syntax and report any errors",
-    { yaml: z.string().describe("The YAML string to validate") },
-    async ({ yaml }) =>
-      callApi("https://yaml-validator.apimesh.xyz/validate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ yaml }),
-      }),
-  );
-
-  server.tool(
-    "swagger_docs_creator",
-    "Generate Swagger/OpenAPI documentation for an API endpoint",
-    {
-      path: z.string().describe("The API path (e.g. '/users/{id}')"),
-      method: z.string().describe("HTTP method (GET, POST, PUT, DELETE, etc.)"),
-      summary: z.string().optional().describe("Short summary of the endpoint"),
-      description: z.string().optional().describe("Detailed description of the endpoint"),
-    },
-    async ({ path, method, summary, description }) =>
-      callApi("https://swagger-docs-creator.apimesh.xyz/generate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ path, method, summary, description }),
-      }),
   );
 
   return server;

@@ -1,0 +1,49 @@
+# apimesh.xyz
+
+> 5 curated x402-payable API tools for AI agents. Pay per call with USDC on Base network.
+
+## Tools
+
+### web_checker
+- **Endpoint:** GET https://check.apimesh.xyz/check?name={name}
+- **Price:** $0.005 per call
+- **What it does:** Checks if a brand name is available across 5 domain TLDs (.com, .io, .xyz, .dev, .ai), GitHub, npm, PyPI, and Reddit — all in one call.
+- **Free preview:** GET https://check.apimesh.xyz/preview?name={name} — checks .com availability only, no payment required.
+
+### http_status_checker
+- **Endpoint:** GET https://http-status-checker.apimesh.xyz/check?url={url}&expected={code}
+- **Price:** $0.001 per call
+- **What it does:** Checks the live HTTP status of any URL. Optionally verify against an expected status code. Useful for uptime monitoring, redirect validation, and link checking.
+
+### favicon_checker
+- **Endpoint:** GET https://favicon-checker.apimesh.xyz/check?url={url}
+- **Price:** $0.001 per call
+- **What it does:** Checks whether a website has a favicon and returns its URL, format, and status. Useful for link previews and site branding validation.
+
+### microservice_health_check
+- **Endpoint:** POST https://microservice-health-check.apimesh.xyz/check with JSON { services: [urls...] }
+- **Price:** $0.003 per call
+- **What it does:** Checks health and response times of up to 10 service URLs in parallel.
+- **Free preview:** GET https://microservice-health-check.apimesh.xyz/preview?url={url} — checks 1 service for free, no payment required.
+
+### robots_txt_parser
+- **Endpoint:** GET https://robots-txt-parser.apimesh.xyz/analyze?url={url}
+- **Price:** $0.001 per call
+- **What it does:** Fetches and parses a website's robots.txt into structured rules, sitemaps, and crawl directives.
+
+## Payment
+
+All paid endpoints use the x402 payment protocol. Send USDC on Base (chain ID 8453).
+Each API has free `/health` and `/` info endpoints. Two tools offer free `/preview` endpoints for trying before paying.
+
+## Discovery
+
+- MCP server (npm): `npx @mbeato/apimesh-mcp-server`
+- x402 discovery: https://apimesh.xyz/.well-known/x402.json
+- AI plugin manifest: https://apimesh.xyz/.well-known/ai-plugin.json
+
+## How to Use
+
+1. Try a free preview: `GET https://check.apimesh.xyz/preview?name=myapp`
+2. GET any paid endpoint — receive 402 Payment Required with payment details
+3. Include x402 payment header and retry — receive the response

@@ -1,7 +1,7 @@
 {
   "name": "@mbeato/apimesh-mcp-server",
-  "version": "1.0.0",
-  "description": "MCP server for APIMesh — 12 x402-payable API tools for AI agents. HTTP status checker, regex builder, YAML validator, JWT generator, robots.txt parser, and more. Pay per call with USDC on Base via x402.",
+  "version": "1.1.0",
+  "description": "MCP server for APIMesh — 5 curated x402-payable API tools for AI agents. Brand availability checker, HTTP status, favicon, health checks, robots.txt parser. Pay per call with USDC on Base via x402.",
   "mcpName": "io.github.mbeato/apimesh",
   "main": "index.ts",
   "bin": { "apimesh-mcp": "./index.ts" },

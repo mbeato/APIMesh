@@ -71,7 +71,7 @@ async function checkReddit(slug: string): Promise<AvailabilityResult> {
   }
 }
 
-async function checkDns(domain: string): Promise<AvailabilityResult> {
+export async function checkDns(domain: string): Promise<AvailabilityResult> {
   const dnsUrl = `https://dns.google/resolve?name=${encodeURIComponent(domain)}&type=A`;
   try {
     const res = await fetch(dnsUrl, { signal: AbortSignal.timeout(5000) });

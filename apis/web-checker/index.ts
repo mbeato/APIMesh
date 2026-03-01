@@ -3,7 +3,7 @@ import { cors } from "hono/cors";
 import { paymentMiddleware, paidRouteWithDiscovery, resourceServer } from "../../shared/x402";
 import { apiLogger } from "../../shared/logger";
 import { rateLimit } from "../../shared/rate-limit";
-import { checkPresence } from "./checker";
+import { checkPresence, checkDns } from "./checker";
 
 const app = new Hono();
 const API_NAME = "web-checker";
@@ -30,6 +30,32 @@ app.get("/", (c) => {
     status: "healthy",
     docs: "GET /check?name=yourname",
     pricing: "$0.005 per check via x402",
+  });
+});
+
+// Free preview — .com domain check only (no payment required)
+app.get("/preview", rateLimit("web-checker-preview", 30, 60_000), async (c) => {
+  const name = c.req.query("name");
+  if (!name) {
+    return c.json({ error: "Provide ?name= parameter (2-50 alphanumeric characters)" }, 400);
+  }
+
+  const slug = name.toLowerCase().replace(/[^a-z0-9-]/g, "");
+  if (slug.length < 2 || slug.length > 50) {
+    return c.json({ error: "Name must contain 2-50 alphanumeric characters (a-z, 0-9, hyphen)" }, 400);
+  }
+  if (slug.startsWith("-") || slug.endsWith("-")) {
+    return c.json({ error: "Name cannot start or end with a hyphen" }, 400);
+  }
+
+  const domainResult = await checkDns(`${slug}.com`);
+
+  return c.json({
+    query: slug,
+    preview: true,
+    results: [domainResult],
+    checkedAt: new Date().toISOString(),
+    note: "Preview checks .com only. Pay via x402 for full sweep across 5 TLDs + GitHub, npm, PyPI, Reddit.",
   });
 });
 
