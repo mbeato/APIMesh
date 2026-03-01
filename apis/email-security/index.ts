@@ -42,18 +42,32 @@ app.get("/preview", rateLimit("email-security-preview", 15, 60_000), async (c) =
     return c.json({ error: "Provide ?domain= parameter. Example: ?domain=example.com" }, 400);
   }
 
+  if (raw.length > 253) {
+    return c.json({ error: "Domain exceeds maximum length" }, 400);
+  }
+
   const validation = validateDomain(raw);
   if (!validation.valid) {
     return c.json({ error: validation.error }, 400);
   }
 
-  const result = await previewCheck(validation.domain!);
+  try {
+    const result = await previewCheck(validation.domain!);
 
-  return c.json({
-    ...result,
-    preview: true,
-    note: "Preview checks SPF and DMARC only. Pay via x402 for full analysis with DKIM probing and MX provider detection.",
-  });
+    return c.json({
+      ...result,
+      preview: true,
+      note: "Preview checks SPF and DMARC only. Pay via x402 for full analysis with DKIM probing and MX provider detection.",
+    });
+  } catch (e: any) {
+    const msg = e?.message ?? "";
+    const safeMsg = msg.includes("timeout")
+      ? "Request timed out"
+      : msg.includes("DNS")
+        ? "DNS lookup failed"
+        : "Failed to check domain";
+    return c.json({ error: safeMsg }, 500);
+  }
 });
 
 // x402 payment gate — only /check is paid
@@ -85,13 +99,27 @@ app.get("/check", async (c) => {
     return c.json({ error: "Provide ?domain= parameter. Example: ?domain=example.com" }, 400);
   }
 
+  if (raw.length > 253) {
+    return c.json({ error: "Domain exceeds maximum length" }, 400);
+  }
+
   const validation = validateDomain(raw);
   if (!validation.valid) {
     return c.json({ error: validation.error }, 400);
   }
 
-  const result = await fullCheck(validation.domain!);
-  return c.json(result);
+  try {
+    const result = await fullCheck(validation.domain!);
+    return c.json(result);
+  } catch (e: any) {
+    const msg = e?.message ?? "";
+    const safeMsg = msg.includes("timeout")
+      ? "Request timed out"
+      : msg.includes("DNS")
+        ? "DNS lookup failed"
+        : "Failed to check domain";
+    return c.json({ error: safeMsg }, 500);
+  }
 });
 
 app.onError((err, c) => {

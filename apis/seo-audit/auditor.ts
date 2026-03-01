@@ -1,7 +1,7 @@
 // On-page SEO auditor — fetches HTML and performs comprehensive analysis using cheerio
 
 import * as cheerio from "cheerio";
-import { validateExternalUrl, safeFetch } from "../../shared/ssrf";
+import { validateExternalUrl, safeFetch, readBodyCapped } from "../../shared/ssrf";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -128,14 +128,15 @@ async function fetchPage(url: string): Promise<FetchedPage> {
   });
 
   const contentType = response.headers.get("content-type") || "";
-  if (!contentType.includes("text/html") && !contentType.includes("text/xhtml") && !contentType.includes("application/xhtml")) {
-    // Allow responses without content-type but warn; reject obvious binary
-    if (contentType && !contentType.startsWith("text/")) {
-      throw new Error(`URL returned non-HTML content type: ${contentType}`);
-    }
+  const isHtml =
+    contentType.includes("text/html") ||
+    contentType.includes("text/xhtml") ||
+    contentType.includes("application/xhtml+xml");
+  if (contentType && !isHtml) {
+    throw new Error(`URL returned non-HTML content type: ${contentType}`);
   }
 
-  const html = await response.text();
+  const html = await readBodyCapped(response, 2 * 1024 * 1024);
   if (!html || html.length === 0) {
     throw new Error("URL returned empty response body");
   }
@@ -151,8 +152,9 @@ async function fetchPage(url: string): Promise<FetchedPage> {
 
 function analyzeTitle($: cheerio.CheerioAPI): TitleAnalysis {
   const titleEl = $("title").first();
-  const text = titleEl.length ? titleEl.text().trim() : null;
-  const length = text ? text.length : 0;
+  const rawText = titleEl.length ? titleEl.text().trim() : null;
+  const text = rawText ? rawText.slice(0, 1000) : null;
+  const length = rawText ? rawText.length : 0;
   const issues: string[] = [];
 
   if (!text) {
@@ -167,8 +169,9 @@ function analyzeTitle($: cheerio.CheerioAPI): TitleAnalysis {
 
 function analyzeMetaDescription($: cheerio.CheerioAPI): MetaDescriptionAnalysis {
   const metaEl = $('meta[name="description"]').first();
-  const text = metaEl.length ? (metaEl.attr("content") || "").trim() : null;
-  const length = text ? text.length : 0;
+  const rawText = metaEl.length ? (metaEl.attr("content") || "").trim() : null;
+  const text = rawText ? rawText.slice(0, 1000) : null;
+  const length = rawText ? rawText.length : 0;
   const issues: string[] = [];
 
   if (!text) {
@@ -183,7 +186,9 @@ function analyzeMetaDescription($: cheerio.CheerioAPI): MetaDescriptionAnalysis 
 
 function analyzeHeadings($: cheerio.CheerioAPI): HeadingsAnalysis {
   const h1Elements = $("h1");
-  const h1Texts = h1Elements.map((_, el) => $(el).text().trim()).get().filter(Boolean);
+  const h1Texts = h1Elements.map((_, el) => $(el).text().trim()).get().filter(Boolean)
+    .slice(0, 10)
+    .map((t: string) => t.slice(0, 1000));
 
   const counts = {
     h1: h1Elements.length,
@@ -242,7 +247,10 @@ function analyzeImages($: cheerio.CheerioAPI): ImagesAnalysis {
     const alt = $(el).attr("alt");
     if (alt === undefined || alt === null) {
       const src = $(el).attr("src") || $(el).attr("data-src") || "(no src)";
-      withoutAlt.push(src);
+      // Reject data: and javascript: URIs; only allow http(s) or relative paths
+      if (/^(https?:\/\/|\/)/i.test(src) || src === "(no src)") {
+        withoutAlt.push(src.slice(0, 500));
+      }
     }
   });
 
@@ -303,33 +311,39 @@ function extractLinks($: cheerio.CheerioAPI, pageUrl: string): {
 
 async function checkLinks(urls: string[]): Promise<LinkResult[]> {
   const toCheck = urls.slice(0, 20);
-  const results = await Promise.allSettled(
-    toCheck.map(async (url): Promise<LinkResult> => {
-      try {
-        const validation = validateExternalUrl(url);
-        if ("error" in validation) {
-          return { url, status: null, error: validation.error };
-        }
+  const LINK_BATCH_SIZE = 5;
+  const allResults: (PromiseSettledResult<LinkResult>)[] = [];
 
-        const res = await fetch(url, {
-          method: "HEAD",
-          redirect: "follow",
-          signal: AbortSignal.timeout(3_000),
-          headers: { "User-Agent": "seo-audit/1.0 apimesh.xyz" },
-        });
+  for (let i = 0; i < toCheck.length; i += LINK_BATCH_SIZE) {
+    const batch = toCheck.slice(i, i + LINK_BATCH_SIZE);
+    const batchResults = await Promise.allSettled(
+      batch.map(async (url): Promise<LinkResult> => {
+        try {
+          const validation = validateExternalUrl(url);
+          if ("error" in validation) {
+            return { url, status: null, error: validation.error };
+          }
 
-        if (res.status !== 200) {
-          return { url, status: res.status, error: null };
+          const res = await safeFetch(url, {
+            method: "HEAD",
+            timeoutMs: 3_000,
+            headers: { "User-Agent": "seo-audit/1.0 apimesh.xyz" },
+          });
+
+          if (res.status !== 200) {
+            return { url, status: res.status, error: null };
+          }
+          return { url, status: 200, error: null };
+        } catch (e: any) {
+          return { url, status: null, error: e?.message || "Request failed" };
         }
-        return { url, status: 200, error: null };
-      } catch (e: any) {
-        return { url, status: null, error: e?.message || "Request failed" };
-      }
-    })
-  );
+      })
+    );
+    allResults.push(...batchResults);
+  }
 
   const broken: LinkResult[] = [];
-  for (const result of results) {
+  for (const result of allResults) {
     if (result.status === "fulfilled") {
       const r = result.value;
       if (r.status !== 200) {
@@ -420,12 +434,15 @@ function analyzeJsonLd($: cheerio.CheerioAPI): JsonLdAnalysis {
   };
 }
 
-function extractTypes(obj: any, types: string[]): void {
+function extractTypes(obj: any, types: string[], depth: number = 0): void {
   if (!obj || typeof obj !== "object") return;
+  if (depth > 10) return;
+  if (types.length >= 50) return;
 
   if (Array.isArray(obj)) {
-    for (const item of obj) {
-      extractTypes(item, types);
+    for (const item of obj.slice(0, 100)) {
+      if (types.length >= 50) return;
+      extractTypes(item, types, depth + 1);
     }
     return;
   }
@@ -433,7 +450,7 @@ function extractTypes(obj: any, types: string[]): void {
   if (obj["@type"]) {
     const t = obj["@type"];
     if (Array.isArray(t)) {
-      types.push(...t.filter((v: unknown) => typeof v === "string"));
+      types.push(...t.filter((v: unknown) => typeof v === "string").slice(0, 50 - types.length));
     } else if (typeof t === "string") {
       types.push(t);
     }
@@ -441,8 +458,9 @@ function extractTypes(obj: any, types: string[]): void {
 
   // Check @graph
   if (obj["@graph"] && Array.isArray(obj["@graph"])) {
-    for (const item of obj["@graph"]) {
-      extractTypes(item, types);
+    for (const item of obj["@graph"].slice(0, 100)) {
+      if (types.length >= 50) return;
+      extractTypes(item, types, depth + 1);
     }
   }
 }

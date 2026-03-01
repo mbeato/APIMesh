@@ -42,6 +42,9 @@ app.get("/preview", rateLimit("core-web-vitals-preview", 15, 60_000), async (c) 
   if (!rawUrl) {
     return c.json({ error: "Missing ?url= parameter (provide a full http(s):// URL)" }, 400);
   }
+  if (rawUrl.length > 2048) {
+    return c.json({ error: "URL exceeds maximum length" }, 400);
+  }
 
   const check = validateExternalUrl(rawUrl.trim());
   if ("error" in check) {
@@ -53,7 +56,7 @@ app.get("/preview", rateLimit("core-web-vitals-preview", 15, 60_000), async (c) 
     return c.json(result);
   } catch (e: any) {
     console.error(`[${new Date().toISOString()}] ${API_NAME} preview error:`, e?.message ?? e);
-    return c.json({ error: e?.message ?? "Failed to analyze URL" }, 502);
+    return c.json({ error: "Failed to analyze URL" }, 502);
   }
 });
 
@@ -85,6 +88,9 @@ app.get("/check", async (c) => {
   if (!rawUrl) {
     return c.json({ error: "Missing ?url= parameter (provide a full http(s):// URL)" }, 400);
   }
+  if (rawUrl.length > 2048) {
+    return c.json({ error: "URL exceeds maximum length" }, 400);
+  }
 
   const check = validateExternalUrl(rawUrl.trim());
   if ("error" in check) {
@@ -99,7 +105,7 @@ app.get("/check", async (c) => {
       return (e as any).getResponse();
     }
     console.error(`[${new Date().toISOString()}] ${API_NAME} error:`, e?.message ?? e);
-    return c.json({ error: e?.message ?? "Failed to analyze URL" }, 502);
+    return c.json({ error: "Failed to analyze URL" }, 502);
   }
 });
 

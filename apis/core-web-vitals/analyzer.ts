@@ -99,16 +99,15 @@ async function callPSI(url: string, categories: string[]): Promise<any> {
 
   if (!response.ok) {
     const body = await response.text().catch(() => "");
-    let message = `PageSpeed Insights returned ${response.status}`;
     try {
       const parsed = JSON.parse(body);
       if (parsed?.error?.message) {
-        message = parsed.error.message;
+        console.error(`[callPSI] Google PSI error ${response.status}: ${parsed.error.message}`);
       }
     } catch {
-      // use generic message
+      console.error(`[callPSI] Google PSI error ${response.status}: ${body.slice(0, 500)}`);
     }
-    throw new Error(message);
+    throw new Error(`Analysis failed (upstream error ${response.status})`);
   }
 
   return response.json();

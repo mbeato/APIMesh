@@ -43,6 +43,9 @@ app.get("/preview", rateLimit("brand-assets-preview", 20, 60_000), async (c) => 
   if (!rawDomain) {
     return c.json({ error: "Missing ?domain= parameter (bare domain, e.g. example.com)" }, 400);
   }
+  if (rawDomain.length > 253) {
+    return c.json({ error: "Domain exceeds maximum length" }, 400);
+  }
 
   const check = validateDomain(rawDomain);
   if ("error" in check) {
@@ -92,6 +95,9 @@ app.get("/check", async (c) => {
   if (!rawDomain) {
     return c.json({ error: "Missing ?domain= parameter (bare domain, e.g. example.com)" }, 400);
   }
+  if (rawDomain.length > 253) {
+    return c.json({ error: "Domain exceeds maximum length" }, 400);
+  }
 
   const check = validateDomain(rawDomain);
   if ("error" in check) {
@@ -106,7 +112,7 @@ app.get("/check", async (c) => {
       return e.getResponse();
     }
     console.error(`[${new Date().toISOString()}] ${API_NAME} error:`, e);
-    return c.json({ error: "Internal server error" }, 500);
+    return c.json({ error: "Extraction failed" }, 500);
   }
 });
 
@@ -114,7 +120,7 @@ app.get("/check", async (c) => {
 app.onError((err, c) => {
   if (typeof err === "object" && err !== null && "getResponse" in err) return (err as any).getResponse();
   console.error(`[${new Date().toISOString()}] ${API_NAME} error:`, err);
-  return c.json({ error: "Internal server error" }, 500);
+  return c.json({ error: "Unexpected error processing request" }, 500);
 });
 
 // 10. Not found

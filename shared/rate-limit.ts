@@ -18,7 +18,15 @@ setInterval(() => {
   }
 }, 60_000);
 
-const IP_PATTERN = /^(\d{1,3}\.){3}\d{1,3}$|^[0-9a-fA-F:]{2,39}$/;
+function isValidIp(value: string): boolean {
+  if (value.length > 45) return false;
+  // IPv4: validate each octet is 0-255
+  if (/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/.test(value)) {
+    return value.split(".").every(o => { const n = parseInt(o, 10); return n >= 0 && n <= 255; });
+  }
+  // IPv6: basic format check
+  return /^[0-9a-fA-F:]{2,39}$/.test(value);
+}
 const MAX_TRACKED_IPS = 10_000;
 
 export function rateLimit(
@@ -31,7 +39,7 @@ export function rateLimit(
 
   return async (c, next) => {
     const ip = c.req.header("x-real-ip");
-    if (!ip || !IP_PATTERN.test(ip)) {
+    if (!ip || !isValidIp(ip)) {
       // No trusted proxy header or invalid format — didn't come through Caddy
       return c.json({ error: "Direct access not allowed" }, 403);
     }

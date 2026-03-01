@@ -40,7 +40,11 @@ function pickHeaders(headers: Headers): Record<string, string> {
 }
 
 function resolveLocation(location: string, currentUrl: string): string {
-  return new URL(location, currentUrl).toString();
+  const resolved = new URL(location, currentUrl);
+  if (resolved.protocol !== "http:" && resolved.protocol !== "https:") {
+    throw new Error("Redirect to unsupported scheme");
+  }
+  return resolved.toString();
 }
 
 async function extractCanonical(url: string): Promise<string | null> {
@@ -67,19 +71,28 @@ async function extractCanonical(url: string): Promise<string | null> {
     if (!reader) return null;
 
     let html = "";
+    let bytesRead = 0;
     const decoder = new TextDecoder();
     const maxBytes = 64 * 1024;
 
-    while (html.length < maxBytes) {
+    while (bytesRead < maxBytes) {
       const { done, value } = await reader.read();
       if (done) break;
+      bytesRead += value.byteLength;
       html += decoder.decode(value, { stream: true });
 
       // Check for canonical in what we have so far
       const match = CANONICAL_RE.exec(html) || CANONICAL_RE_ALT.exec(html);
       if (match) {
+        const raw = match[1];
+        const canonCheck = validateExternalUrl(raw);
+        if ("error" in canonCheck) {
+          // Don't return internal/invalid canonicals
+          reader.cancel();
+          return null;
+        }
         reader.cancel();
-        return match[1];
+        return canonCheck.url.toString();
       }
 
       // If we've passed </head>, no point reading further
@@ -93,7 +106,15 @@ async function extractCanonical(url: string): Promise<string | null> {
 
     // One final check on accumulated HTML
     const match = CANONICAL_RE.exec(html) || CANONICAL_RE_ALT.exec(html);
-    return match ? match[1] : null;
+    if (match) {
+      const raw = match[1];
+      const canonCheck = validateExternalUrl(raw);
+      if ("error" in canonCheck) {
+        return null;
+      }
+      return canonCheck.url.toString();
+    }
+    return null;
   } catch {
     return null;
   }
@@ -147,7 +168,8 @@ export async function traceRedirectChain(
     // SSRF check for each hop
     const check = validateExternalUrl(currentUrl);
     if ("error" in check) {
-      throw new Error(`Unsafe URL in redirect chain: ${check.error} (${currentUrl})`);
+      console.error(`[redirect-chain] Unsafe URL at hop ${chain.length + 1}: ${check.error} (${currentUrl})`);
+      throw new Error(`Redirect chain contains a disallowed URL at hop ${chain.length + 1}`);
     }
 
     // Detect loop
@@ -188,7 +210,8 @@ export async function traceRedirectChain(
         headers: {},
       });
       const errorMsg = err?.name === "TimeoutError" ? "Request timed out" : (err?.message || "Network error");
-      throw new Error(`Failed to fetch ${currentUrl}: ${errorMsg}`);
+      console.error(`[redirect-chain] Failed to fetch ${currentUrl}: ${errorMsg}`);
+      throw new Error(`Failed to reach destination at hop ${chain.length}: ${errorMsg}`);
     }
     const latencyMs = Math.round(performance.now() - start);
 
@@ -211,7 +234,8 @@ export async function traceRedirectChain(
     }
 
     if (!location) {
-      throw new Error(`Redirect ${statusCode} at ${currentUrl} missing Location header`);
+      console.error(`[redirect-chain] Redirect ${statusCode} at ${currentUrl} missing Location header`);
+      throw new Error(`Redirect at hop ${chain.length} missing Location header`);
     }
 
     // Resolve relative Location headers

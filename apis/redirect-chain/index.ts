@@ -6,6 +6,12 @@ import { rateLimit } from "../../shared/rate-limit";
 import { validateExternalUrl } from "../../shared/ssrf";
 import { traceRedirectChain } from "./tracer";
 
+function sanitizeError(e: unknown): string {
+  const msg = e instanceof Error ? e.message : String(e);
+  if (/^Only http|^Private|^Invalid URL|^Too many redirect|^Redirect chain contains|^Failed to reach|^Redirect to unsupported|^Redirect at hop|^Redirect chain exceeded|^URL exceeds/.test(msg)) return msg;
+  return "Failed to trace redirect chain";
+}
+
 const app = new Hono();
 const API_NAME = "redirect-chain";
 const PORT = Number(process.env.PORT) || 3001;
@@ -38,12 +44,15 @@ app.get("/", (c) => {
 
 // Free preview — before paymentMiddleware
 app.get("/preview", rateLimit("redirect-chain-preview", 20, 60_000), async (c) => {
-  const url = c.req.query("url");
-  if (!url) {
+  const rawUrl = c.req.query("url");
+  if (!rawUrl) {
     return c.json({ error: "Missing required ?url parameter" }, 400);
   }
+  if (rawUrl.length > 2048) {
+    return c.json({ error: "URL exceeds maximum length" }, 400);
+  }
 
-  const check = validateExternalUrl(url);
+  const check = validateExternalUrl(rawUrl);
   if ("error" in check) {
     return c.json({ error: check.error }, 400);
   }
@@ -59,8 +68,8 @@ app.get("/preview", rateLimit("redirect-chain-preview", 20, 60_000), async (c) =
       ...result,
       note: "Preview limited to 5 hops, no canonical extraction. Use /check with x402 payment for full analysis.",
     });
-  } catch (err: any) {
-    return c.json({ error: err?.message || "Failed to trace redirect chain" }, 400);
+  } catch (err: unknown) {
+    return c.json({ error: sanitizeError(err) }, 400);
   }
 });
 
@@ -86,12 +95,15 @@ app.use(
 );
 
 app.get("/check", async (c) => {
-  const url = c.req.query("url");
-  if (!url) {
+  const rawUrl = c.req.query("url");
+  if (!rawUrl) {
     return c.json({ error: "Missing required ?url parameter" }, 400);
   }
+  if (rawUrl.length > 2048) {
+    return c.json({ error: "URL exceeds maximum length" }, 400);
+  }
 
-  const check = validateExternalUrl(url);
+  const check = validateExternalUrl(rawUrl);
   if ("error" in check) {
     return c.json({ error: check.error }, 400);
   }
@@ -103,8 +115,8 @@ app.get("/check", async (c) => {
     });
 
     return c.json(result);
-  } catch (err: any) {
-    return c.json({ error: err?.message || "Failed to trace redirect chain" }, 400);
+  } catch (err: unknown) {
+    return c.json({ error: sanitizeError(err) }, 400);
   }
 });
 

@@ -2,6 +2,10 @@ import type { MiddlewareHandler } from "hono";
 import { logRequest, logRevenue } from "./db";
 import { NETWORK } from "./x402";
 
+function sanitizeLogField(value: string, maxLen = 512): string {
+  return value.replace(/[\r\n\t\x00-\x1f\x7f]/g, " ").slice(0, maxLen);
+}
+
 export function apiLogger(apiName: string, priceUsd: number = 0): MiddlewareHandler {
   return async (c, next) => {
     const start = performance.now();
@@ -14,9 +18,10 @@ export function apiLogger(apiName: string, priceUsd: number = 0): MiddlewareHand
     const amount = paid ? priceUsd : 0;
 
     // Trust x-real-ip set by Caddy — "direct" means request bypassed proxy
-    const clientIp = c.req.header("x-real-ip") || "direct";
+    const clientIp = sanitizeLogField(c.req.header("x-real-ip") || "direct");
+    const path = sanitizeLogField(c.req.path);
 
-    logRequest(apiName, c.req.path, c.req.method, c.res.status, ms, paid, amount, clientIp);
+    logRequest(apiName, path, c.req.method, c.res.status, ms, paid, amount, clientIp);
 
     if (paid && amount > 0) {
       // Attempt to extract txHash from settlement response

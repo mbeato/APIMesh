@@ -39,13 +39,20 @@ app.get("/preview", rateLimit("security-headers-preview", 15, 60_000), async (c)
   if (!rawUrl) {
     return c.json({ error: "Missing ?url= parameter (http(s)://...)" }, 400);
   }
-
-  const result = await previewAudit(rawUrl.trim());
-  if ("error" in result && !("preview" in result)) {
-    return c.json({ error: result.error }, 400);
+  if (rawUrl.length > 2048) {
+    return c.json({ error: "URL exceeds maximum length" }, 400);
   }
 
-  return c.json(result);
+  try {
+    const result = await previewAudit(rawUrl.trim());
+    if ("error" in result && !("preview" in result)) {
+      return c.json({ error: result.error }, 400);
+    }
+    return c.json(result);
+  } catch (e: any) {
+    console.error(`[${new Date().toISOString()}] ${API_NAME} preview error:`, e);
+    return c.json({ error: "Failed to analyze URL" }, 502);
+  }
 });
 
 // Payment middleware
@@ -76,13 +83,20 @@ app.get("/check", async (c) => {
   if (!rawUrl) {
     return c.json({ error: "Missing ?url= parameter (http(s)://...)" }, 400);
   }
-
-  const result = await fullAudit(rawUrl.trim());
-  if ("error" in result && !("headers" in result)) {
-    return c.json({ error: result.error }, 400);
+  if (rawUrl.length > 2048) {
+    return c.json({ error: "URL exceeds maximum length" }, 400);
   }
 
-  return c.json(result);
+  try {
+    const result = await fullAudit(rawUrl.trim());
+    if ("error" in result && !("headers" in result)) {
+      return c.json({ error: result.error }, 400);
+    }
+    return c.json(result);
+  } catch (e: any) {
+    console.error(`[${new Date().toISOString()}] ${API_NAME} check error:`, e);
+    return c.json({ error: "Failed to analyze URL" }, 502);
+  }
 });
 
 // CRITICAL error handler - must pass through x402 HTTPExceptions

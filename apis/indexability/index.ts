@@ -49,13 +49,20 @@ app.get("/preview", rateLimit("indexability-preview", 20, 60_000), async (c) => 
   if (!rawUrl) {
     return c.json({ error: "Missing ?url= parameter (http(s)://...)" }, 400);
   }
-
-  const result = await previewCheck(rawUrl.trim());
-  if ("error" in result && !("preview" in result)) {
-    return c.json({ error: result.error }, 400);
+  if (rawUrl.length > 2048) {
+    return c.json({ error: "URL exceeds maximum length" }, 400);
   }
 
-  return c.json(result);
+  try {
+    const result = await previewCheck(rawUrl.trim());
+    if ("error" in result && !("preview" in result)) {
+      return c.json({ error: result.error }, 400);
+    }
+
+    return c.json(result);
+  } catch {
+    return c.json({ error: "Internal server error" }, 500);
+  }
 });
 
 // 7. Payment middleware
@@ -99,13 +106,20 @@ app.get("/check", async (c) => {
   if (!rawUrl) {
     return c.json({ error: "Missing ?url= parameter (http(s)://...)" }, 400);
   }
-
-  const result = await fullCheck(rawUrl.trim());
-  if ("error" in result && !("checks" in result)) {
-    return c.json({ error: result.error }, 400);
+  if (rawUrl.length > 2048) {
+    return c.json({ error: "URL exceeds maximum length" }, 400);
   }
 
-  return c.json(result);
+  try {
+    const result = await fullCheck(rawUrl.trim());
+    if ("error" in result && !("checks" in result)) {
+      return c.json({ error: result.error }, 400);
+    }
+
+    return c.json(result);
+  } catch {
+    return c.json({ error: "Internal server error" }, 500);
+  }
 });
 
 // 9. Error handler — MUST pass through x402 HTTPExceptions

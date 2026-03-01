@@ -1,7 +1,7 @@
 // brand-assets/extractor.ts
 
 import * as cheerio from "cheerio";
-import { safeFetch } from "../../shared/ssrf";
+import { safeFetch, readBodyCapped } from "../../shared/ssrf";
 
 const FETCH_OPTS = {
   timeoutMs: 8000,
@@ -9,6 +9,18 @@ const FETCH_OPTS = {
 };
 
 const MAX_CSS_BYTES = 50 * 1024; // 50KB
+const MAX_HTML_BYTES = 256 * 1024; // 256KB
+
+function sanitizeReturnedUrl(url: string | null): string | null {
+  if (!url) return null;
+  try {
+    const parsed = new URL(url);
+    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") return null;
+    return url.slice(0, 2048);
+  } catch {
+    return null;
+  }
+}
 
 export interface BrandAssets {
   domain: string;
@@ -85,9 +97,7 @@ export async function fullExtract(domain: string): Promise<BrandAssets> {
   try {
     const res = await safeFetch(baseUrl, FETCH_OPTS);
     if (res.ok) {
-      const ab = await res.arrayBuffer();
-      // Only parse up to 256KB to stay fast
-      html = new TextDecoder().decode(ab).slice(0, 256 * 1024);
+      html = await readBodyCapped(res, MAX_HTML_BYTES);
       $ = cheerio.load(html);
     }
   } catch {
@@ -130,8 +140,8 @@ function extractLogo($: cheerio.CheerioAPI, baseUrl: string, result: BrandAssets
   // Priority 1: SVG icon links
   const svgIcon = $('link[rel="icon"][type="image/svg+xml"]').attr("href");
   if (svgIcon) {
-    result.logo = resolveUrl(svgIcon, baseUrl);
-    return;
+    const resolved = sanitizeReturnedUrl(resolveUrl(svgIcon, baseUrl));
+    if (resolved) { result.logo = resolved; return; }
   }
 
   // Also check for any SVG icon without explicit type
@@ -140,16 +150,16 @@ function extractLogo($: cheerio.CheerioAPI, baseUrl: string, result: BrandAssets
     return href.endsWith(".svg");
   }).first().attr("href");
   if (iconWithSvg) {
-    result.logo = resolveUrl(iconWithSvg, baseUrl);
-    return;
+    const resolved = sanitizeReturnedUrl(resolveUrl(iconWithSvg, baseUrl));
+    if (resolved) { result.logo = resolved; return; }
   }
 
   // Priority 2: apple-touch-icon (usually a high-res PNG)
   const appleIcon = $('link[rel="apple-touch-icon"]').attr("href")
     || $('link[rel="apple-touch-icon-precomposed"]').attr("href");
   if (appleIcon) {
-    result.logo = resolveUrl(appleIcon, baseUrl);
-    return;
+    const resolved = sanitizeReturnedUrl(resolveUrl(appleIcon, baseUrl));
+    if (resolved) { result.logo = resolved; return; }
   }
 
   // Priority 3: Google favicon API (set in fallback in fullExtract)
@@ -193,11 +203,14 @@ function extractFavicon($: cheerio.CheerioAPI, baseUrl: string, result: BrandAss
     });
 
     if (bestHref) {
-      result.favicon = {
-        url: resolveUrl(bestHref, baseUrl),
-        format: bestFormat,
-      };
-      return;
+      const resolved = sanitizeReturnedUrl(resolveUrl(bestHref, baseUrl));
+      if (resolved) {
+        result.favicon = {
+          url: resolved,
+          format: bestFormat,
+        };
+        return;
+      }
     }
   }
 
@@ -211,22 +224,28 @@ function extractFavicon($: cheerio.CheerioAPI, baseUrl: string, result: BrandAss
 // --- Meta tag extraction ---
 
 function extractMeta($: cheerio.CheerioAPI, result: BrandAssets): void {
-  // theme-color
-  result.theme_color =
-    $('meta[name="theme-color"]').attr("content") || null;
+  // theme-color — cap length and validate looks like a color
+  const rawThemeColor = $('meta[name="theme-color"]').attr("content") || null;
+  if (rawThemeColor) {
+    const trimmed = rawThemeColor.trim().slice(0, 50);
+    // Only accept values that look like hex colors (#xxx, #xxxxxx, #xxxxxxxx)
+    result.theme_color = isHexColor(trimmed) ? trimmed : null;
+  }
 
-  // og:image
-  result.og_image =
+  // og:image — sanitize URL
+  const rawOgImage =
     $('meta[property="og:image"]').attr("content")
     || $('meta[name="og:image"]').attr("content")
     || null;
+  result.og_image = sanitizeReturnedUrl(rawOgImage);
 
-  // site_name: og:site_name > title
-  result.site_name =
+  // site_name: og:site_name > title — cap length
+  const rawSiteName =
     $('meta[property="og:site_name"]').attr("content")
     || $('meta[name="og:site_name"]').attr("content")
     || $("title").first().text().trim()
     || null;
+  result.site_name = rawSiteName ? rawSiteName.slice(0, 200) : null;
 
   // If theme_color looks like a hex color, also use as primary color hint
   if (result.theme_color && isHexColor(result.theme_color.trim())) {
@@ -261,6 +280,16 @@ async function extractColorsFromCss(
   if (!stylesheetHref) return;
 
   const cssUrl = resolveUrl(stylesheetHref, baseUrl);
+  if (!cssUrl) return;
+
+  // Restrict CSS fetch to same-origin only
+  try {
+    const parsedCssUrl = new URL(cssUrl);
+    const parsedBase = new URL(baseUrl);
+    if (parsedCssUrl.hostname !== parsedBase.hostname) return;
+  } catch {
+    return;
+  }
 
   try {
     const res = await safeFetch(cssUrl, {
@@ -269,8 +298,11 @@ async function extractColorsFromCss(
     });
     if (!res.ok) return;
 
-    const ab = await res.arrayBuffer();
-    const css = new TextDecoder().decode(ab).slice(0, MAX_CSS_BYTES);
+    // Verify Content-Type is CSS or plain text
+    const contentType = res.headers.get("content-type") || "";
+    if (!contentType.includes("text/css") && !contentType.includes("text/plain")) return;
+
+    const css = await readBodyCapped(res, MAX_CSS_BYTES);
 
     // Extract primary color
     if (!result.colors.primary) {
@@ -307,6 +339,7 @@ async function extractColorsFromCss(
 // --- Utility functions ---
 
 function resolveUrl(href: string, baseUrl: string): string {
+  if (/^(javascript|data|vbscript|blob):/i.test(href.trim())) return "";
   if (/^https?:\/\//i.test(href)) return href;
   if (href.startsWith("//")) return "https:" + href;
   if (href.startsWith("/")) return baseUrl + href;

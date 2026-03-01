@@ -83,14 +83,27 @@ const GRADE_SCORE: Record<Grade, number> = {
   "F": 0,
 };
 
+// ── Error Sanitization ─────────────────────────────────────────────────────────
+
+function sanitizeFetchError(err: unknown): string {
+  const msg = (err instanceof Error ? err.message : String(err)).toLowerCase();
+  if (msg.includes("private") || msg.includes("internal")) return "URL not allowed";
+  if (msg.includes("timeout")) return "Request timed out";
+  if (msg.includes("dns") || msg.includes("notfound")) return "DNS lookup failed";
+  if (msg.includes("redirect")) return "Too many redirects";
+  if (msg.includes("invalid url")) return "Invalid URL";
+  return "Unable to reach the target URL";
+}
+
 // ── CSP Parsing ────────────────────────────────────────────────────────────────
 
 export function parseCsp(value: string): CspDirectives {
   const directives: CspDirectives = {};
-  const parts = value.split(";").map((s) => s.trim()).filter(Boolean);
+  const truncated = value.slice(0, 8192);
+  const parts = truncated.split(";").map((s) => s.trim()).filter(Boolean).slice(0, 64);
 
   for (const part of parts) {
-    const tokens = part.split(/\s+/);
+    const tokens = part.split(/\s+/).slice(0, 64);
     const name = tokens[0].toLowerCase();
     directives[name] = tokens.slice(1);
   }
@@ -495,7 +508,8 @@ export async function fullAudit(rawUrl: string): Promise<FullAuditResult | { err
   try {
     headers = await fetchHeaders(check.url.toString());
   } catch (err: any) {
-    return { error: `Failed to fetch URL: ${err.message || String(err)}` };
+    console.error(`[fullAudit] fetch error for ${check.url}:`, err);
+    return { error: sanitizeFetchError(err) };
   }
 
   // Check for Content-Security-Policy-Report-Only as fallback
@@ -546,7 +560,8 @@ export async function previewAudit(rawUrl: string): Promise<PreviewResult | { er
   try {
     headers = await fetchHeaders(check.url.toString());
   } catch (err: any) {
-    return { error: `Failed to fetch URL: ${err.message || String(err)}` };
+    console.error(`[previewAudit] fetch error for ${check.url}:`, err);
+    return { error: sanitizeFetchError(err) };
   }
 
   const analyses: HeaderAnalysis[] = [];

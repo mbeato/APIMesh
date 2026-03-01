@@ -1,4 +1,4 @@
-import { validateExternalUrl, safeFetch } from "../../shared/ssrf";
+import { validateExternalUrl, safeFetch, readBodyCapped } from "../../shared/ssrf";
 
 // ── Types ───────────────────────────────────────────────────────────────────
 
@@ -73,6 +73,37 @@ const META_ROBOTS_REV_RE = /<meta\s+content=["']([^"']+)["']\s+name=["'](?:robot
 const CANONICAL_RE = /<link\s+rel=["']canonical["']\s+href=["']([^"']+)["']/i;
 const CANONICAL_REV_RE = /<link\s+href=["']([^"']+)["']\s+rel=["']canonical["']/i;
 
+// ── Security constants ─────────────────────────────────────────────────────
+
+const ROBOTS_MAX_LINES = 10_000;
+const ROBOTS_MAX_AGENT_BLOCKS = 500;
+const ROBOTS_MAX_RULES_PER_BLOCK = 1_000;
+const ROBOTS_MAX_RULE_PATH_CHARS = 2048;
+
+// ── Security helpers ───────────────────────────────────────────────────────
+
+function sanitizeReflectedUrl(raw: string | null, base?: string): string | null {
+  if (!raw) return null;
+  try {
+    const u = base ? new URL(raw, base) : new URL(raw);
+    if (u.protocol !== "http:" && u.protocol !== "https:") return null;
+    return u.toString().slice(0, 2048);
+  } catch {
+    return null;
+  }
+}
+
+function sanitizeFetchError(err: unknown): string {
+  const msg = (err instanceof Error ? err.message : String(err)).toLowerCase();
+  if (msg.includes("timeout")) return "Request timed out";
+  if (msg.includes("dns") || msg.includes("notfound")) return "DNS lookup failed";
+  if (msg.includes("refused")) return "Connection refused";
+  if (msg.includes("redirect")) return "Too many redirects";
+  if (msg.includes("private") || msg.includes("internal")) return "URL not allowed";
+  if (msg.includes("too large")) return "Response too large";
+  return "Network error";
+}
+
 // ── robots.txt parsing ──────────────────────────────────────────────────────
 
 interface RobotRule {
@@ -89,9 +120,10 @@ function parseRobotsTxtBlocks(text: string): AgentBlock[] {
   const blocks: AgentBlock[] = [];
   let currentAgents: string[] = [];
   let currentRules: RobotRule[] = [];
+  let linesProcessed = 0;
 
   const flushBlock = () => {
-    if (currentAgents.length > 0) {
+    if (currentAgents.length > 0 && blocks.length < ROBOTS_MAX_AGENT_BLOCKS) {
       blocks.push({ agents: currentAgents.slice(), rules: currentRules.slice() });
     }
     currentAgents = [];
@@ -99,6 +131,9 @@ function parseRobotsTxtBlocks(text: string): AgentBlock[] {
   };
 
   for (const rawLine of text.split("\n")) {
+    linesProcessed++;
+    if (linesProcessed > ROBOTS_MAX_LINES) break;
+
     const line = rawLine.replace(/#.*$/, "").trim();
     if (!line) continue;
 
@@ -114,10 +149,12 @@ function parseRobotsTxtBlocks(text: string): AgentBlock[] {
         flushBlock();
       }
       currentAgents.push(value.toLowerCase());
-    } else if (field === "allow") {
-      currentRules.push({ type: "allow", path: value });
-    } else if (field === "disallow") {
-      currentRules.push({ type: "disallow", path: value });
+    } else if (field === "allow" || field === "disallow") {
+      // Cap rule path length and rules per block
+      if (currentRules.length < ROBOTS_MAX_RULES_PER_BLOCK) {
+        const cappedPath = value.slice(0, ROBOTS_MAX_RULE_PATH_CHARS);
+        currentRules.push({ type: field as "allow" | "disallow", path: cappedPath });
+      }
     }
   }
   flushBlock();
@@ -127,19 +164,23 @@ function parseRobotsTxtBlocks(text: string): AgentBlock[] {
 function matchRobotRule(urlPath: string, rulePath: string): boolean {
   if (!rulePath) return false;
 
-  // Handle wildcard and end-of-string anchor per Google's spec
-  // Convert rule to regex: * -> .*, $ at end is literal end anchor
-  let pattern = rulePath
-    .replace(/[.+?^{}()|[\]\\]/g, "\\$&") // escape regex chars except * and $
-    .replace(/\*/g, ".*");
-
-  if (pattern.endsWith("$")) {
-    pattern = pattern.slice(0, -1) + "$";
-  } else {
-    pattern = pattern + ".*";
+  // Cap wildcard count to prevent ReDoS
+  const wildcardCount = (rulePath.match(/\*/g) || []).length;
+  if (wildcardCount > 10) {
+    return urlPath.startsWith(rulePath.replace(/\*/g, ""));
   }
 
+  // Handle wildcard and end-of-string anchor per Google's spec
+  // Convert rule to regex: * -> .*, $ at end is literal end anchor
   try {
+    let pattern = rulePath
+      .replace(/[.+?^{}()|[\]\\]/g, "\\$&") // escape regex chars except * and $
+      .replace(/\*/g, ".*");
+
+    if (rulePath.endsWith("$")) {
+      pattern = pattern.slice(0, -2) + "$";
+    }
+
     return new RegExp("^" + pattern).test(urlPath);
   } catch {
     // Fallback: simple prefix match
@@ -228,7 +269,7 @@ async function checkRobotsTxt(parsedUrl: URL): Promise<RobotsTxtCheck> {
       };
     }
 
-    const text = await res.text();
+    const text = await readBodyCapped(res, 512 * 1024); // 512 KB cap for robots.txt
     const blocks = parseRobotsTxtBlocks(text);
     const urlPath = parsedUrl.pathname + parsedUrl.search;
     const result = checkRobotsTxtRules(blocks, urlPath);
@@ -244,11 +285,11 @@ async function checkRobotsTxt(parsedUrl: URL): Promise<RobotsTxtCheck> {
       matchedRule: result.matchedRule,
       matchedAgent: result.matchedAgent,
     };
-  } catch (err: any) {
+  } catch (err: unknown) {
     // Network error fetching robots.txt = treat as allowed
     return {
       allowed: true,
-      reason: `robots.txt unreachable (${err?.message || "unknown error"}) — treated as allowed`,
+      reason: `robots.txt unreachable (${sanitizeFetchError(err)}) — treated as allowed`,
       robotsTxtStatus: null,
       matchedRule: null,
       matchedAgent: null,
@@ -256,9 +297,10 @@ async function checkRobotsTxt(parsedUrl: URL): Promise<RobotsTxtCheck> {
   }
 }
 
-function checkHttpStatus(status: number, statusText: string, headers: Headers): HttpStatusCheck {
+function checkHttpStatus(status: number, statusText: string, headers: Headers, baseUrl: string): HttpStatusCheck {
   const redirect = status >= 300 && status < 400;
-  const redirectLocation = redirect ? headers.get("location") : null;
+  const rawLocation = redirect ? headers.get("location") : null;
+  const redirectLocation = sanitizeReflectedUrl(rawLocation, baseUrl);
 
   // 200-299 = indexable, everything else is not directly indexable
   const indexable = status >= 200 && status < 300;
@@ -321,13 +363,18 @@ function checkCanonical(html: string, url: string): CanonicalCheck {
     return { found: false, href: null, isSelf: false, pointsElsewhere: false };
   }
 
-  const href = match[1].trim();
+  const rawHref = match[1].trim();
+  const href = sanitizeReflectedUrl(rawHref, url);
+
+  if (!href) {
+    return { found: true, href: null, isSelf: false, pointsElsewhere: true };
+  }
 
   // Normalize both URLs for comparison (remove trailing slash, fragment)
   let normalizedHref: string;
   let normalizedUrl: string;
   try {
-    const canonicalParsed = new URL(href, url);
+    const canonicalParsed = new URL(href);
     normalizedHref = canonicalParsed.origin + canonicalParsed.pathname.replace(/\/+$/, "") + canonicalParsed.search;
     const urlParsed = new URL(url);
     normalizedUrl = urlParsed.origin + urlParsed.pathname.replace(/\/+$/, "") + urlParsed.search;
@@ -373,7 +420,7 @@ export async function fullCheck(rawUrl: string): Promise<IndexabilityResult | { 
     const res = await safeFetch(url, { timeoutMs: 10000 });
 
     // 2. HTTP status
-    httpStatus = checkHttpStatus(res.status, res.statusText, res.headers);
+    httpStatus = checkHttpStatus(res.status, res.statusText, res.headers, url);
     if (!httpStatus.indexable) {
       blockingReasons.push(`HTTP status: ${res.status} ${res.statusText}`);
     }
@@ -384,8 +431,8 @@ export async function fullCheck(rawUrl: string): Promise<IndexabilityResult | { 
       blockingReasons.push(`X-Robots-Tag: ${xRobotsTag.value}`);
     }
 
-    // Read body for meta robots and canonical
-    const html = httpStatus.indexable ? await res.text() : "";
+    // Read body for meta robots and canonical (2 MB cap)
+    const html = httpStatus.indexable ? await readBodyCapped(res, 2 * 1024 * 1024) : "";
 
     // 3. Meta robots
     metaRobots = checkMetaRobots(html);
@@ -398,8 +445,8 @@ export async function fullCheck(rawUrl: string): Promise<IndexabilityResult | { 
     if (canonical.pointsElsewhere) {
       blockingReasons.push(`Canonical points elsewhere: ${canonical.href}`);
     }
-  } catch (err: any) {
-    return { error: `Failed to fetch URL: ${err?.message || "unknown error"}` };
+  } catch (err: unknown) {
+    return { error: `Failed to fetch URL: ${sanitizeFetchError(err)}` };
   }
 
   return {
@@ -432,19 +479,20 @@ export async function previewCheck(rawUrl: string): Promise<PreviewResult | { er
   try {
     const res = await safeFetch(url, { timeoutMs: 8000 });
 
-    httpStatus = checkHttpStatus(res.status, res.statusText, res.headers);
+    httpStatus = checkHttpStatus(res.status, res.statusText, res.headers, url);
     if (!httpStatus.indexable) {
       blockingReasons.push(`HTTP status: ${res.status} ${res.statusText}`);
     }
 
-    const html = httpStatus.indexable ? await res.text() : "";
+    // Read body for meta robots (2 MB cap)
+    const html = httpStatus.indexable ? await readBodyCapped(res, 2 * 1024 * 1024) : "";
 
     metaRobots = checkMetaRobots(html);
     if (metaRobots.noindex) {
       blockingReasons.push(`Meta robots: ${metaRobots.content}`);
     }
-  } catch (err: any) {
-    return { error: `Failed to fetch URL: ${err?.message || "unknown error"}` };
+  } catch (err: unknown) {
+    return { error: `Failed to fetch URL: ${sanitizeFetchError(err)}` };
   }
 
   return {

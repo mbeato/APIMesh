@@ -126,13 +126,36 @@ function dnsErrorMessage(e: unknown): string {
     REFUSED: "query_refused",
     EREFUSED: "query_refused",
   };
-  return map[code ?? ""] ?? `dns_error_${code}`;
+  return map[code ?? ""] ?? "dns_error";
 }
 
 function isNonExistent(e: unknown): boolean {
   if (!isDnsError(e)) return false;
   const code = (e as NodeJS.ErrnoException).code;
   return code === "ENODATA" || code === "ENOTFOUND";
+}
+
+// ---------------------------------------------------------------------------
+// DNS Timeout Wrapper
+// ---------------------------------------------------------------------------
+
+const DNS_TIMEOUT_MS = 3_000;
+
+async function resolveWithTimeout<T>(fn: () => Promise<T>): Promise<T> {
+  return Promise.race([
+    fn(),
+    new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error("DNS timeout")), DNS_TIMEOUT_MS)
+    ),
+  ]);
+}
+
+// ---------------------------------------------------------------------------
+// TXT Record Sanitization
+// ---------------------------------------------------------------------------
+
+function sanitizeTxtRecord(raw: string): string {
+  return raw.replace(/[^\x20-\x7E]/g, "").slice(0, 512);
 }
 
 // ---------------------------------------------------------------------------
@@ -178,12 +201,19 @@ function parseSpfMechanisms(record: string) {
   return { mechanisms, allQualifier };
 }
 
-async function countRecursiveIncludes(domain: string, visited: Set<string> = new Set(), depth: number = 0): Promise<number> {
-  if (depth > 10 || visited.has(domain)) return 0;
+async function countRecursiveIncludes(
+  domain: string,
+  visited: Set<string> = new Set(),
+  depth: number = 0,
+  budget: { remaining: number } = { remaining: 10 },
+): Promise<number> {
+  if (depth > 5 || visited.has(domain) || budget.remaining <= 0) return 0;
   visited.add(domain);
 
   try {
-    const records = await resolver.resolveTxt(domain);
+    budget.remaining--;
+    if (budget.remaining <= 0) return 0;
+    const records = await resolveWithTimeout(() => resolver.resolveTxt(domain));
     const flat = records.map((r) => r.join(""));
     const spf = flat.find((r) => r.startsWith("v=spf1"));
     if (!spf) return 0;
@@ -193,7 +223,8 @@ async function countRecursiveIncludes(domain: string, visited: Set<string> = new
 
     for (const inc of includes) {
       const target = inc.slice(8);
-      count += await countRecursiveIncludes(target, visited, depth + 1);
+      if (!validateDomain(target).valid) continue;
+      count += await countRecursiveIncludes(target, visited, depth + 1, budget);
     }
 
     return count;
@@ -215,7 +246,7 @@ function gradeSpf(found: boolean, allQualifier: string | null): Grade {
 
 export async function checkSpf(domain: string): Promise<SpfResult> {
   try {
-    const records = await resolver.resolveTxt(domain);
+    const records = await resolveWithTimeout(() => resolver.resolveTxt(domain));
     const flat = records.map((r) => r.join(""));
     const spfRecord = flat.find((r) => r.toLowerCase().startsWith("v=spf1"));
 
@@ -231,11 +262,12 @@ export async function checkSpf(domain: string): Promise<SpfResult> {
     }
 
     const { mechanisms, allQualifier } = parseSpfMechanisms(spfRecord);
-    const recursiveIncludeCount = await countRecursiveIncludes(domain);
+    const budget = { remaining: 10 };
+    const recursiveIncludeCount = await countRecursiveIncludes(domain, new Set(), 0, budget);
 
     return {
       found: true,
-      raw: spfRecord,
+      raw: sanitizeTxtRecord(spfRecord),
       mechanisms,
       allQualifier,
       recursiveIncludeCount,
@@ -301,7 +333,7 @@ function gradeDmarc(found: boolean, policy: string | null, rua: string[]): Grade
 
 export async function checkDmarc(domain: string): Promise<DmarcResult> {
   try {
-    const records = await resolver.resolveTxt(`_dmarc.${domain}`);
+    const records = await resolveWithTimeout(() => resolver.resolveTxt(`_dmarc.${domain}`));
     const flat = records.map((r) => r.join(""));
     const dmarcRecord = flat.find((r) => r.toLowerCase().startsWith("v=dmarc1"));
 
@@ -322,7 +354,7 @@ export async function checkDmarc(domain: string): Promise<DmarcResult> {
 
     return {
       found: true,
-      raw: dmarcRecord,
+      raw: sanitizeTxtRecord(dmarcRecord),
       policy,
       pct,
       rua,
@@ -376,12 +408,12 @@ const DEFAULT_SELECTORS = [
 
 async function probeDkimSelector(domain: string, selector: string): Promise<DkimSelector> {
   try {
-    const records = await resolver.resolveTxt(`${selector}._domainkey.${domain}`);
+    const records = await resolveWithTimeout(() => resolver.resolveTxt(`${selector}._domainkey.${domain}`));
     const flat = records.map((r) => r.join(""));
     const dkimRecord = flat.find((r) => r.toLowerCase().includes("v=dkim1") || r.includes("p="));
 
     if (dkimRecord) {
-      return { selector, found: true, raw: dkimRecord };
+      return { selector, found: true, raw: sanitizeTxtRecord(dkimRecord) };
     }
     return { selector, found: false };
   } catch {
@@ -389,13 +421,17 @@ async function probeDkimSelector(domain: string, selector: string): Promise<Dkim
   }
 }
 
+const DKIM_BATCH_SIZE = 3;
+
 export async function checkDkim(domain: string): Promise<DkimResult> {
   try {
-    const results = await Promise.all(
-      DEFAULT_SELECTORS.map((sel) => probeDkimSelector(domain, sel))
-    );
-
-    const found = results.filter((r) => r.found);
+    const found: DkimSelector[] = [];
+    for (let i = 0; i < DEFAULT_SELECTORS.length; i += DKIM_BATCH_SIZE) {
+      const batch = DEFAULT_SELECTORS.slice(i, i + DKIM_BATCH_SIZE);
+      const results = await Promise.all(batch.map(sel => probeDkimSelector(domain, sel)));
+      found.push(...results.filter(r => r.found));
+      if (found.length > 0) break;
+    }
 
     return {
       selectorsProbed: DEFAULT_SELECTORS,
@@ -436,7 +472,7 @@ function detectProvider(hostname: string): string | null {
 
 export async function checkMx(domain: string): Promise<MxResult> {
   try {
-    const records = await resolver.resolveMx(domain);
+    const records = await resolveWithTimeout(() => resolver.resolveMx(domain));
 
     if (!records || records.length === 0) {
       return { found: false, records: [], pass: false };

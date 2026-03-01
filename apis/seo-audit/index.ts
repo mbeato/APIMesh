@@ -6,6 +6,12 @@ import { rateLimit } from "../../shared/rate-limit";
 import { validateExternalUrl } from "../../shared/ssrf";
 import { auditFull, auditPreview } from "./auditor";
 
+function sanitizeError(e: unknown): string {
+  const msg = e instanceof Error ? e.message : String(e);
+  if (/^Only http|^Private|^Invalid URL|^URL returned non-HTML|^URL returned empty|^Too many redirect|^Response body too large/.test(msg)) return msg;
+  return "Failed to fetch or process the URL";
+}
+
 const app = new Hono();
 const API_NAME = "seo-audit";
 const PORT = Number(process.env.PORT) || 3001;
@@ -42,6 +48,9 @@ app.get("/preview", rateLimit("seo-audit-preview", 15, 60_000), async (c) => {
   if (!rawUrl) {
     return c.json({ error: "Missing ?url= parameter (provide a full http(s):// URL)" }, 400);
   }
+  if (rawUrl.length > 2048) {
+    return c.json({ error: "URL exceeds maximum length" }, 400);
+  }
 
   const check = validateExternalUrl(rawUrl.trim());
   if ("error" in check) {
@@ -53,7 +62,7 @@ app.get("/preview", rateLimit("seo-audit-preview", 15, 60_000), async (c) => {
     return c.json(result);
   } catch (e: any) {
     console.error(`[${new Date().toISOString()}] ${API_NAME} preview error:`, e?.message ?? e);
-    return c.json({ error: e?.message ?? "Failed to audit URL" }, 502);
+    return c.json({ error: sanitizeError(e) }, 502);
   }
 });
 
@@ -85,6 +94,9 @@ app.get("/check", async (c) => {
   if (!rawUrl) {
     return c.json({ error: "Missing ?url= parameter (provide a full http(s):// URL)" }, 400);
   }
+  if (rawUrl.length > 2048) {
+    return c.json({ error: "URL exceeds maximum length" }, 400);
+  }
 
   const check = validateExternalUrl(rawUrl.trim());
   if ("error" in check) {
@@ -99,7 +111,7 @@ app.get("/check", async (c) => {
       return (e as any).getResponse();
     }
     console.error(`[${new Date().toISOString()}] ${API_NAME} error:`, e?.message ?? e);
-    return c.json({ error: e?.message ?? "Failed to audit URL" }, 502);
+    return c.json({ error: sanitizeError(e) }, 502);
   }
 });
 

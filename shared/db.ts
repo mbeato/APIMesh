@@ -213,6 +213,6 @@ export function getApiRevenue(apiName: string, days: number = 7): number {
     SELECT COALESCE(SUM(amount_usd), 0) as total_usd
     FROM revenue
     WHERE api_name = ? AND created_at > datetime('now', '-' || ? || ' days')
-  `).get(apiName, days) as { total_usd: number };
+  `).get(apiName, safeDays(days)) as { total_usd: number };
   return result.total_usd;
 }
