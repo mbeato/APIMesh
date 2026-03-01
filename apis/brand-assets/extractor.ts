@@ -215,10 +215,10 @@ function extractFavicon($: cheerio.CheerioAPI, baseUrl: string, result: BrandAss
   }
 
   // Fallback: /favicon.ico
-  result.favicon = {
-    url: `${baseUrl}/favicon.ico`,
-    format: "ico",
-  };
+  const fallbackUrl = sanitizeReturnedUrl(`${baseUrl}/favicon.ico`);
+  if (fallbackUrl) {
+    result.favicon = { url: fallbackUrl, format: "ico" };
+  }
 }
 
 // --- Meta tag extraction ---

@@ -5,8 +5,8 @@ const HOP_TIMEOUT_MS = 8000;
 const MAX_HOPS = 20;
 const SELECTED_HEADERS = ["server", "x-robots-tag", "cache-control"];
 
-const CANONICAL_RE = /<link[^>]+rel=["']canonical["'][^>]+href=["']([^"']+)["']/i;
-const CANONICAL_RE_ALT = /href=["']([^"']+)["'][^>]+rel=["']canonical["']/i;
+const CANONICAL_RE = /<link[^>]*?rel=["']canonical["'][^>]*?href=["']([^"']+)["']/i;
+const CANONICAL_RE_ALT = /href=["']([^"']+)["'][^>]*?rel=["']canonical["']/i;
 
 export interface RedirectHop {
   url: string;

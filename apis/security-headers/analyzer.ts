@@ -508,7 +508,7 @@ export async function fullAudit(rawUrl: string): Promise<FullAuditResult | { err
   try {
     headers = await fetchHeaders(check.url.toString());
   } catch (err: any) {
-    console.error(`[fullAudit] fetch error for ${check.url}:`, err);
+    console.error(`[fullAudit] fetch error:`, sanitizeFetchError(err));
     return { error: sanitizeFetchError(err) };
   }
 
@@ -560,7 +560,7 @@ export async function previewAudit(rawUrl: string): Promise<PreviewResult | { er
   try {
     headers = await fetchHeaders(check.url.toString());
   } catch (err: any) {
-    console.error(`[previewAudit] fetch error for ${check.url}:`, err);
+    console.error(`[previewAudit] fetch error:`, sanitizeFetchError(err));
     return { error: sanitizeFetchError(err) };
   }
 

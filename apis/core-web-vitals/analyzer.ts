@@ -2,6 +2,15 @@
 
 const PSI_BASE = "https://www.googleapis.com/pagespeedonline/v5/runPagespeed";
 
+function sanitizePsiUrl(raw: unknown): string {
+  if (typeof raw !== "string") return "";
+  try {
+    const u = new URL(raw);
+    if (u.protocol !== "http:" && u.protocol !== "https:") return "";
+    return u.toString().slice(0, 2048);
+  } catch { return ""; }
+}
+
 // ─── Thresholds (Google's official) ───────────────────────────────────────────
 
 const THRESHOLDS = {
@@ -186,7 +195,7 @@ export async function analyzeFullReport(url: string): Promise<FullReport> {
 
   return {
     url,
-    fetchedUrl: data.lighthouseResult?.finalDisplayedUrl ?? data.id ?? url,
+    fetchedUrl: sanitizePsiUrl(data.lighthouseResult?.finalDisplayedUrl ?? data.id ?? url),
     strategy: "mobile",
     coreWebVitals: {
       lcp,

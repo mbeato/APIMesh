@@ -312,7 +312,8 @@ function parseDmarc(record: string) {
   }
 
   const policy = tags["p"] || null;
-  const pct = tags["pct"] ? parseInt(tags["pct"], 10) : null;
+  const rawPct = tags["pct"] ? parseInt(tags["pct"], 10) : null;
+  const pct = rawPct !== null && Number.isFinite(rawPct) && rawPct >= 0 && rawPct <= 100 ? rawPct : null;
   const rua = tags["rua"] ? tags["rua"].split(",").map((s) => s.trim()) : [];
   const ruf = tags["ruf"] ? tags["ruf"].split(",").map((s) => s.trim()) : [];
   const subdomainPolicy = tags["sp"] || null;

@@ -305,9 +305,12 @@ function checkHttpStatus(status: number, statusText: string, headers: Headers, b
   // 200-299 = indexable, everything else is not directly indexable
   const indexable = status >= 200 && status < 300;
 
+  // Sanitize statusText from untrusted server
+  const safeStatusText = statusText.replace(/[^\x20-\x7E]/g, "").slice(0, 100);
+
   return {
     status,
-    statusText,
+    statusText: safeStatusText,
     indexable,
     redirect,
     redirectLocation,
