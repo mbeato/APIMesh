@@ -19,6 +19,8 @@
     "GET https://email-security.apimesh.xyz/check",
     "GET https://seo-audit.apimesh.xyz/check",
     "GET https://indexability.apimesh.xyz/check",
-    "GET https://brand-assets.apimesh.xyz/check"
+    "GET https://brand-assets.apimesh.xyz/check",
+    "GET https://email-verify.apimesh.xyz/check",
+    "GET https://tech-stack.apimesh.xyz/check"
   ]
 }

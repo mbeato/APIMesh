@@ -24,6 +24,8 @@ const subdomainRoutes: Record<string, string[]> = {
   "seo-audit":                  ["GET /check"],
   "indexability":               ["GET /check"],
   "brand-assets":               ["GET /check"],
+  "email-verify":               ["GET /check"],
+  "tech-stack":                  ["GET /check"],
 };
 
 // Router health check (no subdomain needed)

@@ -51,6 +51,22 @@ app.get("/.well-known/*", publicLimit, async (c) => {
   return c.json({ error: "Not found" }, 404);
 });
 
+// Landing page — public, no auth (served at apimesh.xyz root)
+app.get("/", publicLimit, async (c) => {
+  const file = Bun.file(join(import.meta.dir, "../landing/landing.html"));
+  if (await file.exists()) {
+    return new Response(await file.text(), {
+      headers: {
+        "Content-Type": "text/html; charset=utf-8",
+        "Content-Security-Policy": "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src data:; connect-src 'self'",
+        "X-Frame-Options": "DENY",
+        "X-Content-Type-Options": "nosniff",
+      },
+    });
+  }
+  return c.text("Landing page not found", 404);
+});
+
 // Dashboard UI — public, no auth
 app.get("/dashboard", publicLimit, async (c) => {
   const file = Bun.file(join(import.meta.dir, "dashboard.html"));

@@ -1,6 +1,6 @@
 # apimesh.xyz
 
-> 12 curated x402-payable API tools for AI agents. Pay per call with USDC on Base network.
+> 14 curated x402-payable API tools for AI agents. Pay per call with USDC on Base network.
 
 ## Tools
 
@@ -72,6 +72,18 @@
 - **Price:** $0.002 per call
 - **What it does:** Extracts brand assets from any domain — logo URL, favicon, theme colors, OG image, and site name. Discovers logos from SVG icons, apple-touch-icons, and Google Favicon API.
 - **Free preview:** GET https://brand-assets.apimesh.xyz/preview?domain={domain} — returns Google favicon URL for free.
+
+### email_verify
+- **Endpoint:** GET https://email-verify.apimesh.xyz/check?email={email}
+- **Price:** $0.001 per call
+- **What it does:** Verifies an email address — syntax validation, MX record check, disposable domain detection, role-address detection, free provider detection, and deliverability assessment.
+- **Free preview:** GET https://email-verify.apimesh.xyz/preview?email={email} — checks syntax, disposable, and role-address status for free.
+
+### tech_stack
+- **Endpoint:** GET https://tech-stack.apimesh.xyz/check?url={url}
+- **Price:** $0.003 per call
+- **What it does:** Detects the technology stack of any website — CMS, frameworks, languages, analytics, CDN, hosting, JavaScript libraries, and CSS frameworks from HTTP headers and HTML analysis.
+- **Free preview:** GET https://tech-stack.apimesh.xyz/preview?url={url} — detects technologies from HTTP headers only, no payment required.
 
 ## Payment
 

@@ -87,7 +87,7 @@ function qs(params: Record<string, string | number | undefined>): string {
 export function createServer(): McpServer {
   const server = new McpServer({
     name: "apimesh",
-    version: "1.2.2",
+    version: "1.3.0",
   });
 
   server.tool(
@@ -192,6 +192,22 @@ export function createServer(): McpServer {
     { domain: z.string().describe("The domain to extract assets from (e.g. example.com)") },
     async ({ domain }) =>
       callApi(`https://brand-assets.apimesh.xyz/check${qs({ domain })}`),
+  );
+
+  server.tool(
+    "email_verify",
+    "Verify an email address: syntax validation, MX record check, disposable domain detection, role-address detection, free provider detection, and deliverability assessment. Free preview: GET https://email-verify.apimesh.xyz/preview?email=... checks syntax and disposable status for free",
+    { email: z.string().describe("The email address to verify (e.g. user@example.com)") },
+    async ({ email }) =>
+      callApi(`https://email-verify.apimesh.xyz/check${qs({ email })}`),
+  );
+
+  server.tool(
+    "tech_stack",
+    "Detect the technology stack of any website. Analyzes HTTP headers and HTML to identify CMS, frameworks, languages, analytics, CDN, hosting, JavaScript libraries, and CSS frameworks. Free preview: GET https://tech-stack.apimesh.xyz/preview?url=... detects technologies from HTTP headers only",
+    { url: z.string().describe("The URL to analyze (e.g. https://example.com)") },
+    async ({ url }) =>
+      callApi(`https://tech-stack.apimesh.xyz/check${qs({ url })}`),
   );
 
   return server;

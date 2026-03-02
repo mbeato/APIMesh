@@ -1,0 +1,905 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>APIMesh — Web Analysis APIs for AI Agents</title>
+    <meta name="description" content="14 web analysis APIs for AI agents. x402 micropayments on Base. No API keys, no accounts. Pay per call." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <style>
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+      :root {
+        --bg: #090909;
+        --surface: #0f0f0f;
+        --border: #1a1a1a;
+        --border-hover: #2a2a2a;
+        --text: #e8e8e8;
+        --text-secondary: #888;
+        --text-dim: #555;
+        --accent: #3ddc84;
+        --accent-dim: rgba(61, 220, 132, 0.08);
+        --blue: #52a8ff;
+        --font: "Space Grotesk", -apple-system, sans-serif;
+        --mono: "JetBrains Mono", "SF Mono", monospace;
+      }
+
+      body {
+        font-family: var(--font);
+        background: var(--bg);
+        color: var(--text);
+        min-height: 100vh;
+        -webkit-font-smoothing: antialiased;
+        font-size: 15px;
+        line-height: 1.6;
+        overflow-x: hidden;
+      }
+
+      /* Hero mesh canvas */
+      #mesh {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 0;
+      }
+      .hero-wrap {
+        position: relative;
+        overflow: hidden;
+      }
+
+      a { color: var(--text); text-decoration: none; }
+
+      .container {
+        max-width: 980px;
+        margin: 0 auto;
+        padding: 0 24px;
+        position: relative;
+        z-index: 1;
+      }
+
+      /* --- Animations --- */
+      @keyframes fadeUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+      @keyframes slideInLeft {
+        from { opacity: 0; transform: translateX(-12px); }
+        to { opacity: 1; transform: translateX(0); }
+      }
+      @keyframes blink {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0; }
+      }
+      .anim {
+        opacity: 0;
+        animation: fadeUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      }
+      .anim-d1 { animation-delay: 0.08s; }
+      .anim-d2 { animation-delay: 0.18s; }
+      .anim-d3 { animation-delay: 0.3s; }
+      .anim-d4 { animation-delay: 0.44s; }
+      .anim-d5 { animation-delay: 0.58s; }
+
+      /* Scroll-triggered sections */
+      .reveal {
+        opacity: 0;
+        transform: translateY(24px);
+        transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+      .reveal.visible {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      /* Staggered children inside revealed sections */
+      .reveal .stagger { opacity: 0; transform: translateY(12px); transition: opacity 0.4s ease, transform 0.4s ease; }
+      .reveal.visible .stagger { opacity: 1; transform: translateY(0); }
+      .reveal.visible .stagger:nth-child(1) { transition-delay: 0.04s; }
+      .reveal.visible .stagger:nth-child(2) { transition-delay: 0.08s; }
+      .reveal.visible .stagger:nth-child(3) { transition-delay: 0.12s; }
+      .reveal.visible .stagger:nth-child(4) { transition-delay: 0.16s; }
+      .reveal.visible .stagger:nth-child(5) { transition-delay: 0.20s; }
+      .reveal.visible .stagger:nth-child(6) { transition-delay: 0.24s; }
+      .reveal.visible .stagger:nth-child(7) { transition-delay: 0.28s; }
+      .reveal.visible .stagger:nth-child(8) { transition-delay: 0.32s; }
+      .reveal.visible .stagger:nth-child(9) { transition-delay: 0.36s; }
+      .reveal.visible .stagger:nth-child(10) { transition-delay: 0.40s; }
+      .reveal.visible .stagger:nth-child(11) { transition-delay: 0.44s; }
+      .reveal.visible .stagger:nth-child(12) { transition-delay: 0.48s; }
+
+      /* Typing cursor for code block */
+      .code-cursor {
+        display: inline-block;
+        width: 8px;
+        height: 15px;
+        background: var(--accent);
+        margin-left: 2px;
+        vertical-align: text-bottom;
+        animation: blink 1s step-end infinite;
+      }
+      .code-body.typed .code-cursor { display: none; }
+
+      /* --- Nav --- */
+      nav {
+        border-bottom: 1px solid var(--border);
+        padding: 14px 0;
+        position: sticky;
+        top: 0;
+        background: rgba(9, 9, 9, 0.85);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        z-index: 10;
+      }
+      .nav-inner {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .nav-left {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .nav-left h1 {
+        font-size: 15px;
+        font-weight: 600;
+        letter-spacing: -0.3px;
+      }
+      .nav-tag {
+        font-family: var(--mono);
+        font-size: 11px;
+        color: var(--accent);
+        padding: 2px 7px;
+        border: 1px solid rgba(61, 220, 132, 0.2);
+        border-radius: 4px;
+        background: var(--accent-dim);
+      }
+      .nav-links {
+        display: flex;
+        align-items: center;
+        gap: 24px;
+        font-size: 13px;
+        font-weight: 400;
+      }
+      .nav-links a {
+        color: var(--text-dim);
+        transition: color 0.2s;
+      }
+      .nav-links a:hover { color: var(--text); }
+
+      /* --- Hero --- */
+      .hero {
+        padding: 100px 0 80px;
+        text-align: center;
+      }
+      .hero-label {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-family: var(--mono);
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--accent);
+        padding: 4px 12px;
+        border: 1px solid rgba(61, 220, 132, 0.15);
+        border-radius: 20px;
+        background: var(--accent-dim);
+        margin-bottom: 28px;
+      }
+      .hero-label .dot {
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        background: var(--accent);
+        animation: pulse 2s ease-in-out infinite;
+      }
+      @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.4; }
+      }
+      .hero h2 {
+        font-size: 48px;
+        font-weight: 700;
+        letter-spacing: -1.5px;
+        line-height: 1.1;
+        max-width: 640px;
+        margin: 0 auto 20px;
+      }
+      .hero h2 .em {
+        color: #fff;
+      }
+      .hero .sub {
+        font-size: 17px;
+        color: var(--text-secondary);
+        font-weight: 300;
+        max-width: 460px;
+        margin: 0 auto 40px;
+      }
+
+      .install-block {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 14px 20px;
+        margin-bottom: 32px;
+        cursor: pointer;
+        transition: border-color 0.2s, box-shadow 0.2s;
+      }
+      .install-block:hover {
+        border-color: var(--border-hover);
+        box-shadow: 0 0 0 1px var(--border-hover);
+      }
+      .install-block .prompt {
+        color: var(--text-dim);
+        font-family: var(--mono);
+        font-size: 14px;
+        user-select: none;
+      }
+      .install-block code {
+        font-family: var(--mono);
+        font-size: 14px;
+        color: var(--text);
+        font-weight: 500;
+      }
+      .install-block .copy-hint {
+        font-family: var(--font);
+        font-size: 11px;
+        color: var(--text-dim);
+        border-left: 1px solid var(--border);
+        padding-left: 12px;
+        transition: color 0.15s;
+      }
+      .install-block:hover .copy-hint { color: var(--text-secondary); }
+
+      .hero-buttons {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+      }
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 11px 22px;
+        background: var(--text);
+        color: var(--bg);
+        border: none;
+        border-radius: 8px;
+        font-family: var(--font);
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.15s, transform 0.1s;
+        text-decoration: none;
+        letter-spacing: -0.2px;
+      }
+      .btn:hover { background: #fff; color: var(--bg); transform: translateY(-1px); }
+      .btn:active { transform: translateY(0); }
+      .btn-outline {
+        background: transparent;
+        color: var(--text-secondary);
+        border: 1px solid var(--border);
+      }
+      .btn-outline:hover {
+        color: var(--text);
+        border-color: var(--border-hover);
+        background: transparent;
+        transform: translateY(-1px);
+      }
+
+      /* --- Section --- */
+      .section {
+        padding: 64px 0;
+        border-top: 1px solid var(--border);
+      }
+      .section-header {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        margin-bottom: 28px;
+      }
+      .section-title {
+        font-size: 12px;
+        font-family: var(--mono);
+        font-weight: 500;
+        color: var(--text-dim);
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+      }
+      .section-count {
+        font-family: var(--mono);
+        font-size: 12px;
+        color: var(--text-dim);
+      }
+
+      /* --- Tool Grid --- */
+      .tool-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1px;
+        background: var(--border);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        overflow: hidden;
+      }
+      .tool {
+        background: var(--surface);
+        padding: 20px 22px;
+        transition: background 0.2s;
+      }
+      .tool:hover { background: #141414; }
+      .tool-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 6px;
+      }
+      .tool-name {
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--text);
+        letter-spacing: -0.2px;
+      }
+      .tool-price {
+        font-family: var(--mono);
+        font-size: 12px;
+        color: var(--accent);
+        font-weight: 500;
+      }
+      .tool-desc {
+        font-size: 13px;
+        color: var(--text-dim);
+        line-height: 1.5;
+      }
+
+      /* --- How It Works --- */
+      .steps {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+        margin-bottom: 28px;
+      }
+      .step {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 24px;
+        transition: border-color 0.2s;
+      }
+      .step:hover { border-color: var(--border-hover); }
+      .step-num {
+        font-family: var(--mono);
+        font-size: 28px;
+        font-weight: 700;
+        color: var(--border-hover);
+        line-height: 1;
+        margin-bottom: 16px;
+      }
+      .step-title {
+        font-size: 15px;
+        font-weight: 600;
+        color: var(--text);
+        margin-bottom: 6px;
+        letter-spacing: -0.3px;
+      }
+      .step-desc {
+        font-size: 13px;
+        color: var(--text-dim);
+        line-height: 1.5;
+      }
+
+      .code-example {
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        overflow: hidden;
+        background: var(--surface);
+      }
+      .code-header {
+        padding: 12px 20px;
+        border-bottom: 1px solid var(--border);
+        font-size: 12px;
+        color: var(--text-dim);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .code-header .endpoint {
+        font-family: var(--mono);
+        font-size: 12px;
+        font-weight: 500;
+      }
+      .code-header .method {
+        color: var(--accent);
+      }
+      .code-body {
+        padding: 20px;
+        font-family: var(--mono);
+        font-size: 13px;
+        line-height: 1.7;
+        overflow-x: auto;
+        white-space: pre;
+        color: var(--text-dim);
+      }
+      .code-body .key { color: var(--text-secondary); }
+      .code-body .str { color: var(--text); }
+      .code-body .num { color: var(--accent); }
+      .code-body .bool { color: var(--blue); }
+
+      /* --- Pricing --- */
+      .pricing-box {
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 32px;
+        background: var(--surface);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 40px;
+      }
+      .pricing-left {}
+      .pricing-range {
+        font-size: 36px;
+        font-weight: 700;
+        font-family: var(--mono);
+        letter-spacing: -1px;
+        margin-bottom: 4px;
+      }
+      .pricing-unit {
+        font-size: 14px;
+        color: var(--text-dim);
+        font-weight: 300;
+      }
+      .pricing-right {
+        font-size: 14px;
+        color: var(--text-dim);
+        line-height: 1.8;
+        text-align: right;
+      }
+      .pricing-right strong {
+        color: var(--text-secondary);
+        font-weight: 500;
+      }
+
+      /* --- Footer --- */
+      footer {
+        border-top: 1px solid var(--border);
+        padding: 28px 0;
+        margin-top: 16px;
+      }
+      .footer-inner {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 13px;
+        color: var(--text-dim);
+      }
+      .footer-links {
+        display: flex;
+        gap: 20px;
+      }
+      .footer-links a {
+        color: var(--text-dim);
+        transition: color 0.2s;
+      }
+      .footer-links a:hover { color: var(--text); }
+
+      /* --- Responsive --- */
+      @media (max-width: 768px) {
+        .hero { padding: 60px 0 48px; }
+        .hero h2 { font-size: 32px; letter-spacing: -1px; }
+        .hero .sub { font-size: 15px; }
+        .tool-grid { grid-template-columns: repeat(2, 1fr); }
+        .steps { grid-template-columns: 1fr; gap: 12px; }
+        .pricing-box { flex-direction: column; text-align: center; gap: 20px; }
+        .pricing-right { text-align: center; }
+        .section { padding: 48px 0; }
+      }
+      @media (max-width: 480px) {
+        .tool-grid { grid-template-columns: 1fr; }
+        .hero h2 { font-size: 28px; }
+        .hero-buttons { flex-direction: column; width: 100%; }
+        .hero-buttons .btn { width: 100%; justify-content: center; }
+        .install-block { width: 100%; justify-content: center; }
+        .nav-links { gap: 14px; }
+        .footer-inner { flex-direction: column; gap: 12px; }
+      }
+    </style>
+  </head>
+  <body>
+    <nav>
+      <div class="container nav-inner">
+        <div class="nav-left">
+          <h1>APIMesh</h1>
+          <span class="nav-tag">x402</span>
+        </div>
+        <div class="nav-links">
+          <a href="#tools">Tools</a>
+          <a href="#how-it-works">How it works</a>
+          <a href="#pricing">Pricing</a>
+          <a href="https://github.com/mbeato/conway" target="_blank">GitHub</a>
+        </div>
+      </div>
+    </nav>
+
+    <div class="hero-wrap">
+      <canvas id="mesh"></canvas>
+      <div class="container">
+        <div class="hero">
+        <div class="hero-label anim anim-d1">
+          <span class="dot"></span>
+          14 tools live on Base
+        </div>
+        <h2 class="anim anim-d2">Web analysis APIs<br>for <span class="em">AI agents</span></h2>
+        <p class="sub anim anim-d3">x402 micropayments. No API keys, no accounts, no billing pages. Your agent pays per call in USDC.</p>
+
+        <div class="install-block anim anim-d4" onclick="navigator.clipboard.writeText('npx @mbeato/apimesh-mcp-server').then(function(){var h=document.querySelector('.copy-hint');h.textContent='copied';setTimeout(function(){h.textContent='copy'},1500)})">
+          <span class="prompt">$</span>
+          <code>npx @mbeato/apimesh-mcp-server</code>
+          <span class="copy-hint">copy</span>
+        </div>
+
+        <div class="hero-buttons anim anim-d5">
+          <a href="https://github.com/mbeato/conway" class="btn" target="_blank">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+            View source
+          </a>
+          <a href="https://seo-audit.apimesh.xyz/preview?url=https://example.com" class="btn btn-outline" target="_blank">Try free preview</a>
+        </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="container">
+      <div class="section reveal" id="tools">
+        <div class="section-header">
+          <span class="section-title">Tools</span>
+          <span class="section-count">14 endpoints</span>
+        </div>
+        <div class="tool-grid">
+          <div class="tool stagger">
+            <div class="tool-header">
+              <span class="tool-name">SEO Audit</span>
+              <span class="tool-price">$0.005</span>
+            </div>
+            <div class="tool-desc">Full SEO analysis with 0-100 score</div>
+          </div>
+          <div class="tool stagger">
+            <div class="tool-header">
+              <span class="tool-name">Security Headers</span>
+              <span class="tool-price">$0.005</span>
+            </div>
+            <div class="tool-desc">Grade security headers A+ to F</div>
+          </div>
+          <div class="tool stagger">
+            <div class="tool-header">
+              <span class="tool-name">Core Web Vitals</span>
+              <span class="tool-price">$0.01</span>
+            </div>
+            <div class="tool-desc">Performance metrics via PageSpeed API</div>
+          </div>
+          <div class="tool stagger">
+            <div class="tool-header">
+              <span class="tool-name">Domain Availability</span>
+              <span class="tool-price">$0.005</span>
+            </div>
+            <div class="tool-desc">Check across TLDs, GitHub, npm, PyPI</div>
+          </div>
+          <div class="tool stagger">
+            <div class="tool-header">
+              <span class="tool-name">Email Security</span>
+              <span class="tool-price">$0.005</span>
+            </div>
+            <div class="tool-desc">SPF, DKIM, DMARC analysis</div>
+          </div>
+          <div class="tool stagger">
+            <div class="tool-header">
+              <span class="tool-name">Redirect Chain</span>
+              <span class="tool-price">$0.003</span>
+            </div>
+            <div class="tool-desc">Trace full redirect path with status codes</div>
+          </div>
+          <div class="tool stagger">
+            <div class="tool-header">
+              <span class="tool-name">Robots.txt Parser</span>
+              <span class="tool-price">$0.001</span>
+            </div>
+            <div class="tool-desc">Parse and analyze crawl directives</div>
+          </div>
+          <div class="tool stagger">
+            <div class="tool-header">
+              <span class="tool-name">Brand Assets</span>
+              <span class="tool-price">$0.003</span>
+            </div>
+            <div class="tool-desc">Extract favicons, logos, brand colors</div>
+          </div>
+          <div class="tool stagger">
+            <div class="tool-header">
+              <span class="tool-name">Indexability</span>
+              <span class="tool-price">$0.003</span>
+            </div>
+            <div class="tool-desc">Check if pages are search-indexable</div>
+          </div>
+          <div class="tool stagger">
+            <div class="tool-header">
+              <span class="tool-name">HTTP Status</span>
+              <span class="tool-price">$0.001</span>
+            </div>
+            <div class="tool-desc">Check response codes and redirects</div>
+          </div>
+          <div class="tool stagger">
+            <div class="tool-header">
+              <span class="tool-name">Favicon Checker</span>
+              <span class="tool-price">$0.001</span>
+            </div>
+            <div class="tool-desc">Detect and validate all favicon formats</div>
+          </div>
+          <div class="tool stagger">
+            <div class="tool-header">
+              <span class="tool-name">Health Check</span>
+              <span class="tool-price">$0.001</span>
+            </div>
+            <div class="tool-desc">Monitor endpoint availability and latency</div>
+          </div>
+          <div class="tool stagger">
+            <div class="tool-header">
+              <span class="tool-name">Email Verify</span>
+              <span class="tool-price">$0.001</span>
+            </div>
+            <div class="tool-desc">Syntax, MX, disposable, and deliverability check</div>
+          </div>
+          <div class="tool stagger">
+            <div class="tool-header">
+              <span class="tool-name">Tech Stack</span>
+              <span class="tool-price">$0.003</span>
+            </div>
+            <div class="tool-desc">Detect CMS, frameworks, analytics, and hosting</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section reveal" id="how-it-works">
+        <div class="section-header">
+          <span class="section-title">How it works</span>
+        </div>
+        <div class="steps">
+          <div class="step stagger">
+            <div class="step-num">01</div>
+            <div class="step-title">Install the MCP server</div>
+            <div class="step-desc">One command. Works with Claude Desktop, Cursor, Windsurf, and any MCP client.</div>
+          </div>
+          <div class="step stagger">
+            <div class="step-num">02</div>
+            <div class="step-title">Agent calls the API</div>
+            <div class="step-desc">Your AI agent picks the right tool and sends the HTTP request automatically.</div>
+          </div>
+          <div class="step stagger">
+            <div class="step-num">03</div>
+            <div class="step-title">x402 pays per call</div>
+            <div class="step-desc">USDC micropayment settles on Base. No signup, no API key, no billing page.</div>
+          </div>
+        </div>
+
+        <div class="code-example reveal">
+          <div class="code-header">
+            <span class="endpoint"><span class="method">GET</span> security-headers.apimesh.xyz/check</span>
+            <span>Response</span>
+          </div>
+          <div class="code-body" id="code-typed"><span class="code-cursor"></span></div>
+        </div>
+      </div>
+
+      <div class="section reveal" id="pricing">
+        <div class="section-header">
+          <span class="section-title">Pricing</span>
+        </div>
+        <div class="pricing-box">
+          <div class="pricing-left">
+            <div class="pricing-range">$0.001 — $0.01</div>
+            <div class="pricing-unit">per API call</div>
+          </div>
+          <div class="pricing-right">
+            <strong>Free /preview</strong> endpoints on every tool<br>
+            No accounts. No tiers. No monthly fees.<br>
+            Pay exactly what you use via x402 on Base.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer class="reveal">
+      <div class="container footer-inner">
+        <span>APIMesh</span>
+        <div class="footer-links">
+          <a href="https://github.com/mbeato/conway" target="_blank">GitHub</a>
+          <a href="https://www.npmjs.com/package/@mbeato/apimesh-mcp-server" target="_blank">npm</a>
+          <a href="/dashboard">Dashboard</a>
+        </div>
+      </div>
+    </footer>
+    <script>
+      /* --- Mesh network animation --- */
+      (function() {
+        var c = document.getElementById('mesh');
+        var ctx = c.getContext('2d');
+        var dpr = window.devicePixelRatio || 1;
+        var w, h, nodes = [], raf;
+        var CONNECT_DIST = 140;
+        var NODE_COUNT = 40;
+
+        function resize() {
+          var wrap = c.parentElement;
+          w = wrap.offsetWidth;
+          h = wrap.offsetHeight;
+          c.width = w * dpr;
+          c.height = h * dpr;
+          c.style.width = w + 'px';
+          c.style.height = h + 'px';
+          ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        }
+
+        function init() {
+          resize();
+          nodes = [];
+          for (var i = 0; i < NODE_COUNT; i++) {
+            nodes.push({
+              x: Math.random() * w,
+              y: Math.random() * h,
+              vx: (Math.random() - 0.5) * 0.3,
+              vy: (Math.random() - 0.5) * 0.3,
+              r: 1.5 + Math.random() * 1,
+              pulse: Math.random() * Math.PI * 2,
+              active: Math.random() < 0.15
+            });
+          }
+        }
+
+        function draw() {
+          ctx.clearRect(0, 0, w, h);
+
+          /* Draw connections */
+          for (var i = 0; i < nodes.length; i++) {
+            for (var j = i + 1; j < nodes.length; j++) {
+              var dx = nodes[i].x - nodes[j].x;
+              var dy = nodes[i].y - nodes[j].y;
+              var dist = Math.sqrt(dx * dx + dy * dy);
+              if (dist < CONNECT_DIST) {
+                var alpha = (1 - dist / CONNECT_DIST) * 0.12;
+                ctx.strokeStyle = 'rgba(255,255,255,' + alpha + ')';
+                ctx.lineWidth = 0.5;
+                ctx.beginPath();
+                ctx.moveTo(nodes[i].x, nodes[i].y);
+                ctx.lineTo(nodes[j].x, nodes[j].y);
+                ctx.stroke();
+              }
+            }
+          }
+
+          /* Draw nodes */
+          var t = Date.now() * 0.001;
+          for (var k = 0; k < nodes.length; k++) {
+            var n = nodes[k];
+            var glow = n.active ? 0.15 + Math.sin(t * 1.5 + n.pulse) * 0.1 : 0;
+
+            /* Active node glow */
+            if (n.active) {
+              ctx.fillStyle = 'rgba(61,220,132,' + glow + ')';
+              ctx.beginPath();
+              ctx.arc(n.x, n.y, 8, 0, Math.PI * 2);
+              ctx.fill();
+            }
+
+            /* Node dot */
+            var nodeAlpha = n.active ? 0.6 : 0.2;
+            ctx.fillStyle = n.active ? 'rgba(61,220,132,' + nodeAlpha + ')' : 'rgba(255,255,255,' + nodeAlpha + ')';
+            ctx.beginPath();
+            ctx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
+            ctx.fill();
+          }
+
+          /* Occasionally toggle active states */
+          if (Math.random() < 0.005) {
+            var ri = Math.floor(Math.random() * nodes.length);
+            nodes[ri].active = !nodes[ri].active;
+          }
+
+          /* Update positions */
+          for (var m = 0; m < nodes.length; m++) {
+            var nd = nodes[m];
+            nd.x += nd.vx;
+            nd.y += nd.vy;
+            if (nd.x < 0 || nd.x > w) nd.vx *= -1;
+            if (nd.y < 0 || nd.y > h) nd.vy *= -1;
+            nd.x = Math.max(0, Math.min(w, nd.x));
+            nd.y = Math.max(0, Math.min(h, nd.y));
+          }
+
+          raf = requestAnimationFrame(draw);
+        }
+
+        init();
+        draw();
+        window.addEventListener('resize', function() { resize(); });
+
+        /* Pause when not visible */
+        document.addEventListener('visibilitychange', function() {
+          if (document.hidden) { cancelAnimationFrame(raf); }
+          else { draw(); }
+        });
+      })();
+
+      /* --- Scroll reveal --- */
+      var observer = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+            /* Trigger code typing when code block enters view */
+            if (entry.target.querySelector('#code-typed')) typeCode();
+          }
+        });
+      }, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
+
+      document.querySelectorAll('.reveal').forEach(function(el) { observer.observe(el); });
+
+      /* --- Code typing animation --- */
+      var codeLines = [
+        '{',
+        '  <span class="key">"url"</span>: <span class="str">"https://example.com"</span>,',
+        '  <span class="key">"score"</span>: <span class="num">72</span>,',
+        '  <span class="key">"grade"</span>: <span class="str">"B"</span>,',
+        '  <span class="key">"headers"</span>: {',
+        '    <span class="key">"strict-transport-security"</span>: <span class="bool">true</span>,',
+        '    <span class="key">"content-security-policy"</span>: <span class="bool">false</span>,',
+        '    <span class="key">"x-frame-options"</span>: <span class="bool">true</span>',
+        '  },',
+        '  <span class="key">"x402"</span>: { <span class="key">"paid"</span>: <span class="num">0.005</span>, <span class="key">"currency"</span>: <span class="str">"USDC"</span> }',
+        '}'
+      ];
+      var codeTyped = false;
+
+      function typeCode() {
+        if (codeTyped) return;
+        codeTyped = true;
+        var el = document.getElementById('code-typed');
+        var i = 0;
+        var out = '';
+
+        function nextLine() {
+          if (i >= codeLines.length) {
+            el.innerHTML = out;
+            el.classList.add('typed');
+            return;
+          }
+          out += (i > 0 ? '\n' : '') + codeLines[i];
+          el.innerHTML = out + '<span class="code-cursor"></span>';
+          i++;
+          setTimeout(nextLine, 60 + Math.random() * 40);
+        }
+        nextLine();
+      }
+
+      /* --- Smooth scroll for nav links --- */
+      document.querySelectorAll('a[href^="#"]').forEach(function(a) {
+        a.addEventListener('click', function(e) {
+          var target = document.querySelector(this.getAttribute('href'));
+          if (target) {
+            e.preventDefault();
+            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        });
+      });
+    </script>
+  </body>
+</html>

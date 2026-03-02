@@ -37,6 +37,15 @@ apimesh.xyz {
         file_server
     }
 
+    @landing path /
+    handle @landing {
+        import dashboard_headers
+        reverse_proxy localhost:3000 {
+            header_up X-Real-IP {remote_host}
+            header_up -X-Forwarded-For
+        }
+    }
+
     handle /dashboard {
         import dashboard_headers
         reverse_proxy localhost:3000 {

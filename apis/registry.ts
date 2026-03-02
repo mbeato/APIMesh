@@ -17,8 +17,8 @@ import { app as emailSecurity } from "./email-security/index";
 import { app as seoAudit } from "./seo-audit/index";
 import { app as indexability } from "./indexability/index";
 import { app as brandAssets } from "./brand-assets/index";
-
-
+import { app as emailVerify } from "./email-verify/index";
+import { app as techStack } from "./tech-stack/index";
 
 
 
@@ -41,4 +41,6 @@ export const registry: Record<string, Hono> = {
   "seo-audit": seoAudit,
   "indexability": indexability,
   "brand-assets": brandAssets,
+  "email-verify": emailVerify,
+  "tech-stack": techStack,
 };

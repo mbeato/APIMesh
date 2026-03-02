@@ -1,6 +1,6 @@
 # APIMesh
 
-18 x402-payable API tools for AI agents. Pay per call with USDC on Base.
+20 x402-payable API tools for AI agents. Pay per call with USDC on Base.
 
 ## What is this?
 
@@ -24,6 +24,8 @@ Most tools have **free `/preview` endpoints** so agents can verify the API works
 | **Favicon Checker** | `GET /check?url=` | $0.001 | Check favicon existence, URL, format |
 | **Health Check** | `POST /check` | $0.003 | Parallel health check for up to 10 service URLs |
 | **Robots.txt Parser** | `GET /analyze?url=` | $0.001 | Parse robots.txt into structured rules and sitemaps |
+| **Email Verify** | `GET /check?email=` | $0.001 | Syntax, MX, disposable domain, role-address, deliverability |
+| **Tech Stack** | `GET /check?url=` | $0.003 | Detect CMS, frameworks, analytics, CDN, hosting from headers and HTML |
 
 Plus 6 utility APIs (regex builder, YAML validator, JWT generator, UA analyzer, status codes, Swagger docs).
 
