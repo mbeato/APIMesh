@@ -3,1029 +3,649 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>APIMesh Premium Dashboard</title>
-    <link
-      href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap"
-      rel="stylesheet"
-    />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&display=swap"
-      rel="stylesheet"
-    />
+    <title>APIMesh</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
     <style>
-      :root {
-        --bg-base: #050505;
-        --bg-card: rgba(20, 20, 25, 0.6);
-        --bg-card-hover: rgba(30, 30, 40, 0.8);
-        --border-color: rgba(255, 255, 255, 0.08);
-        --border-glow: rgba(122, 162, 247, 0.3);
-
-        --text-primary: #f0f0f0;
-        --text-secondary: #a0a0b0;
-        --text-muted: #666677;
-
-        --accent-blue: #7aa2f7;
-        --accent-blue-glow: 0 0 15px rgba(122, 162, 247, 0.6);
-        --accent-green: #9ece6a;
-        --accent-red: #f7768e;
-        --accent-orange: #e0af68;
-
-        --glass-blur: blur(12px);
-        --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-        --transition-smooth: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-      }
-
-      *,
-      *::before,
-      *::after {
-        box-sizing: border-box;
-        margin: 0;
-        padding: 0;
-      }
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
       body {
-        font-family: "Outfit", sans-serif;
-        background: var(--bg-base);
-        color: var(--text-primary);
+        font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+        background: #0a0a0a;
+        color: #ededed;
         min-height: 100vh;
-        overflow-x: hidden;
-        position: relative;
-        /* Fancy animated background gradient */
-        background-image:
-          radial-gradient(
-            circle at 15% 50%,
-            rgba(122, 162, 247, 0.05) 0%,
-            transparent 50%
-          ),
-          radial-gradient(
-            circle at 85% 30%,
-            rgba(158, 206, 106, 0.05) 0%,
-            transparent 50%
-          );
+        -webkit-font-smoothing: antialiased;
+        font-size: 14px;
+        line-height: 1.5;
       }
 
-      /* Decorative background blobs */
-      .bg-blob {
-        position: fixed;
-        border-radius: 50%;
-        filter: blur(80px);
-        z-index: -1;
-        opacity: 0.5;
-        animation: drift 20s infinite alternate cubic-bezier(0.4, 0, 0.2, 1);
-      }
-      .blob-1 {
-        top: -10%;
-        left: -10%;
-        width: 40vw;
-        height: 40vw;
-        background: radial-gradient(
-          circle,
-          rgba(122, 162, 247, 0.15),
-          transparent
-        );
-      }
-      .blob-2 {
-        bottom: -10%;
-        right: -10%;
-        width: 50vw;
-        height: 50vw;
-        background: radial-gradient(
-          circle,
-          rgba(158, 206, 106, 0.1),
-          transparent
-        );
-        animation-delay: -10s;
-      }
+      a { color: #ededed; text-decoration: none; }
+      a:hover { color: #fff; }
 
-      @keyframes drift {
-        0% {
-          transform: translate(0, 0) scale(1);
-        }
-        100% {
-          transform: translate(5%, 5%) scale(1.1);
-        }
-      }
-
-      a {
-        color: var(--accent-blue);
-        text-decoration: none;
-        transition: color var(--transition-fast);
-      }
-      a:hover {
-        color: #8bb1ff;
-        text-shadow: var(--accent-blue-glow);
-      }
-
-      /* Login Overlay */
+      /* --- Login --- */
       #login {
-        display: flex;
         position: fixed;
         inset: 0;
-        z-index: 1000;
-        background: rgba(5, 5, 5, 0.8);
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
+        z-index: 100;
+        background: #0a0a0a;
+        display: flex;
         align-items: center;
         justify-content: center;
-        flex-direction: column;
-        gap: 24px;
-        transition:
-          opacity var(--transition-smooth),
-          visibility var(--transition-smooth);
+        transition: opacity 0.3s ease;
       }
-      #login.hidden {
-        opacity: 0;
-        visibility: hidden;
-        pointer-events: none;
-      }
+      #login.hidden { opacity: 0; pointer-events: none; }
 
-      .login-card {
-        background: rgba(20, 20, 25, 0.7);
-        border: 1px solid var(--border-color);
-        padding: 40px;
-        border-radius: 16px;
-        box-shadow:
-          0 25px 50px -12px rgba(0, 0, 0, 0.5),
-          inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      .login-box {
+        width: 320px;
         display: flex;
         flex-direction: column;
-        gap: 20px;
-        text-align: center;
-        animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        gap: 16px;
       }
-
-      @keyframes slideUp {
-        from {
-          opacity: 0;
-          transform: translateY(20px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
-      }
-
-      .login-card h1 {
-        font-size: 28px;
-        font-weight: 700;
-        background: linear-gradient(135deg, #fff, var(--accent-blue));
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        letter-spacing: -0.5px;
-      }
-
-      .login-card input {
-        background: rgba(0, 0, 0, 0.3);
-        border: 1px solid var(--border-color);
-        color: var(--text-primary);
-        padding: 14px 18px;
-        width: 340px;
-        font-family: "Fira Code", monospace;
-        font-size: 14px;
-        border-radius: 8px;
-        transition: all var(--transition-fast);
-      }
-      .login-card input:focus {
-        outline: none;
-        border-color: var(--accent-blue);
-        box-shadow: 0 0 0 3px rgba(122, 162, 247, 0.15);
-      }
-
-      .login-card button {
-        background: linear-gradient(135deg, var(--accent-blue), #5d8de6);
-        color: #000;
-        border: none;
-        padding: 14px 24px;
-        font-family: inherit;
-        font-size: 15px;
-        cursor: pointer;
-        border-radius: 8px;
+      .login-box h1 {
+        font-size: 16px;
         font-weight: 600;
-        transition: all var(--transition-fast);
-        box-shadow: 0 4px 14px rgba(122, 162, 247, 0.3);
+        color: #ededed;
+        margin-bottom: 8px;
       }
-      .login-card button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(122, 162, 247, 0.4);
-      }
-      .login-card button:active {
-        transform: translateY(0);
-      }
-      #login-error {
-        color: var(--accent-red);
+      .login-box input {
+        width: 100%;
+        padding: 10px 12px;
+        background: #0a0a0a;
+        border: 1px solid #333;
+        border-radius: 6px;
+        color: #ededed;
+        font-family: inherit;
         font-size: 14px;
-        min-height: 20px;
-        font-weight: 500;
+        outline: none;
+        transition: border-color 0.15s;
       }
+      .login-box input:focus { border-color: #ededed; }
+      .login-box input::placeholder { color: #666; }
 
-      /* Dashboard Layout */
+      .btn {
+        padding: 10px 16px;
+        background: #ededed;
+        color: #0a0a0a;
+        border: none;
+        border-radius: 6px;
+        font-family: inherit;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background 0.15s;
+      }
+      .btn:hover { background: #fff; }
+      .btn-ghost {
+        background: transparent;
+        color: #666;
+        border: 1px solid #333;
+        padding: 6px 12px;
+        font-size: 13px;
+      }
+      .btn-ghost:hover { color: #ededed; border-color: #555; background: transparent; }
+
+      #login-error { color: #e5484d; font-size: 13px; min-height: 18px; }
+
+      /* --- Shell --- */
       #dashboard {
         opacity: 0;
         visibility: hidden;
-        padding: 40px 24px;
-        max-width: 1400px;
+        transition: opacity 0.2s;
+        max-width: 1200px;
         margin: 0 auto;
-        transition: opacity var(--transition-smooth) 0.2s;
+        padding: 24px 20px 64px;
       }
-      #dashboard.active {
-        opacity: 1;
-        visibility: visible;
-      }
+      #dashboard.active { opacity: 1; visibility: visible; }
 
-      /* Header */
+      /* --- Header --- */
       .header {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        margin-bottom: 40px;
-        flex-wrap: wrap;
-        gap: 20px;
-        animation: fadeInDown 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        padding-bottom: 24px;
+        border-bottom: 1px solid #1a1a1a;
+        margin-bottom: 32px;
       }
-
-      @keyframes fadeInDown {
-        from {
-          opacity: 0;
-          transform: translateY(-15px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
-      }
-
-      .header h1 {
-        font-size: 24px;
-        font-weight: 600;
+      .header-left {
         display: flex;
         align-items: center;
         gap: 12px;
       }
-      .header h1::before {
-        content: "";
-        display: block;
-        width: 32px;
-        height: 32px;
-        background: linear-gradient(135deg, var(--accent-blue), #9ece6a);
-        border-radius: 8px;
-        box-shadow: 0 0 15px rgba(122, 162, 247, 0.4);
+      .header-left h1 { font-size: 14px; font-weight: 600; }
+      .header-left .sep { color: #333; }
+      .header-left .env {
+        font-size: 12px;
+        color: #666;
+        padding: 2px 8px;
+        border: 1px solid #222;
+        border-radius: 4px;
       }
-
       .header-right {
         display: flex;
         align-items: center;
-        gap: 20px;
-        font-size: 13px;
-        color: var(--text-secondary);
+        gap: 12px;
+      }
+      .header-right .meta {
+        font-size: 12px;
+        color: #555;
       }
 
-      .wallet-container {
-        background: rgba(255, 255, 255, 0.03);
-        border: 1px solid var(--border-color);
-        padding: 6px 12px;
-        border-radius: 20px;
+      /* Toggle */
+      .toggle {
         display: flex;
         align-items: center;
-        gap: 8px;
-        font-family: "Fira Code", monospace;
-      }
-      .wallet-container::before {
-        content: "";
-        display: block;
-        width: 8px;
-        height: 8px;
-        background: var(--accent-green);
-        border-radius: 50%;
-        box-shadow: 0 0 8px var(--accent-green);
-      }
-      .wallet {
-        color: var(--text-primary);
-        max-width: 140px;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-
-      .header-right button {
-        background: rgba(255, 255, 255, 0.05);
-        border: 1px solid var(--border-color);
-        color: var(--text-secondary);
-        padding: 8px 16px;
-        font-family: inherit;
-        font-size: 13px;
-        font-weight: 500;
+        gap: 6px;
         cursor: pointer;
-        border-radius: 6px;
-        transition: all var(--transition-fast);
-      }
-      .header-right button:hover {
-        border-color: rgba(255, 255, 255, 0.2);
-        color: var(--text-primary);
-        background: rgba(255, 255, 255, 0.1);
-      }
-
-      /* Toggle Switch */
-      .auto-refresh-toggle {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        cursor: pointer;
+        font-size: 12px;
+        color: #666;
         user-select: none;
-        font-weight: 500;
       }
-      .toggle-switch {
+      .toggle input { display: none; }
+      .toggle-track {
+        width: 28px;
+        height: 16px;
+        background: #333;
+        border-radius: 8px;
         position: relative;
-        width: 36px;
-        height: 20px;
-        background: rgba(255, 255, 255, 0.1);
-        border-radius: 20px;
-        transition: var(--transition-fast);
+        transition: background 0.15s;
       }
-      .auto-refresh-toggle input {
-        display: none;
-      }
-      .toggle-slider {
+      .toggle-knob {
+        width: 12px;
+        height: 12px;
+        background: #666;
+        border-radius: 50%;
         position: absolute;
         top: 2px;
         left: 2px;
-        width: 16px;
-        height: 16px;
-        background: var(--text-secondary);
-        border-radius: 50%;
-        transition: var(--transition-fast);
+        transition: transform 0.15s, background 0.15s;
       }
-      .auto-refresh-toggle input:checked + .toggle-switch {
-        background: var(--accent-blue);
-      }
-      .auto-refresh-toggle input:checked + .toggle-switch .toggle-slider {
-        transform: translateX(16px);
-        background: #fff;
-        box-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+      .toggle input:checked + .toggle-track { background: #333; }
+      .toggle input:checked + .toggle-track .toggle-knob {
+        transform: translateX(12px);
+        background: #ededed;
       }
 
-      /* Glass Cards */
+      /* --- Cards --- */
       .cards {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-        gap: 24px;
-        margin-bottom: 40px;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1px;
+        background: #1a1a1a;
+        border: 1px solid #1a1a1a;
+        border-radius: 8px;
+        overflow: hidden;
+        margin-bottom: 32px;
       }
       .card {
-        background: var(--bg-card);
-        backdrop-filter: var(--glass-blur);
-        -webkit-backdrop-filter: var(--glass-blur);
-        border: 1px solid var(--border-color);
-        border-radius: 12px;
-        padding: 24px;
-        position: relative;
-        overflow: hidden;
-        transition:
-          transform var(--transition-fast),
-          border-color var(--transition-fast),
-          box-shadow var(--transition-fast);
-        animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+        background: #0a0a0a;
+        padding: 20px;
       }
-      .card:nth-child(1) {
-        animation-delay: 0.1s;
-      }
-      .card:nth-child(2) {
-        animation-delay: 0.2s;
-      }
-      .card:nth-child(3) {
-        animation-delay: 0.3s;
-      }
-      .card:nth-child(4) {
-        animation-delay: 0.4s;
-      }
-
-      .card:hover {
-        transform: translateY(-4px);
-        border-color: rgba(255, 255, 255, 0.15);
-        box-shadow:
-          0 10px 30px -10px rgba(0, 0, 0, 0.5),
-          0 0 20px rgba(122, 162, 247, 0.05);
-      }
-
-      /* Shimmer effect inside card */
-      .card::after {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 50%;
-        height: 100%;
-        background: linear-gradient(
-          to right,
-          transparent,
-          rgba(255, 255, 255, 0.03),
-          transparent
-        );
-        transform: skewX(-20deg);
-        transition: var(--transition-smooth);
-      }
-      .card:hover::after {
-        left: 150%;
-        transition: 0.8s ease-in-out;
-      }
-
       .card-label {
-        font-size: 13px;
-        color: var(--text-secondary);
-        font-weight: 500;
-        margin-bottom: 12px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-      }
-      .card-value {
-        font-size: 36px;
-        font-weight: 700;
-        color: var(--text-primary);
-        font-family: "Fira Code", monospace;
-        letter-spacing: -1px;
-      }
-      .card-value.revenue {
-        color: var(--accent-green);
-        text-shadow: 0 0 20px rgba(158, 206, 106, 0.2);
-      }
-
-      /* Tables container */
-      .sections-grid {
-        display: grid;
-        grid-template-columns: 1fr;
-        gap: 32px;
-      }
-      @media (min-width: 1200px) {
-        .sections-grid {
-          grid-template-columns: 1fr 1fr;
-        }
-      }
-
-      .section {
-        background: var(--bg-card);
-        backdrop-filter: var(--glass-blur);
-        border: 1px solid var(--border-color);
-        border-radius: 12px;
-        padding: 24px;
-        animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) backwards;
-        animation-delay: 0.5s;
-        overflow: hidden;
-        display: flex;
-        flex-direction: column;
-      }
-
-      @keyframes fadeInUp {
-        from {
-          opacity: 0;
-          transform: translateY(20px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
-      }
-
-      .section-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 20px;
-      }
-
-      .section-title {
-        font-size: 18px;
-        font-weight: 600;
-        color: var(--text-primary);
-        display: flex;
-        align-items: center;
-        gap: 8px;
-      }
-
-      .table-container {
-        overflow-x: auto;
-        /* Custom scrollbar for tables */
-        scrollbar-width: thin;
-        scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
-      }
-      .table-container::-webkit-scrollbar {
-        height: 6px;
-      }
-      .table-container::-webkit-scrollbar-track {
-        background: transparent;
-      }
-      .table-container::-webkit-scrollbar-thumb {
-        background: rgba(255, 255, 255, 0.2);
-        border-radius: 3px;
-      }
-
-      table {
-        width: 100%;
-        border-collapse: separate;
-        border-spacing: 0;
-      }
-
-      th {
-        text-align: left;
-        padding: 14px 16px;
-        color: var(--text-secondary);
-        font-weight: 500;
         font-size: 12px;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-        background: rgba(0, 0, 0, 0.2);
+        color: #666;
+        margin-bottom: 8px;
       }
-      th:first-child {
-        border-top-left-radius: 6px;
-      }
-      th:last-child {
-        border-top-right-radius: 6px;
-      }
-
-      td {
-        padding: 16px;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.03);
-        font-size: 14px;
-        color: var(--text-primary);
-      }
-      td.mono {
-        font-family: "Fira Code", monospace;
-        font-size: 13px;
-      }
-
-      tr {
-        transition: background var(--transition-fast);
-      }
-      tr:hover td {
-        background: rgba(255, 255, 255, 0.02);
-      }
-      tr:last-child td {
-        border-bottom: none;
-      }
-
-      /* Badges */
-      .badge {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        padding: 4px 10px;
-        border-radius: 20px;
-        font-size: 11px;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        font-family: "Outfit", sans-serif;
-      }
-      .badge-active {
-        background: rgba(158, 206, 106, 0.1);
-        color: var(--accent-green);
-        border: 1px solid rgba(158, 206, 106, 0.2);
-      }
-      .badge-paid {
-        background: rgba(122, 162, 247, 0.1);
-        color: var(--accent-blue);
-        border: 1px solid rgba(122, 162, 247, 0.2);
-      }
-      .badge-free {
-        background: rgba(255, 255, 255, 0.05);
-        color: var(--text-secondary);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-      }
-
-      .status-2xx {
-        color: var(--accent-green);
-      }
-      .status-4xx {
-        color: var(--accent-orange);
-      }
-      .status-5xx {
-        color: var(--accent-red);
-      }
-
-      .loading {
-        color: var(--text-muted);
-        text-align: center;
-        padding: 60px;
+      .card-row {
         display: flex;
-        flex-direction: column;
-        align-items: center;
+        align-items: flex-end;
+        justify-content: space-between;
         gap: 16px;
       }
+      .card-value {
+        font-size: 24px;
+        font-weight: 600;
+        letter-spacing: -0.5px;
+        color: #ededed;
+        white-space: nowrap;
+      }
+      .card-spark {
+        width: 80px;
+        height: 28px;
+        flex-shrink: 0;
+      }
+      .card-spark svg { width: 100%; height: 100%; }
 
-      /* Loading spinner */
-      .spinner {
-        width: 30px;
-        height: 30px;
-        border: 3px solid rgba(255, 255, 255, 0.1);
-        border-top-color: var(--accent-blue);
+      /* --- Chart Section --- */
+      .chart-section {
+        margin-bottom: 32px;
+      }
+      .chart-section-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 16px;
+      }
+      .chart-section-title {
+        font-size: 13px;
+        font-weight: 500;
+        color: #ededed;
+      }
+      .chart-section-sub {
+        font-size: 12px;
+        color: #555;
+      }
+      .chart-container {
+        border: 1px solid #1a1a1a;
+        border-radius: 8px;
+        padding: 20px 20px 12px;
+        background: #0a0a0a;
+      }
+      .chart-area {
+        width: 100%;
+        height: 140px;
+      }
+      .chart-area svg { width: 100%; height: 100%; display: block; }
+
+      /* --- Two column layout --- */
+      .cols {
+        display: grid;
+        grid-template-columns: 1fr 280px;
+        gap: 24px;
+        margin-bottom: 32px;
+      }
+
+      /* --- Tables --- */
+      .panel {
+        border: 1px solid #1a1a1a;
+        border-radius: 8px;
+        overflow: hidden;
+      }
+      .panel-header {
+        padding: 14px 16px;
+        border-bottom: 1px solid #1a1a1a;
+        font-size: 13px;
+        font-weight: 500;
+        color: #ededed;
+      }
+
+      table { width: 100%; border-collapse: collapse; }
+      th {
+        text-align: left;
+        padding: 10px 16px;
+        font-size: 12px;
+        font-weight: 500;
+        color: #555;
+        border-bottom: 1px solid #1a1a1a;
+      }
+      td {
+        padding: 10px 16px;
+        font-size: 13px;
+        color: #999;
+        border-bottom: 1px solid #111;
+      }
+      tr:last-child td { border-bottom: none; }
+      tr:hover td { background: #111; }
+
+      td.primary { color: #ededed; font-weight: 500; }
+      td.mono { font-family: "SF Mono", "Fira Code", monospace; font-size: 12px; }
+      td.green { color: #3ddc84; }
+      td.dim { color: #555; }
+      td.red { color: #e5484d; }
+
+      .badge {
+        display: inline-block;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-size: 11px;
+        font-weight: 500;
+      }
+      .badge-ok { background: #062312; color: #3ddc84; }
+      .badge-paid { background: #0d1b2a; color: #52a8ff; }
+      .badge-free { color: #555; }
+
+      /* --- Breakdown --- */
+      .breakdown { padding: 4px 0; }
+      .breakdown-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 16px;
+      }
+      .breakdown-item + .breakdown-item { border-top: 1px solid #111; }
+      .breakdown-dot {
+        width: 6px;
+        height: 6px;
         border-radius: 50%;
-        animation: spin 1s linear infinite;
+        flex-shrink: 0;
       }
-      @keyframes spin {
-        to {
-          transform: rotate(360deg);
-        }
+      .breakdown-name {
+        font-size: 13px;
+        color: #999;
+        flex: 1;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .breakdown-val {
+        font-size: 13px;
+        color: #ededed;
+        font-weight: 500;
+        font-family: "SF Mono", "Fira Code", monospace;
+        white-space: nowrap;
       }
 
-      .row-anim {
-        animation: fadeIn 0.3s ease-out forwards;
-        opacity: 0;
-      }
-      @keyframes fadeIn {
-        to {
-          opacity: 1;
-        }
+      .empty-state {
+        padding: 32px 16px;
+        text-align: center;
+        color: #444;
+        font-size: 13px;
       }
 
-      @media (max-width: 768px) {
-        #dashboard {
-          padding: 20px 16px;
-        }
-        .header {
-          flex-direction: column;
-          align-items: flex-start;
-        }
-        .header-right {
-          width: 100%;
-          justify-content: space-between;
-          flex-wrap: wrap;
-        }
-        .card-value {
-          font-size: 28px;
-        }
-        .sections-grid {
-          grid-template-columns: 1fr;
-        }
+      .loading-row td {
+        color: #333;
+        text-align: center;
+        padding: 32px;
+      }
+
+      /* --- Responsive --- */
+      @media (max-width: 900px) {
+        .cards { grid-template-columns: repeat(2, 1fr); }
+        .cols { grid-template-columns: 1fr; }
+      }
+      @media (max-width: 560px) {
+        .cards { grid-template-columns: 1fr; }
+        .header { flex-direction: column; align-items: flex-start; gap: 12px; }
+        .header-right { width: 100%; justify-content: space-between; }
       }
     </style>
   </head>
   <body>
-    <!-- Background Decorations -->
-    <div class="bg-blob blob-1"></div>
-    <div class="bg-blob blob-2"></div>
-
     <div id="login">
-      <div class="login-card">
-        <h1>APIMesh Panel</h1>
-        <div>
-          <input
-            type="password"
-            id="token-input"
-            placeholder="Enter security token"
-            autocomplete="off"
-          />
-        </div>
-        <button id="login-btn">Authenticate Access</button>
+      <div class="login-box">
+        <h1>APIMesh</h1>
+        <input type="password" id="token-input" placeholder="Token" autocomplete="off" />
+        <button class="btn" id="login-btn">Log in</button>
         <div id="login-error"></div>
       </div>
     </div>
 
     <div id="dashboard">
       <div class="header">
-        <h1>APIMesh Dashboard</h1>
+        <div class="header-left">
+          <h1>APIMesh</h1>
+          <span class="sep">/</span>
+          <span class="env">production</span>
+        </div>
         <div class="header-right">
-          <div class="wallet-container">
-            <span class="wallet" id="wallet" title="Agent Wallet"
-              >Connecting...</span
-            >
-          </div>
-          <label class="auto-refresh-toggle">
+          <span class="meta" id="wallet"></span>
+          <label class="toggle">
             <input type="checkbox" id="auto-refresh" checked />
-            <div class="toggle-switch"><div class="toggle-slider"></div></div>
-            <span>Live</span>
+            <div class="toggle-track"><div class="toggle-knob"></div></div>
+            Live
           </label>
-          <span
-            id="last-updated"
-            style="color: var(--text-muted); font-size: 12px"
-            >Waiting for data...</span
-          >
-          <button id="logout-btn">Disconnect</button>
+          <span class="meta" id="last-updated"></span>
+          <button class="btn-ghost" id="logout-btn">Log out</button>
         </div>
       </div>
 
       <div class="cards">
         <div class="card">
-          <div class="card-label">Overall Revenue (7d)</div>
-          <div class="card-value revenue" id="rev-7d">--</div>
+          <div class="card-label">Revenue (7d)</div>
+          <div class="card-row">
+            <div class="card-value" id="rev-7d">&mdash;</div>
+            <div class="card-spark" id="spark-rev"></div>
+          </div>
         </div>
         <div class="card">
-          <div class="card-label">Overall Revenue (30d)</div>
-          <div class="card-value revenue" id="rev-30d">--</div>
+          <div class="card-label">Revenue (30d)</div>
+          <div class="card-row">
+            <div class="card-value" id="rev-30d">&mdash;</div>
+            <div class="card-spark" id="spark-rev-30"></div>
+          </div>
         </div>
         <div class="card">
-          <div class="card-label">Active Endpoints</div>
-          <div class="card-value mono" id="active-apis">--</div>
+          <div class="card-label">APIs</div>
+          <div class="card-row">
+            <div class="card-value" id="active-apis">&mdash;</div>
+          </div>
         </div>
         <div class="card">
-          <div class="card-label">Total Requests (7d)</div>
-          <div class="card-value mono" id="total-requests">--</div>
+          <div class="card-label">Requests (7d)</div>
+          <div class="card-row">
+            <div class="card-value" id="total-requests">&mdash;</div>
+            <div class="card-spark" id="spark-req"></div>
+          </div>
         </div>
       </div>
 
-      <div class="sections-grid">
-        <div class="section">
-          <div class="section-header">
-            <div class="section-title">Network APIs</div>
-          </div>
-          <div class="table-container">
-            <table>
-              <thead>
-                <tr>
-                  <th>Service</th>
-                  <th>Requests (7d)</th>
-                  <th>Errors</th>
-                  <th>Revenue (7d)</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody id="apis-table">
-                <tr>
-                  <td colspan="5">
-                    <div class="loading">
-                      <div class="spinner"></div>
-                      Loading APIs...
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+      <div class="chart-section">
+        <div class="chart-section-header">
+          <span class="chart-section-title">Requests</span>
+          <span class="chart-section-sub">Last 24h</span>
+        </div>
+        <div class="chart-container">
+          <div class="chart-area" id="chart-hourly"></div>
+        </div>
+      </div>
+
+      <div class="cols">
+        <div class="panel">
+          <div class="panel-header">APIs</div>
+          <table>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Requests</th>
+                <th>Errors</th>
+                <th>Revenue</th>
+              </tr>
+            </thead>
+            <tbody id="apis-table">
+              <tr><td colspan="4" class="loading-row">Loading...</td></tr>
+            </tbody>
+          </table>
         </div>
 
-        <div class="section">
-          <div class="section-header">
-            <div class="section-title">Live Transaction Stream</div>
-          </div>
-          <div class="table-container">
-            <table>
-              <thead>
-                <tr>
-                  <th>Time</th>
-                  <th>Endpoint</th>
-                  <th>Status</th>
-                  <th>LATENCY</th>
-                  <th>Type</th>
-                </tr>
-              </thead>
-              <tbody id="requests-table">
-                <tr>
-                  <td colspan="5">
-                    <div class="loading">
-                      <div class="spinner"></div>
-                      Listening for events...
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+        <div class="panel">
+          <div class="panel-header">Revenue by API</div>
+          <div class="breakdown" id="api-breakdown">
+            <div class="empty-state">No data</div>
           </div>
         </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">Recent requests</div>
+        <table>
+          <thead>
+            <tr>
+              <th>Time</th>
+              <th>API</th>
+              <th>Endpoint</th>
+              <th>Status</th>
+              <th>Latency</th>
+              <th>Type</th>
+            </tr>
+          </thead>
+          <tbody id="requests-table">
+            <tr><td colspan="6" class="loading-row">Waiting...</td></tr>
+          </tbody>
+        </table>
       </div>
     </div>
 
     <script>
-      const BASE = location.origin;
-      let refreshInterval = null;
+      var B = location.origin, ri = null;
 
-      function getToken() {
-        return sessionStorage.getItem("dashboard_token");
-      }
-      function setToken(t) {
-        sessionStorage.setItem("dashboard_token", t);
-      }
-      function clearToken() {
-        sessionStorage.removeItem("dashboard_token");
-      }
+      function gt() { return sessionStorage.getItem("t"); }
+      function st(t) { sessionStorage.setItem("t", t); }
+      function ct() { sessionStorage.removeItem("t"); }
 
-      async function doLogin() {
-        const input = document.getElementById("token-input");
-        const err = document.getElementById("login-error");
-        const btn = document.getElementById("login-btn");
-        const token = input.value.trim();
-
-        if (!token) {
-          err.textContent = "Token required";
-          return;
-        }
-
+      async function login() {
+        var inp = document.getElementById("token-input");
+        var err = document.getElementById("login-error");
+        var tok = inp.value.trim();
+        if (!tok) { err.textContent = "Token required"; return; }
         try {
-          btn.textContent = "Authenticating...";
-          btn.style.opacity = "0.8";
-
-          // Slight artificial delay for UX smoothness
-          await new Promise((r) => setTimeout(r, 400));
-
-          const res = await fetch(BASE + "/api/stats", {
-            headers: { Authorization: "Bearer " + token },
-          });
-
-          if (res.status === 401) {
-            err.textContent = "Invalid security token";
-            return;
-          }
-          if (!res.ok) {
-            err.textContent = "Connection error: " + res.status;
-            return;
-          }
-
-          setToken(token);
-          input.value = "";
-          err.textContent = "";
-          showDashboard();
-
-          // Initial data load uses the fetched result if we wanted, but calling loadStats is fine
-          const data = await res.json();
-          render(data);
-        } catch (e) {
-          err.textContent = "Network offline or unreachable";
-        } finally {
-          btn.textContent = "Authenticate Access";
-          btn.style.opacity = "1";
-        }
+          var res = await fetch(B + "/api/stats", { headers: { Authorization: "Bearer " + tok } });
+          if (res.status === 401) { err.textContent = "Invalid token"; return; }
+          if (!res.ok) { err.textContent = "Error " + res.status; return; }
+          st(tok); inp.value = ""; err.textContent = "";
+          show(); render(await res.json());
+        } catch(e) { err.textContent = "Network error"; }
       }
 
-      document
-        .getElementById("token-input")
-        .addEventListener("keydown", (e) => {
-          if (e.key === "Enter") doLogin();
-        });
-      document.getElementById("login-btn").addEventListener("click", doLogin);
-      document.getElementById("logout-btn").addEventListener("click", doLogout);
+      document.getElementById("token-input").addEventListener("keydown", function(e) { if (e.key === "Enter") login(); });
+      document.getElementById("login-btn").addEventListener("click", login);
+      document.getElementById("logout-btn").addEventListener("click", logout);
 
-      function doLogout() {
-        clearToken();
-        stopRefresh();
-        const loginForm = document.getElementById("login");
-        loginForm.classList.remove("hidden");
+      function logout() {
+        ct(); stopR();
+        document.getElementById("login").classList.remove("hidden");
         document.getElementById("dashboard").classList.remove("active");
       }
 
-      function showDashboard() {
+      function show() {
         document.getElementById("login").classList.add("hidden");
         document.getElementById("dashboard").classList.add("active");
-        startRefresh();
+        startR();
       }
 
-      function startRefresh() {
-        stopRefresh();
-        if (document.getElementById("auto-refresh").checked) {
-          refreshInterval = setInterval(loadStats, 10000); // More frequent for "live" feel
-        }
-      }
-
-      function stopRefresh() {
-        if (refreshInterval) {
-          clearInterval(refreshInterval);
-          refreshInterval = null;
-        }
-      }
-
-      document.getElementById("auto-refresh").addEventListener("change", () => {
-        if (document.getElementById("auto-refresh").checked) startRefresh();
-        else stopRefresh();
+      function startR() { stopR(); if (document.getElementById("auto-refresh").checked) ri = setInterval(load, 10000); }
+      function stopR() { if (ri) { clearInterval(ri); ri = null; } }
+      document.getElementById("auto-refresh").addEventListener("change", function() {
+        if (this.checked) startR(); else stopR();
       });
 
-      async function loadStats() {
-        const token = getToken();
-        if (!token) return;
-
+      async function load() {
+        var tok = gt(); if (!tok) return;
         try {
-          const res = await fetch(BASE + "/api/stats", {
-            headers: { Authorization: "Bearer " + token },
-          });
-          if (res.status === 401) {
-            doLogout();
-            return;
-          }
+          var res = await fetch(B + "/api/stats", { headers: { Authorization: "Bearer " + tok } });
+          if (res.status === 401) { logout(); return; }
           if (!res.ok) return;
-          const data = await res.json();
-          render(data);
-        } catch (e) {
-          console.error("Failed to load stats:", e);
-        }
+          render(await res.json());
+        } catch(e) {}
       }
 
-      function fmt$(v) {
-        return "$" + Number(v || 0).toFixed(4);
-      }
-      function fmtN(v) {
-        return Number(v || 0).toLocaleString();
-      }
-      function fmtPct(v) {
-        return (Number(v || 0) * 100).toFixed(1) + "%";
-      }
+      function fmt$(v) { return "$" + Number(v || 0).toFixed(4); }
+      function fmtN(v) { return Number(v || 0).toLocaleString(); }
+      function fmtPct(v) { return (Number(v || 0) * 100).toFixed(1) + "%"; }
       function fmtTime(iso) {
         if (!iso) return "--";
-        const d = new Date(iso + "Z");
-        return d.toLocaleTimeString([], {
-          hour: "2-digit",
-          minute: "2-digit",
-          second: "2-digit",
-        });
+        var s = iso.includes("T") ? iso : iso.replace(" ", "T") + "Z";
+        var d = new Date(s);
+        if (isNaN(d)) return "--";
+        return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
       }
-      function statusClass(code) {
-        if (code >= 500) return "status-5xx";
-        if (code >= 400) return "status-4xx";
-        return "status-2xx";
+      function esc(s) { var d = document.createElement("div"); d.textContent = s || ""; return d.innerHTML; }
+
+      // --- SVG ---
+      function sparkline(el, data, color) {
+        if (!data || !data.length) { el.innerHTML = ""; return; }
+        var w = 80, h = 28, max = Math.max.apply(null, data.concat([0.001]));
+        var pts = data.map(function(v, i) {
+          return [(i / Math.max(data.length - 1, 1)) * w, h - (v / max) * (h - 2) - 1];
+        });
+        var d = pts.map(function(p, i) { return (i ? "L" : "M") + p[0].toFixed(1) + "," + p[1].toFixed(1); }).join("");
+        el.innerHTML = '<svg viewBox="0 0 ' + w + ' ' + h + '" preserveAspectRatio="none">' +
+          '<path d="' + d + '" fill="none" stroke="' + color + '" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
       }
 
-      // Staggered animation utility for table rows
-      function generateStaggeredRows(htmlArray) {
-        return htmlArray
-          .map((html, i) => {
-            return html.replace(
-              "<tr",
-              `<tr class="row-anim" style="animation-delay: ${i * 0.05}s"`,
-            );
-          })
-          .join("");
+      function barChart(el, labels, vals) {
+        if (!vals || !vals.length) { el.innerHTML = '<div class="empty-state">No data</div>'; return; }
+        var w = 700, h = 120, max = Math.max.apply(null, vals.concat([1]));
+        var bw = Math.max(2, w / vals.length - 1.5);
+        var svg = '';
+
+        // Gridlines
+        for (var g = 0; g <= 3; g++) {
+          var gy = (h / 3) * g;
+          svg += '<line x1="0" y1="' + gy.toFixed(1) + '" x2="' + w + '" y2="' + gy.toFixed(1) + '" stroke="#1a1a1a" stroke-width="1"/>';
+        }
+
+        // Bars
+        for (var i = 0; i < vals.length; i++) {
+          var bh = (vals[i] / max) * (h - 4);
+          var x = (i / vals.length) * w;
+          var y = h - bh;
+          svg += '<rect x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" width="' + bw.toFixed(1) + '" height="' + bh.toFixed(1) + '" rx="1" fill="#333"/>';
+        }
+
+        // X labels
+        var step = Math.max(1, Math.floor(vals.length / 6));
+        for (var j = 0; j < labels.length; j += step) {
+          var lx = (j / vals.length) * w + bw / 2;
+          svg += '<text x="' + lx.toFixed(1) + '" y="' + (h + 14) + '" fill="#444" font-size="10" font-family="Inter,sans-serif" text-anchor="middle">' + esc(labels[j]) + '</text>';
+        }
+
+        el.innerHTML = '<svg viewBox="0 0 ' + w + ' ' + (h + 18) + '" preserveAspectRatio="none">' + svg + '</svg>';
+      }
+
+      function breakdown(el, items) {
+        if (!items || !items.length) { el.innerHTML = '<div class="empty-state">No revenue data</div>'; return; }
+        var colors = ["#ededed", "#999", "#666", "#555", "#444", "#333"];
+        el.innerHTML = items.slice(0, 8).map(function(item, i) {
+          return '<div class="breakdown-item">' +
+            '<div class="breakdown-dot" style="background:' + colors[i % colors.length] + '"></div>' +
+            '<div class="breakdown-name">' + esc(item.api_name) + '</div>' +
+            '<div class="breakdown-val">' + fmt$(item.total_usd) + '</div></div>';
+        }).join("");
       }
 
       function render(data) {
-        // Update Cards with subtle scale animation
-        const updateValue = (id, val) => {
-          const el = document.getElementById(id);
-          if (el.textContent !== String(val)) {
-            el.style.transform = "scale(1.05)";
-            el.style.opacity = "0.5";
-            setTimeout(() => {
-              el.textContent = val;
-              el.style.transform = "scale(1)";
-              el.style.opacity = "1";
-            }, 150);
-          }
-        };
+        var upd = function(id, v) { document.getElementById(id).textContent = v; };
+        upd("rev-7d", fmt$(data.revenue_7d));
+        upd("rev-30d", fmt$(data.revenue_30d));
+        upd("active-apis", data.apis ? data.apis.length : 0);
+        upd("total-requests", fmtN(data.total_requests_7d));
 
-        updateValue("rev-7d", fmt$(data.revenue_7d));
-        updateValue("rev-30d", fmt$(data.revenue_30d));
-        updateValue("active-apis", data.apis ? data.apis.length : 0);
-        updateValue("total-requests", fmtN(data.total_requests_7d));
-
-        const walletEl = document.getElementById("wallet");
         if (data.wallet) {
-          walletEl.textContent =
-            data.wallet.substring(0, 6) +
-            "..." +
-            data.wallet.substring(data.wallet.length - 4);
-          walletEl.title = data.wallet;
+          document.getElementById("wallet").textContent = data.wallet.substring(0, 6) + "..." + data.wallet.slice(-4);
+          document.getElementById("wallet").title = data.wallet;
+        }
+        document.getElementById("last-updated").textContent = new Date().toLocaleTimeString();
+
+        // Sparklines
+        if (data.charts) {
+          sparkline(document.getElementById("spark-rev"), (data.charts.daily_revenue_7d || []).map(function(d) { return d.total_usd; }), "#3ddc84");
+          sparkline(document.getElementById("spark-rev-30"), (data.charts.daily_revenue_30d || []).map(function(d) { return d.total_usd; }), "#3ddc84");
+          sparkline(document.getElementById("spark-req"), (data.charts.daily_requests_7d || []).map(function(d) { return d.total; }), "#ededed");
+
+          var hourly = data.charts.hourly_requests_24h || [];
+          barChart(
+            document.getElementById("chart-hourly"),
+            hourly.map(function(h) { var p = h.hour.split(" "); return p[1] || h.hour; }),
+            hourly.map(function(h) { return h.total; })
+          );
         }
 
-        document.getElementById("last-updated").textContent =
-          "Sync: " + new Date().toLocaleTimeString();
+        // Revenue breakdown
+        breakdown(document.getElementById("api-breakdown"), data.revenue_by_api);
 
         // APIs table
-        const apisBody = document.getElementById("apis-table");
-        if (!data.apis || data.apis.length === 0) {
-          apisBody.innerHTML =
-            '<tr><td colspan="5" style="color:var(--text-muted); text-align:center; padding: 40px;">No operational APIs detected</td></tr>';
+        var ab = document.getElementById("apis-table");
+        if (!data.apis || !data.apis.length) {
+          ab.innerHTML = '<tr><td colspan="4" class="empty-state">No APIs</td></tr>';
         } else {
-          const rows = data.apis.map(
-            (a) => `<tr>
-      <td><a href="https://${esc(a.subdomain)}.apimesh.xyz" target="_blank" style="font-weight: 500;">${esc(a.name)}</a></td>
-      <td class="mono">${fmtN(a.requests_7d)}</td>
-      <td class="mono" style="color: ${a.error_rate_7d?.rate > 0.05 ? "var(--accent-red)" : "inherit"}">${fmtPct(a.error_rate_7d?.rate)}</td>
-      <td class="mono" style="color: var(--accent-green)">${fmt$(a.revenue_7d)}</td>
-      <td><span class="badge badge-active">${esc(a.status)}</span></td>
-    </tr>`,
-          );
-          apisBody.innerHTML = generateStaggeredRows(rows);
+          ab.innerHTML = data.apis.map(function(a) {
+            var errColor = a.error_rate_7d && a.error_rate_7d.rate > 0.05 ? ' class="mono red"' : ' class="mono dim"';
+            return '<tr>' +
+              '<td class="primary"><a href="https://' + esc(a.subdomain) + '.apimesh.xyz" target="_blank">' + esc(a.name) + '</a></td>' +
+              '<td class="mono">' + fmtN(a.requests_7d) + '</td>' +
+              '<td' + errColor + '>' + fmtPct(a.error_rate_7d ? a.error_rate_7d.rate : 0) + '</td>' +
+              '<td class="mono green">' + fmt$(a.revenue_7d) + '</td></tr>';
+          }).join("");
         }
 
-        // Recent requests table (Simplified columns for better fit in grid layout)
-        const reqBody = document.getElementById("requests-table");
-        if (!data.recent_requests || data.recent_requests.length === 0) {
-          reqBody.innerHTML =
-            '<tr><td colspan="5" style="color:var(--text-muted); text-align:center; padding: 40px;">No events in stream</td></tr>';
+        // Recent requests
+        var rb = document.getElementById("requests-table");
+        if (!data.recent_requests || !data.recent_requests.length) {
+          rb.innerHTML = '<tr><td colspan="6" class="empty-state">No events</td></tr>';
         } else {
-          // Only show top 10 to keep it manageable in half-width
-          const rows = data.recent_requests.slice(0, 10).map(
-            (r) => `<tr>
-      <td class="mono" style="color: var(--text-secondary)">${fmtTime(r.created_at)}</td>
-      <td>
-        <div style="font-weight:500">${esc(r.api_name)}</div>
-        <div class="mono" style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">${esc(r.method)} ${esc(r.endpoint)}</div>
-      </td>
-      <td class="mono ${statusClass(r.status_code)}">${Number.isFinite(r.status_code) ? r.status_code : "--"}</td>
-      <td class="mono">${Number.isFinite(r.response_time_ms) ? r.response_time_ms.toFixed(0) + "ms" : "--"}</td>
-      <td>${r.paid ? '<span class="badge badge-paid">paid</span>' : '<span class="badge badge-free">free</span>'}</td>
-    </tr>`,
-          );
-          reqBody.innerHTML = generateStaggeredRows(rows);
+          rb.innerHTML = data.recent_requests.slice(0, 15).map(function(r) {
+            var sc = r.status_code;
+            var scClass = sc >= 500 ? "mono red" : sc >= 400 ? "mono" : "mono green";
+            return '<tr>' +
+              '<td class="mono dim">' + fmtTime(r.created_at) + '</td>' +
+              '<td class="primary">' + esc(r.api_name) + '</td>' +
+              '<td class="mono dim">' + esc(r.method) + ' ' + esc(r.endpoint) + '</td>' +
+              '<td class="' + scClass + '">' + (Number.isFinite(sc) ? sc : "--") + '</td>' +
+              '<td class="mono dim">' + (Number.isFinite(r.response_time_ms) ? r.response_time_ms.toFixed(0) + "ms" : "--") + '</td>' +
+              '<td>' + (r.paid ? '<span class="badge badge-paid">paid</span>' : '<span class="badge badge-free">free</span>') + '</td></tr>';
+          }).join("");
         }
       }
 
-      function esc(s) {
-        const d = document.createElement("div");
-        d.textContent = s || "";
-        return d.innerHTML;
-      }
-
-      // Auto-login if token in session
-      if (getToken()) {
-        document.getElementById("login").classList.add("hidden");
-        document.getElementById("dashboard").classList.add("active");
-        loadStats();
-        startRefresh();
-      }
+      if (gt()) { show(); load(); }
     </script>
   </body>
 </html>

@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { bearerAuth } from "hono/bearer-auth";
 import { resolve, join } from "path";
-import db, { getRevenueByApi, getTotalRevenue, getRequestCount, getErrorRate, getApiRevenue, getRecentRequests, getActiveApis } from "../../shared/db";
+import db, { getRevenueByApi, getTotalRevenue, getRequestCount, getErrorRate, getApiRevenue, getRecentRequests, getActiveApis, getDailyRevenue, getDailyRequests, getHourlyRequests } from "../../shared/db";
 import { WALLET_ADDRESS } from "../../shared/x402";
 import { rateLimit } from "../../shared/rate-limit";
 
@@ -58,7 +58,7 @@ app.get("/dashboard", publicLimit, async (c) => {
     return new Response(await file.text(), {
       headers: {
         "Content-Type": "text/html; charset=utf-8",
-        "Content-Security-Policy": "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self'",
+        "Content-Security-Policy": "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src data:; connect-src 'self'",
         "X-Frame-Options": "DENY",
         "X-Content-Type-Options": "nosniff",
       },
@@ -123,6 +123,12 @@ app.get("/api/stats", (c) => {
     apis,
     total_requests_7d: totalRequests7d,
     recent_requests: getRecentRequests(20),
+    charts: {
+      daily_revenue_7d: getDailyRevenue(7),
+      daily_revenue_30d: getDailyRevenue(30),
+      daily_requests_7d: getDailyRequests(7),
+      hourly_requests_24h: getHourlyRequests(24),
+    },
     wallet: WALLET_ADDRESS,
     timestamp: new Date().toISOString(),
   });

@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "resources": [
+    "GET https://check.apimesh.xyz/check",
+    "GET https://http-status-checker.apimesh.xyz/check",
+    "GET https://favicon-checker.apimesh.xyz/check",
+    "POST https://microservice-health-check.apimesh.xyz/check",
+    "GET https://status-code-checker.apimesh.xyz/check",
+    "POST https://regex-builder.apimesh.xyz/build",
+    "POST https://regex-builder.apimesh.xyz/test",
+    "GET https://user-agent-analyzer.apimesh.xyz/analyze",
+    "GET https://robots-txt-parser.apimesh.xyz/analyze",
+    "POST https://mock-jwt-generator.apimesh.xyz/generate",
+    "POST https://yaml-validator.apimesh.xyz/validate",
+    "POST https://swagger-docs-creator.apimesh.xyz/generate",
+    "GET https://core-web-vitals.apimesh.xyz/check",
+    "GET https://security-headers.apimesh.xyz/check",
+    "GET https://redirect-chain.apimesh.xyz/check",
+    "GET https://email-security.apimesh.xyz/check",
+    "GET https://seo-audit.apimesh.xyz/check",
+    "GET https://indexability.apimesh.xyz/check",
+    "GET https://brand-assets.apimesh.xyz/check"
+  ]
+}

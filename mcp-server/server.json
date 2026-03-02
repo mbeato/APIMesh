@@ -1,7 +1,7 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.mbeato/apimesh",
-  "description": "12 curated x402-payable API tools for AI agents — web vitals, security headers, SEO audit, email security, brand assets, redirect chains, indexability, brand availability, HTTP status, favicon, health checks, robots.txt. Pay per call with USDC on Base.",
+  "description": "12 x402-payable API tools for AI agents — web vitals, SEO, security, email, more.",
   "repository": {
     "url": "https://github.com/mbeato/conway",
     "source": "github"

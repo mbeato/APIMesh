@@ -4,6 +4,28 @@ import { registry } from "./registry";
 const router = new Hono();
 const PORT = 3001;
 
+// Per-subdomain paid route mapping for .well-known/x402 discovery
+const subdomainRoutes: Record<string, string[]> = {
+  check:                        ["GET /check"],
+  "http-status-checker":        ["GET /check"],
+  "favicon-checker":            ["GET /check"],
+  "microservice-health-check":  ["POST /check"],
+  "status-code-checker":        ["GET /check"],
+  "regex-builder":              ["POST /build", "POST /test"],
+  "user-agent-analyzer":        ["GET /analyze"],
+  "robots-txt-parser":          ["GET /analyze"],
+  "mock-jwt-generator":         ["POST /generate"],
+  "yaml-validator":             ["POST /validate"],
+  "swagger-docs-creator":       ["POST /generate"],
+  "core-web-vitals":            ["GET /check"],
+  "security-headers":           ["GET /check"],
+  "redirect-chain":             ["GET /check"],
+  "email-security":             ["GET /check"],
+  "seo-audit":                  ["GET /check"],
+  "indexability":               ["GET /check"],
+  "brand-assets":               ["GET /check"],
+};
+
 // Router health check (no subdomain needed)
 router.get("/health", (c) => {
   const host = c.req.header("host") ?? "";
@@ -13,6 +35,19 @@ router.get("/health", (c) => {
     return registry[subdomain].fetch(c.req.raw);
   }
   return c.json({ status: "ok", router: true, apis: Object.keys(registry) });
+});
+
+// Serve .well-known/x402 per subdomain so x402 scanners can discover paid routes
+router.get("/.well-known/x402", (c) => {
+  const host = c.req.header("host") ?? "";
+  const subdomain = extractSubdomain(host);
+
+  if (subdomain && subdomainRoutes[subdomain]) {
+    return c.json({ version: 1, resources: subdomainRoutes[subdomain] });
+  }
+
+  // No subdomain or unknown — return empty discovery
+  return c.json({ version: 1, resources: [] }, 404);
 });
 
 // Catch-all: route by subdomain

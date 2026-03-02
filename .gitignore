@@ -46,3 +46,9 @@ report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
 
 # MCP registry tokens
 .mcpregistry_*
+
+# Playwright MCP browser logs
+.playwright-mcp/
+
+# Temporary screenshots
+*.png

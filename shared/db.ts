@@ -216,3 +216,97 @@ export function getApiRevenue(apiName: string, days: number = 7): number {
   `).get(apiName, safeDays(days)) as { total_usd: number };
   return result.total_usd;
 }
+
+// --- Time-series query functions for dashboard charts ---
+
+export interface DailyRevenue {
+  date: string;
+  total_usd: number;
+  tx_count: number;
+}
+
+export function getDailyRevenue(days: number = 7): DailyRevenue[] {
+  const safeDaysVal = safeDays(days);
+  const rows = db.query(`
+    SELECT date(created_at) as date,
+           COALESCE(SUM(amount_usd), 0) as total_usd,
+           COUNT(*) as tx_count
+    FROM revenue
+    WHERE created_at > datetime('now', '-' || ? || ' days')
+    GROUP BY date(created_at)
+    ORDER BY date ASC
+  `).all(safeDaysVal) as DailyRevenue[];
+
+  const byDate = new Map(rows.map(r => [r.date, r]));
+  const result: DailyRevenue[] = [];
+  for (let i = safeDaysVal - 1; i >= 0; i--) {
+    const d = new Date();
+    d.setUTCDate(d.getUTCDate() - i);
+    const date = d.toISOString().slice(0, 10);
+    result.push(byDate.get(date) ?? { date, total_usd: 0, tx_count: 0 });
+  }
+  return result;
+}
+
+export interface DailyRequests {
+  date: string;
+  total: number;
+  paid: number;
+  free: number;
+  errors: number;
+}
+
+export function getDailyRequests(days: number = 7): DailyRequests[] {
+  const safeDaysVal = safeDays(days);
+  const rows = db.query(`
+    SELECT date(created_at) as date,
+           COUNT(*) as total,
+           SUM(CASE WHEN paid = 1 THEN 1 ELSE 0 END) as paid,
+           SUM(CASE WHEN paid = 0 THEN 1 ELSE 0 END) as free,
+           SUM(CASE WHEN status_code >= 500 THEN 1 ELSE 0 END) as errors
+    FROM requests
+    WHERE created_at > datetime('now', '-' || ? || ' days')
+    GROUP BY date(created_at)
+    ORDER BY date ASC
+  `).all(safeDaysVal) as DailyRequests[];
+
+  const byDate = new Map(rows.map(r => [r.date, r]));
+  const result: DailyRequests[] = [];
+  for (let i = safeDaysVal - 1; i >= 0; i--) {
+    const d = new Date();
+    d.setUTCDate(d.getUTCDate() - i);
+    const date = d.toISOString().slice(0, 10);
+    result.push(byDate.get(date) ?? { date, total: 0, paid: 0, free: 0, errors: 0 });
+  }
+  return result;
+}
+
+export interface HourlyRequests {
+  hour: string;
+  total: number;
+}
+
+export function getHourlyRequests(hours: number = 24): HourlyRequests[] {
+  const safeHoursVal = Math.max(1, Math.min(168, Math.floor(hours)));
+  const rows = db.query(`
+    SELECT strftime('%Y-%m-%d %H:00', created_at) as hour,
+           COUNT(*) as total
+    FROM requests
+    WHERE created_at > datetime('now', '-' || ? || ' hours')
+    GROUP BY strftime('%Y-%m-%d %H:00', created_at)
+    ORDER BY hour ASC
+  `).all(safeHoursVal) as HourlyRequests[];
+
+  const byHour = new Map(rows.map(r => [r.hour, r]));
+  const result: HourlyRequests[] = [];
+  const now = new Date();
+  for (let i = safeHoursVal - 1; i >= 0; i--) {
+    const d = new Date(now.getTime() - i * 3600_000);
+    const hour = d.getUTCFullYear() + "-" +
+      String(d.getUTCMonth() + 1).padStart(2, "0") + "-" +
+      String(d.getUTCDate()).padStart(2, "0") + " " +
+      String(d.getUTCHours()).padStart(2, "0") + ":00";
+    result.push(byHour.get(hour) ?? { hour, total: 0 });
+  }
+  return result;
+}
