@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { bearerAuth } from "hono/bearer-auth";
 import { resolve, join } from "path";
-import db, { getRevenueByApi, getTotalRevenue, getRequestCount, getErrorRate, getApiRevenue, getRecentRequests, getActiveApis, getDailyRevenue, getDailyRequests, getHourlyRequests, getAuditLog, getWalletSummaries, getAllSpendCaps, upsertSpendCap, deleteSpendCap } from "../../shared/db";
+import db, { getRevenueByApi, getTotalRevenue, getRequestCount, getErrorRate, getApiRevenue, getRecentRequests, getActiveApis, getDailyRevenue, getDailyRequests, getHourlyRequests, getAuditLog, getWalletSummaries, getAllSpendCaps, upsertSpendCap, deleteSpendCap, getWalletSpend, getSpendCap } from "../../shared/db";
 import { WALLET_ADDRESS } from "../../shared/x402";
 import { rateLimit } from "../../shared/rate-limit";
 
@@ -113,6 +113,102 @@ app.get("/landing.js", publicLimit, async (c) => {
   return c.text("Not found", 404);
 });
 
+// --- Public wallet endpoints (no auth, rate-limited) ---
+const walletLimit = rateLimit("dashboard-wallet", 30, 60_000);
+const WALLET_RE = /^0x[0-9a-fA-F]{40}$/;
+
+app.get("/wallet/:address", walletLimit, (c) => {
+  const addr = c.req.param("address");
+  if (!addr || !WALLET_RE.test(addr)) {
+    return c.json({ error: "Invalid wallet address" }, 400);
+  }
+  const wallet = addr.toLowerCase();
+  const spend1d = getWalletSpend(wallet, 1);
+  const spend7d = getWalletSpend(wallet, 7);
+  const spend30d = getWalletSpend(wallet, 30);
+  const cap = getSpendCap(wallet);
+  const recent = getAuditLog(wallet, undefined, 10, 0);
+
+  return c.json({
+    wallet,
+    spend: { daily: spend1d, last_7d: spend7d, last_30d: spend30d },
+    cap: cap ? {
+      daily_limit_usd: cap.daily_limit_usd,
+      monthly_limit_usd: cap.monthly_limit_usd,
+      daily_remaining: cap.daily_limit_usd !== null ? Math.max(0, cap.daily_limit_usd - spend1d) : null,
+      monthly_remaining: cap.monthly_limit_usd !== null ? Math.max(0, cap.monthly_limit_usd - spend30d) : null,
+    } : null,
+    recent_requests: recent.rows,
+    total_requests: recent.total,
+  });
+});
+
+app.get("/wallet/:address/history", walletLimit, (c) => {
+  const addr = c.req.param("address");
+  if (!addr || !WALLET_RE.test(addr)) {
+    return c.json({ error: "Invalid wallet address" }, 400);
+  }
+  const wallet = addr.toLowerCase();
+  const limit = Math.max(1, Math.min(100, parseInt(c.req.query("limit") || "50", 10) || 50));
+  const offset = Math.max(0, parseInt(c.req.query("offset") || "0", 10) || 0);
+  const apiFilter = c.req.query("api") || undefined;
+  if (apiFilter && apiFilter.length > 64) {
+    return c.json({ error: "Invalid api name" }, 400);
+  }
+
+  const result = getAuditLog(wallet, apiFilter, limit, offset);
+  return c.json({
+    wallet,
+    rows: result.rows,
+    total: result.total,
+    limit,
+    offset,
+    has_more: offset + limit < result.total,
+  });
+});
+
+app.put("/wallet/:address/cap", walletLimit, async (c) => {
+  const addr = c.req.param("address");
+  if (!addr || !WALLET_RE.test(addr)) {
+    return c.json({ error: "Invalid wallet address" }, 400);
+  }
+  const wallet = addr.toLowerCase();
+  const MAX_BODY = 4096;
+  const contentLength = parseInt(c.req.header("content-length") || "0", 10);
+  if (contentLength > MAX_BODY) {
+    return c.json({ error: "Request body too large" }, 413);
+  }
+  const rawBody = await c.req.arrayBuffer();
+  if (rawBody.byteLength > MAX_BODY) {
+    return c.json({ error: "Request body too large" }, 413);
+  }
+  let body: any;
+  try {
+    body = JSON.parse(new TextDecoder().decode(rawBody));
+  } catch {
+    return c.json({ error: "Invalid JSON" }, 400);
+  }
+  const { label, daily_limit_usd, monthly_limit_usd } = body;
+
+  if (label !== undefined && label !== null) {
+    if (typeof label !== "string") return c.json({ error: "Label must be a string or null" }, 400);
+    if (label.length > 128) return c.json({ error: "Label must be 128 characters or fewer" }, 400);
+  }
+  if (daily_limit_usd !== undefined && daily_limit_usd !== null) {
+    if (typeof daily_limit_usd !== "number" || !Number.isFinite(daily_limit_usd) || daily_limit_usd <= 0) {
+      return c.json({ error: "daily_limit_usd must be a finite positive number or null" }, 400);
+    }
+  }
+  if (monthly_limit_usd !== undefined && monthly_limit_usd !== null) {
+    if (typeof monthly_limit_usd !== "number" || !Number.isFinite(monthly_limit_usd) || monthly_limit_usd <= 0) {
+      return c.json({ error: "monthly_limit_usd must be a finite positive number or null" }, 400);
+    }
+  }
+
+  upsertSpendCap(wallet, label ?? null, daily_limit_usd ?? null, monthly_limit_usd ?? null);
+  return c.json({ ok: true, wallet });
+});
+
 // CORS before rate limiter so 429 responses include CORS headers
 const ALLOWED_ORIGIN = (() => {
   const o = process.env.CORS_ORIGIN || "https://apimesh.xyz";
@@ -122,7 +218,7 @@ const ALLOWED_ORIGIN = (() => {
   }
   return o;
 })();
-app.use("*", cors({
+app.use("/api/*", cors({
   origin: ALLOWED_ORIGIN,
   allowMethods: ["GET", "PUT", "DELETE"],
   allowHeaders: ["Authorization", "Content-Type"],
