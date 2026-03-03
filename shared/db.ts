@@ -70,14 +70,14 @@ db.exec(`
   );
 `);
 
-// Indexes for audit log performance
-db.exec(`CREATE INDEX IF NOT EXISTS idx_requests_created_at ON requests(created_at DESC)`);
-db.exec(`CREATE INDEX IF NOT EXISTS idx_requests_payer_wallet ON requests(payer_wallet)`);
-db.exec(`CREATE INDEX IF NOT EXISTS idx_revenue_payer_wallet ON revenue(payer_wallet)`);
-
 // Migrations for existing tables (ALTER TABLE is safe for adding columns in SQLite)
 try { db.exec("ALTER TABLE requests ADD COLUMN payer_wallet TEXT"); } catch {}
 try { db.exec("ALTER TABLE revenue ADD COLUMN payer_wallet TEXT"); } catch {}
+
+// Indexes for audit log performance (must run after migrations add payer_wallet)
+db.exec(`CREATE INDEX IF NOT EXISTS idx_requests_created_at ON requests(created_at DESC)`);
+db.exec(`CREATE INDEX IF NOT EXISTS idx_requests_payer_wallet ON requests(payer_wallet)`);
+db.exec(`CREATE INDEX IF NOT EXISTS idx_revenue_payer_wallet ON revenue(payer_wallet)`);
 
 export default db;
 
