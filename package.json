@@ -4,7 +4,8 @@
   "type": "module",
   "private": true,
   "devDependencies": {
-    "@types/bun": "latest"
+    "@types/bun": "latest",
+    "@types/zxcvbn": "^4.4.5"
   },
   "peerDependencies": {
     "typescript": "^5"
@@ -17,6 +18,7 @@
     "@x402/extensions": "^2.5.0",
     "@x402/hono": "^2.5.0",
     "cheerio": "^1.2.0",
-    "hono": "^4.12.3"
+    "hono": "^4.12.3",
+    "zxcvbn": "^4.4.2"
   }
 }
