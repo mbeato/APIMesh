@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Verify Email - APIMesh</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <style>
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+      :root {
+        --bg: #090909;
+        --surface: #0f0f0f;
+        --border: #1a1a1a;
+        --border-hover: #2a2a2a;
+        --text: #e8e8e8;
+        --text-secondary: #888;
+        --text-dim: #555;
+        --accent: #3ddc84;
+        --accent-dim: rgba(61, 220, 132, 0.08);
+        --font: "Space Grotesk", -apple-system, sans-serif;
+        --mono: "JetBrains Mono", "SF Mono", monospace;
+      }
+
+      body {
+        font-family: var(--font);
+        background: var(--bg);
+        color: var(--text);
+        min-height: 100vh;
+        -webkit-font-smoothing: antialiased;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+      }
+
+      #mesh {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      .auth-container {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        max-width: 440px;
+        padding: 20px;
+      }
+
+      .wordmark {
+        text-align: center;
+        margin-bottom: 32px;
+      }
+
+      .wordmark a {
+        font-family: var(--font);
+        font-size: 20px;
+        font-weight: 700;
+        color: var(--text);
+        text-decoration: none;
+        letter-spacing: -0.5px;
+      }
+
+      .auth-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 40px;
+        text-align: center;
+      }
+
+      .auth-card h2 {
+        font-size: 22px;
+        font-weight: 600;
+        letter-spacing: -0.5px;
+        margin-bottom: 8px;
+      }
+
+      .subtitle {
+        font-size: 14px;
+        color: var(--text-secondary);
+        margin-bottom: 28px;
+      }
+
+      .subtitle .email-display {
+        color: var(--text);
+        font-family: var(--mono);
+        font-size: 13px;
+      }
+
+      .error-message {
+        background: rgba(239, 68, 68, 0.08);
+        border: 1px solid rgba(239, 68, 68, 0.2);
+        border-radius: 8px;
+        padding: 10px 14px;
+        font-size: 13px;
+        color: #ef4444;
+        margin-bottom: 16px;
+        opacity: 0;
+        max-height: 0;
+        overflow: hidden;
+        transition: opacity 0.25s ease, max-height 0.25s ease, margin-bottom 0.25s ease, padding 0.25s ease;
+      }
+
+      .error-message.visible {
+        opacity: 1;
+        max-height: 100px;
+        padding: 10px 14px;
+      }
+
+      .success-message {
+        background: rgba(61, 220, 132, 0.08);
+        border: 1px solid rgba(61, 220, 132, 0.2);
+        border-radius: 8px;
+        padding: 10px 14px;
+        font-size: 13px;
+        color: var(--accent);
+        margin-bottom: 16px;
+        opacity: 0;
+        max-height: 0;
+        overflow: hidden;
+        transition: opacity 0.25s ease, max-height 0.25s ease, margin-bottom 0.25s ease, padding 0.25s ease;
+      }
+
+      .success-message.visible {
+        opacity: 1;
+        max-height: 100px;
+        padding: 10px 14px;
+      }
+
+      .code-inputs {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+        margin-bottom: 24px;
+      }
+
+      .code-input {
+        width: 48px;
+        height: 56px;
+        text-align: center;
+        font-family: var(--mono);
+        font-size: 24px;
+        font-weight: 500;
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        color: var(--text);
+        outline: none;
+        transition: border-color 0.2s ease;
+        -moz-appearance: textfield;
+      }
+
+      .code-input::-webkit-outer-spin-button,
+      .code-input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+
+      .code-input:focus {
+        border-color: var(--accent);
+      }
+
+      .resend-area {
+        margin-top: 20px;
+        font-size: 13px;
+        color: var(--text-dim);
+      }
+
+      .resend-btn {
+        background: none;
+        border: none;
+        color: var(--accent);
+        font-family: var(--font);
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        padding: 0;
+      }
+
+      .resend-btn:hover { text-decoration: underline; }
+      .resend-btn:disabled { color: var(--text-dim); cursor: not-allowed; text-decoration: none; }
+
+      .auth-links {
+        text-align: center;
+        margin-top: 20px;
+        font-size: 13px;
+        color: var(--text-dim);
+      }
+
+      .auth-links a {
+        color: var(--accent);
+        text-decoration: none;
+        font-weight: 500;
+      }
+
+      .auth-links a:hover { text-decoration: underline; }
+
+      @keyframes fadeUp {
+        from { opacity: 0; transform: translateY(16px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+
+      .auth-container {
+        animation: fadeUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      }
+
+      @media (max-width: 480px) {
+        .auth-card { padding: 28px 20px; }
+        .auth-container { padding: 16px; }
+        .code-inputs { gap: 6px; }
+        .code-input { width: 42px; height: 50px; font-size: 20px; }
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="mesh"></canvas>
+    <div class="auth-container">
+      <div class="wordmark"><a href="/">APIMesh</a></div>
+      <div class="auth-card">
+        <h2>Enter verification code</h2>
+        <p class="subtitle">Code sent to <span class="email-display" id="email-display"></span></p>
+        <div class="error-message" id="error-msg"></div>
+        <div class="success-message" id="success-msg"></div>
+        <div class="code-inputs" id="code-inputs">
+          <input type="text" inputmode="numeric" pattern="[0-9]" maxlength="1" class="code-input" autocomplete="one-time-code" />
+          <input type="text" inputmode="numeric" pattern="[0-9]" maxlength="1" class="code-input" />
+          <input type="text" inputmode="numeric" pattern="[0-9]" maxlength="1" class="code-input" />
+          <input type="text" inputmode="numeric" pattern="[0-9]" maxlength="1" class="code-input" />
+          <input type="text" inputmode="numeric" pattern="[0-9]" maxlength="1" class="code-input" />
+          <input type="text" inputmode="numeric" pattern="[0-9]" maxlength="1" class="code-input" />
+        </div>
+        <div class="resend-area">
+          Didn't receive a code? <button class="resend-btn" id="resend-btn">Resend code</button>
+        </div>
+      </div>
+      <div class="auth-links">
+        <a href="/signup">Back to signup</a>
+      </div>
+    </div>
+    <script src="/auth.js" defer></script>
+  </body>
+</html>

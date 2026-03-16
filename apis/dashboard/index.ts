@@ -108,6 +108,57 @@ app.get("/dashboard.js", publicLimit, async (c) => {
   return c.text("Not found", 404);
 });
 
+// Signup page — public, no auth
+app.get("/signup", publicLimit, async (c) => {
+  const file = Bun.file(join(import.meta.dir, "../landing/signup.html"));
+  if (await file.exists()) {
+    return new Response(await file.text(), {
+      headers: {
+        "Content-Type": "text/html; charset=utf-8",
+        "Content-Security-Policy": "default-src 'none'; script-src 'self'; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src data:; connect-src 'self'",
+        "X-Frame-Options": "DENY",
+        "X-Content-Type-Options": "nosniff",
+        "Cache-Control": "no-store",
+      },
+    });
+  }
+  return c.text("Page not found", 404);
+});
+
+// Login page — public, no auth
+app.get("/login", publicLimit, async (c) => {
+  const file = Bun.file(join(import.meta.dir, "../landing/login.html"));
+  if (await file.exists()) {
+    return new Response(await file.text(), {
+      headers: {
+        "Content-Type": "text/html; charset=utf-8",
+        "Content-Security-Policy": "default-src 'none'; script-src 'self'; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src data:; connect-src 'self'",
+        "X-Frame-Options": "DENY",
+        "X-Content-Type-Options": "nosniff",
+        "Cache-Control": "no-store",
+      },
+    });
+  }
+  return c.text("Page not found", 404);
+});
+
+// Verify page — public, no auth
+app.get("/verify", publicLimit, async (c) => {
+  const file = Bun.file(join(import.meta.dir, "../landing/verify.html"));
+  if (await file.exists()) {
+    return new Response(await file.text(), {
+      headers: {
+        "Content-Type": "text/html; charset=utf-8",
+        "Content-Security-Policy": "default-src 'none'; script-src 'self'; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src data:; connect-src 'self'",
+        "X-Frame-Options": "DENY",
+        "X-Content-Type-Options": "nosniff",
+        "Cache-Control": "no-store",
+      },
+    });
+  }
+  return c.text("Page not found", 404);
+});
+
 // Landing JS — external script (CSP: script-src 'self')
 app.get("/landing.js", publicLimit, async (c) => {
   const file = Bun.file(join(import.meta.dir, "../landing/landing.js"));
@@ -579,7 +630,7 @@ app.get("/account", publicLimit, async (c) => {
     return new Response(await file.text(), {
       headers: {
         "Content-Type": "text/html; charset=utf-8",
-        "Content-Security-Policy": "default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src data:; connect-src 'self'",
+        "Content-Security-Policy": "default-src 'none'; script-src 'self'; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src data:; connect-src 'self'",
         "X-Frame-Options": "DENY",
         "X-Content-Type-Options": "nosniff",
         "Cache-Control": "no-store",

@@ -1,67 +1,139 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Account - APIMesh</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      font-family: 'Space Grotesk', sans-serif;
-      background: #0a0a0f;
-      color: #e0e0e0;
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .container {
-      max-width: 600px;
-      width: 90%;
-      padding: 2rem;
-      text-align: center;
-    }
-    h1 {
-      font-size: 2rem;
-      margin-bottom: 1rem;
-      background: linear-gradient(135deg, #00d4ff, #7b2ff7);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-    p {
-      color: #888;
-      margin-bottom: 2rem;
-    }
-    .btn {
-      display: inline-block;
-      padding: 0.75rem 2rem;
-      border: 1px solid #333;
-      border-radius: 8px;
-      color: #e0e0e0;
-      text-decoration: none;
-      font-family: 'Space Grotesk', sans-serif;
-      cursor: pointer;
-      background: transparent;
-      transition: border-color 0.2s;
-    }
-    .btn:hover { border-color: #00d4ff; }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <h1>Account</h1>
-    <p>Account management coming soon. API keys, billing, and settings will appear here.</p>
-    <a href="/" class="btn">Back to Home</a>
-    <button id="logout-btn" class="btn" style="margin-left: 1rem;">Log Out</button>
-  </div>
-  <script>
-    document.getElementById('logout-btn').addEventListener('click', async () => {
-      await fetch('/auth/logout', { method: 'POST' });
-      window.location.href = '/login';
-    });
-  </script>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Account - APIMesh</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <style>
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+      :root {
+        --bg: #090909;
+        --surface: #0f0f0f;
+        --border: #1a1a1a;
+        --border-hover: #2a2a2a;
+        --text: #e8e8e8;
+        --text-secondary: #888;
+        --text-dim: #555;
+        --accent: #3ddc84;
+        --accent-dim: rgba(61, 220, 132, 0.08);
+        --font: "Space Grotesk", -apple-system, sans-serif;
+        --mono: "JetBrains Mono", "SF Mono", monospace;
+      }
+
+      body {
+        font-family: var(--font);
+        background: var(--bg);
+        color: var(--text);
+        min-height: 100vh;
+        -webkit-font-smoothing: antialiased;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+      }
+
+      #mesh {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      .auth-container {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        max-width: 600px;
+        padding: 20px;
+      }
+
+      .wordmark {
+        text-align: center;
+        margin-bottom: 32px;
+      }
+
+      .wordmark a {
+        font-family: var(--font);
+        font-size: 20px;
+        font-weight: 700;
+        color: var(--text);
+        text-decoration: none;
+        letter-spacing: -0.5px;
+      }
+
+      .auth-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 48px 40px;
+        text-align: center;
+      }
+
+      .auth-card h2 {
+        font-size: 26px;
+        font-weight: 700;
+        letter-spacing: -0.5px;
+        margin-bottom: 12px;
+      }
+
+      .auth-card p {
+        font-size: 15px;
+        color: var(--text-secondary);
+        margin-bottom: 32px;
+        line-height: 1.5;
+      }
+
+      .btn-logout {
+        display: inline-block;
+        padding: 11px 28px;
+        background: transparent;
+        color: var(--text-secondary);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        font-family: var(--font);
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: border-color 0.2s, color 0.2s;
+      }
+
+      .btn-logout:hover {
+        border-color: var(--border-hover);
+        color: var(--text);
+      }
+
+      @keyframes fadeUp {
+        from { opacity: 0; transform: translateY(16px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+
+      .auth-container {
+        animation: fadeUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      }
+
+      @media (max-width: 480px) {
+        .auth-card { padding: 32px 20px; }
+        .auth-container { padding: 16px; }
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="mesh"></canvas>
+    <div class="auth-container">
+      <div class="wordmark"><a href="/">APIMesh</a></div>
+      <div class="auth-card">
+        <h2>Welcome to APIMesh</h2>
+        <p>Your account is ready. Dashboard features coming soon.</p>
+        <button class="btn-logout" id="logout-btn">Log out</button>
+      </div>
+    </div>
+    <script src="/auth.js" defer></script>
+  </body>
 </html>

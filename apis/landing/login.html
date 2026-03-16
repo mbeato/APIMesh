@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Log In - APIMesh</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <style>
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+      :root {
+        --bg: #090909;
+        --surface: #0f0f0f;
+        --border: #1a1a1a;
+        --border-hover: #2a2a2a;
+        --text: #e8e8e8;
+        --text-secondary: #888;
+        --text-dim: #555;
+        --accent: #3ddc84;
+        --accent-dim: rgba(61, 220, 132, 0.08);
+        --font: "Space Grotesk", -apple-system, sans-serif;
+        --mono: "JetBrains Mono", "SF Mono", monospace;
+      }
+
+      body {
+        font-family: var(--font);
+        background: var(--bg);
+        color: var(--text);
+        min-height: 100vh;
+        -webkit-font-smoothing: antialiased;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+      }
+
+      #mesh {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      .auth-container {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        max-width: 440px;
+        padding: 20px;
+      }
+
+      .wordmark {
+        text-align: center;
+        margin-bottom: 32px;
+      }
+
+      .wordmark a {
+        font-family: var(--font);
+        font-size: 20px;
+        font-weight: 700;
+        color: var(--text);
+        text-decoration: none;
+        letter-spacing: -0.5px;
+      }
+
+      .auth-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 40px;
+      }
+
+      .auth-card h2 {
+        font-size: 22px;
+        font-weight: 600;
+        letter-spacing: -0.5px;
+        margin-bottom: 24px;
+        text-align: center;
+      }
+
+      .error-message {
+        background: rgba(239, 68, 68, 0.08);
+        border: 1px solid rgba(239, 68, 68, 0.2);
+        border-radius: 8px;
+        padding: 10px 14px;
+        font-size: 13px;
+        color: #ef4444;
+        margin-bottom: 16px;
+        opacity: 0;
+        max-height: 0;
+        overflow: hidden;
+        transition: opacity 0.25s ease, max-height 0.25s ease, margin-bottom 0.25s ease, padding 0.25s ease;
+      }
+
+      .error-message.visible {
+        opacity: 1;
+        max-height: 100px;
+        padding: 10px 14px;
+      }
+
+      .form-group {
+        margin-bottom: 16px;
+      }
+
+      .form-group label {
+        display: block;
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--text-secondary);
+        margin-bottom: 6px;
+      }
+
+      .form-group input {
+        width: 100%;
+        padding: 12px 16px;
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        color: var(--text);
+        font-family: var(--mono);
+        font-size: 14px;
+        outline: none;
+        transition: border-color 0.2s ease;
+      }
+
+      .form-group input:focus {
+        border-color: var(--accent);
+      }
+
+      .form-group input::placeholder {
+        color: var(--text-dim);
+      }
+
+      .btn-submit {
+        width: 100%;
+        padding: 12px;
+        background: var(--accent);
+        color: var(--bg);
+        border: none;
+        border-radius: 8px;
+        font-family: var(--font);
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: opacity 0.15s ease, transform 0.1s ease;
+        margin-top: 8px;
+      }
+
+      .btn-submit:hover { opacity: 0.9; transform: translateY(-1px); }
+      .btn-submit:active { transform: translateY(0); }
+      .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+      .auth-links {
+        text-align: center;
+        margin-top: 20px;
+        font-size: 13px;
+        color: var(--text-dim);
+      }
+
+      .auth-links a {
+        color: var(--accent);
+        text-decoration: none;
+        font-weight: 500;
+      }
+
+      .auth-links a:hover { text-decoration: underline; }
+
+      .auth-links .forgot {
+        display: block;
+        margin-top: 10px;
+        color: var(--text-dim);
+      }
+
+      .auth-links .forgot:hover { color: var(--text-secondary); }
+
+      @keyframes fadeUp {
+        from { opacity: 0; transform: translateY(16px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+
+      .auth-container {
+        animation: fadeUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      }
+
+      @media (max-width: 480px) {
+        .auth-card { padding: 28px 20px; }
+        .auth-container { padding: 16px; }
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="mesh"></canvas>
+    <div class="auth-container">
+      <div class="wordmark"><a href="/">APIMesh</a></div>
+      <div class="auth-card">
+        <h2>Welcome back</h2>
+        <div class="error-message" id="error-msg"></div>
+        <form id="login-form" novalidate>
+          <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" placeholder="you@example.com" required autocomplete="email" />
+          </div>
+          <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" placeholder="Your password" required autocomplete="current-password" />
+          </div>
+          <button type="submit" class="btn-submit" id="submit-btn">Log in</button>
+        </form>
+        <div class="auth-links">
+          Don't have an account? <a href="/signup">Sign up</a>
+          <a href="/forgot-password" class="forgot">Forgot password?</a>
+        </div>
+      </div>
+    </div>
+    <script src="/auth.js" defer></script>
+  </body>
+</html>
