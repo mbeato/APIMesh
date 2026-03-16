@@ -7,11 +7,11 @@
 
 ### Authentication
 
-- [ ] **AUTH-01**: User can sign up with email and password (Argon2id, min 12 chars, zxcvbn >= 3)
-- [ ] **AUTH-02**: User password is checked against HaveIBeenPwned at signup (k-anonymity)
-- [ ] **AUTH-03**: User receives 6-digit verification code via email after signup
-- [ ] **AUTH-04**: User can verify email by entering 6-digit code (expires 10min, 3 attempts max)
-- [ ] **AUTH-05**: User can resend verification code (1 per 60s per email, 5 per IP per hour)
+- [x] **AUTH-01**: User can sign up with email and password (Argon2id, min 12 chars, zxcvbn >= 3)
+- [x] **AUTH-02**: User password is checked against HaveIBeenPwned at signup (k-anonymity)
+- [x] **AUTH-03**: User receives 6-digit verification code via email after signup
+- [x] **AUTH-04**: User can verify email by entering 6-digit code (expires 10min, 3 attempts max)
+- [x] **AUTH-05**: User can resend verification code (1 per 60s per email, 5 per IP per hour)
 - [ ] **AUTH-06**: User can log in with email and password (constant-time, no email enumeration)
 - [ ] **AUTH-07**: Failed logins trigger progressive lockout (5 -> 15min, 10 -> 1hr, 20 -> 24hr)
 - [ ] **AUTH-08**: User can log out and have session destroyed
@@ -128,11 +128,11 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| AUTH-01 | Phase 2 | Pending |
-| AUTH-02 | Phase 2 | Pending |
-| AUTH-03 | Phase 2 | Pending |
-| AUTH-04 | Phase 2 | Pending |
-| AUTH-05 | Phase 2 | Pending |
+| AUTH-01 | Phase 2 | Complete |
+| AUTH-02 | Phase 2 | Complete |
+| AUTH-03 | Phase 2 | Complete |
+| AUTH-04 | Phase 2 | Complete |
+| AUTH-05 | Phase 2 | Complete |
 | AUTH-06 | Phase 2 | Pending |
 | AUTH-07 | Phase 3 | Pending |
 | AUTH-08 | Phase 2 | Pending |

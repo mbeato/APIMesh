@@ -5,32 +5,33 @@
 See: .planning/PROJECT.md (updated 2026-03-15)
 
 **Core value:** Developers and AI agents can access web analysis APIs through a single account with one credit pool, paying with credit card or crypto.
-**Current focus:** Phase 1: Foundation
+**Current focus:** Phase 2: Signup & Login
 
 ## Current Position
 
-Phase: 1 of 8 (Foundation) -- COMPLETE
-Plan: 3 of 3 in current phase (all done)
-Status: Phase 1 Complete, ready for Phase 2
-Last activity: 2026-03-16 — Completed 01-03 (Auth Rate Limiters & Email Module)
+Phase: 2 of 8 (Signup & Login)
+Plan: 1 of 3 in current phase (complete)
+Status: Executing Phase 2
+Last activity: 2026-03-16 — Completed 02-01 (Signup & Email Verification)
 
-Progress: [██░░░░░░░░] 14%
+Progress: [███░░░░░░░] 19%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 3
+- Total plans completed: 4
 - Average duration: 4min
-- Total execution time: 0.2 hours
+- Total execution time: 0.25 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 01-foundation | 3 | 12min | 4min |
+| 02-signup-login | 1 | 3min | 3min |
 
 **Recent Trend:**
-- Last 5 plans: 01-01 (4min), 01-02 (3min), 01-03 (5min)
+- Last 5 plans: 01-01 (4min), 01-02 (3min), 01-03 (5min), 02-01 (3min)
 - Trend: stable
 
 *Updated after each plan completion*
@@ -52,6 +53,10 @@ Recent decisions affecting current work:
 - 01-03: Auth rate limiter uses SQLite (not in-memory Map) to survive process restarts
 - 01-03: Email module uses fetch() with AbortSignal.timeout(5000) and 1 retry on 5xx
 - 01-03: Auth rate limiter inlines its own normalizeEmail to avoid circular dependency with validation.ts
+- 02-01: HMAC-SHA256 for verification code hashing (fast for 6-digit codes, secret-keyed)
+- 02-01: Fail-open on HIBP API errors to avoid blocking signups
+- 02-01: Unverified re-signup deletes old user to prevent stuck accounts
+- 02-01: Anti-enumeration on resend-code (generic success for unknown emails)
 
 ### Pending Todos
 
@@ -66,5 +71,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-16
-Stopped at: Completed 01-03-PLAN.md (Phase 1 complete)
+Stopped at: Completed 02-01-PLAN.md
 Resume file: None
