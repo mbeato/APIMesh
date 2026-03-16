@@ -31,6 +31,24 @@ export function migrate(db: Database, migrationsDir: string): void {
     );
   `);
 
+  // Pre-migration: Add missing columns to pre-existing tables BEFORE running migrations.
+  // This handles the case where tables were created before the migration system existed
+  // and migrations reference columns (e.g., indexes) that don't exist yet.
+  const preExistingRequests = db
+    .query("SELECT COUNT(*) AS cnt FROM sqlite_master WHERE type='table' AND name='requests'")
+    .get() as { cnt: number };
+  if (preExistingRequests.cnt > 0) {
+    addColumnIfAbsent(db, "requests", "payer_wallet", "TEXT");
+    addColumnIfAbsent(db, "requests", "user_id", "TEXT");
+    addColumnIfAbsent(db, "requests", "api_key_id", "TEXT");
+  }
+  const preExistingRevenue = db
+    .query("SELECT COUNT(*) AS cnt FROM sqlite_master WHERE type='table' AND name='revenue'")
+    .get() as { cnt: number };
+  if (preExistingRevenue.cnt > 0) {
+    addColumnIfAbsent(db, "revenue", "payer_wallet", "TEXT");
+  }
+
   // Read migration files, sorted by name for ordering
   let files: string[];
   try {
@@ -82,14 +100,4 @@ export function migrate(db: Database, migrationsDir: string): void {
     console.log(`Migration applied: ${file}`);
   }
 
-  // Post-migration: Add columns to existing tables using PRAGMA introspection
-  // These are guarded so they work on both fresh DBs and production DBs with existing tables
-  // Only run if the requests table exists (may not exist in test scenarios with custom migration dirs)
-  const hasRequests = db
-    .query("SELECT COUNT(*) AS cnt FROM sqlite_master WHERE type='table' AND name='requests'")
-    .get() as { cnt: number };
-  if (hasRequests.cnt > 0) {
-    addColumnIfAbsent(db, "requests", "user_id", "TEXT");
-    addColumnIfAbsent(db, "requests", "api_key_id", "TEXT");
-  }
 }

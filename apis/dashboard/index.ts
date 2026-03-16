@@ -1,11 +1,12 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { bearerAuth } from "hono/bearer-auth";
+import { setCookie, getCookie, deleteCookie } from "hono/cookie";
 import { resolve, join } from "path";
 import db, { getRevenueByApi, getTotalRevenue, getRequestCount, getErrorRate, getApiRevenue, getRecentRequests, getActiveApis, getDailyRevenue, getDailyRequests, getHourlyRequests, getAuditLog, getWalletSummaries, getAllSpendCaps, upsertSpendCap, deleteSpendCap, getWalletSpend, getSpendCap } from "../../shared/db";
 import { WALLET_ADDRESS } from "../../shared/x402";
 import { rateLimit } from "../../shared/rate-limit";
-import { hashPassword, logAuthEvent } from "../../shared/auth";
+import { hashPassword, verifyPassword, createSession, getSession, deleteSession, refreshSessionExpiry, logAuthEvent } from "../../shared/auth";
 import { normalizeEmail, validateEmail, validatePassword } from "../../shared/validation";
 import { sendVerificationCode } from "../../shared/email";
 import { initBalance } from "../../shared/credits";
@@ -24,6 +25,9 @@ if (DASHBOARD_TOKEN.length < 32) {
   console.error("FATAL: DASHBOARD_TOKEN must be at least 32 characters (use: openssl rand -hex 24)");
   process.exit(1);
 }
+
+// Pre-compute dummy hash at startup for constant-time login (no first-request penalty)
+const DUMMY_HASH_PROMISE = hashPassword("dummy-password-for-constant-time-login");
 
 // Rate limit for public routes (higher limit, still bounded)
 const publicLimit = rateLimit("dashboard-public", 120, 60_000);
@@ -462,6 +466,157 @@ app.post("/auth/resend-code", authLimit, async (c) => {
   await sendVerificationCode(normalized, code);
 
   return c.json({ success: true });
+});
+
+// --- Login route ---
+app.post("/auth/login", authLimit, async (c) => {
+  const ip = getIp(c);
+  const userAgent = getUserAgent(c);
+
+  let body: any;
+  try {
+    body = await c.req.json();
+  } catch {
+    return c.json({ error: "Invalid JSON" }, 400);
+  }
+
+  const { email, password } = body;
+  if (!email || !password) {
+    return c.json({ error: "Email and password are required" }, 400);
+  }
+
+  // Rate limit by IP
+  const rl = checkAuthRateLimit(db, "login", ip);
+  if (!rl.allowed) {
+    c.header("Retry-After", String(rl.retryAfter));
+    return c.json({ error: "Too many login attempts. Try again later." }, 429);
+  }
+
+  const normalized = normalizeEmail(email);
+
+  // Look up user
+  const user = db.query(
+    "SELECT id, email, password_hash, email_verified FROM users WHERE email = ?"
+  ).get(normalized) as { id: string; email: string; password_hash: string; email_verified: number } | null;
+
+  if (!user) {
+    // Constant-time: verify against dummy hash so timing is identical
+    await verifyPassword(password, await DUMMY_HASH_PROMISE);
+    logAuthEvent(db, null, "login_failed", ip, userAgent, { reason: "unknown_email" });
+    return c.json({ error: "Invalid email or password." }, 401);
+  }
+
+  // Always verify password (even for unverified users) to maintain constant timing
+  const passwordValid = await verifyPassword(password, user.password_hash);
+
+  if (!user.email_verified) {
+    // Unverified user — redirect to verify page (200 so frontend can redirect)
+    return c.json({
+      error: "email_not_verified",
+      redirect: `/verify?email=${encodeURIComponent(normalized)}`,
+    });
+  }
+
+  if (!passwordValid) {
+    logAuthEvent(db, user.id, "login_failed", ip, userAgent, { reason: "wrong_password" });
+    return c.json({ error: "Invalid email or password." }, 401);
+  }
+
+  // Password valid, email verified — create session
+  const sessionId = createSession(db, user.id, ip, userAgent);
+
+  setCookie(c, "session", sessionId, {
+    path: "/",
+    httpOnly: true,
+    secure: true,
+    sameSite: "Strict",
+    maxAge: 30 * 24 * 60 * 60, // 30 days
+  });
+
+  logAuthEvent(db, user.id, "login", ip, userAgent);
+
+  return c.json({ success: true, redirect: "/account" });
+});
+
+// --- Logout route ---
+app.post("/auth/logout", authLimit, async (c) => {
+  const ip = getIp(c);
+  const userAgent = getUserAgent(c);
+  const sessionId = getCookie(c, "session");
+
+  if (sessionId) {
+    const session = getSession(db, sessionId);
+    if (session) {
+      deleteSession(db, sessionId);
+      logAuthEvent(db, session.user_id, "logout", ip, userAgent);
+    }
+  }
+
+  deleteCookie(c, "session", { path: "/" });
+
+  return c.json({ success: true, redirect: "/login" });
+});
+
+// --- Session helper (private function, Phase 3 will formalize as middleware) ---
+async function getAuthenticatedUser(c: any): Promise<{ userId: string; sessionId: string } | null> {
+  const sessionId = getCookie(c, "session");
+  if (!sessionId) return null;
+  const session = getSession(db, sessionId);
+  if (!session) return null;
+  refreshSessionExpiry(db, sessionId);
+  return { userId: session.user_id, sessionId };
+}
+
+// --- Account page (placeholder, session-protected) ---
+app.get("/account", publicLimit, async (c) => {
+  const auth = await getAuthenticatedUser(c);
+  if (!auth) {
+    return c.redirect("/login", 302);
+  }
+
+  const file = Bun.file(join(import.meta.dir, "../landing/account.html"));
+  if (await file.exists()) {
+    return new Response(await file.text(), {
+      headers: {
+        "Content-Type": "text/html; charset=utf-8",
+        "Content-Security-Policy": "default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src data:; connect-src 'self'",
+        "X-Frame-Options": "DENY",
+        "X-Content-Type-Options": "nosniff",
+        "Cache-Control": "no-store",
+      },
+    });
+  }
+  return c.text("Account page not found", 404);
+});
+
+// Auth JS — external script for login/signup UI (Plan 02-03)
+app.get("/auth.js", publicLimit, async (c) => {
+  const file = Bun.file(join(import.meta.dir, "../landing/auth.js"));
+  if (await file.exists()) {
+    return new Response(await file.text(), {
+      headers: {
+        "Content-Type": "application/javascript; charset=utf-8",
+        "X-Content-Type-Options": "nosniff",
+        "Cache-Control": "no-cache",
+      },
+    });
+  }
+  return c.text("Not found", 404);
+});
+
+// zxcvbn JS — password strength library for client-side strength bar
+app.get("/zxcvbn.js", publicLimit, async (c) => {
+  const file = Bun.file(join(import.meta.dir, "../../node_modules/zxcvbn/dist/zxcvbn.js"));
+  if (await file.exists()) {
+    return new Response(await file.text(), {
+      headers: {
+        "Content-Type": "application/javascript; charset=utf-8",
+        "X-Content-Type-Options": "nosniff",
+        "Cache-Control": "public, max-age=86400",
+      },
+    });
+  }
+  return c.text("Not found", 404);
 });
 
 // CORS before rate limiter so 429 responses include CORS headers
