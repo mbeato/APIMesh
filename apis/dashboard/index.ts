@@ -5,6 +5,12 @@ import { resolve, join } from "path";
 import db, { getRevenueByApi, getTotalRevenue, getRequestCount, getErrorRate, getApiRevenue, getRecentRequests, getActiveApis, getDailyRevenue, getDailyRequests, getHourlyRequests, getAuditLog, getWalletSummaries, getAllSpendCaps, upsertSpendCap, deleteSpendCap, getWalletSpend, getSpendCap } from "../../shared/db";
 import { WALLET_ADDRESS } from "../../shared/x402";
 import { rateLimit } from "../../shared/rate-limit";
+import { hashPassword, logAuthEvent } from "../../shared/auth";
+import { normalizeEmail, validateEmail, validatePassword } from "../../shared/validation";
+import { sendVerificationCode } from "../../shared/email";
+import { initBalance } from "../../shared/credits";
+import { checkAuthRateLimit } from "../../shared/auth-rate-limit";
+import { isPasswordBreached } from "../../shared/hibp";
 
 const app = new Hono();
 const PORT = 3000;
@@ -207,6 +213,255 @@ app.put("/wallet/:address/cap", walletLimit, async (c) => {
 
   upsertSpendCap(wallet, label ?? null, daily_limit_usd ?? null, monthly_limit_usd ?? null);
   return c.json({ ok: true, wallet });
+});
+
+// --- Verification code secret ---
+const VERIFICATION_CODE_SECRET = process.env.VERIFICATION_CODE_SECRET || "dev-only-secret-change-in-production";
+if (process.env.NODE_ENV === "production" && VERIFICATION_CODE_SECRET === "dev-only-secret-change-in-production") {
+  console.error("FATAL: VERIFICATION_CODE_SECRET must be set in production");
+  process.exit(1);
+}
+
+// --- Auth helper functions (private) ---
+
+function generateVerificationCode(): string {
+  const arr = new Uint32Array(1);
+  crypto.getRandomValues(arr);
+  return String(arr[0] % 1000000).padStart(6, "0");
+}
+
+async function hashCode(code: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const key = await crypto.subtle.importKey(
+    "raw",
+    encoder.encode(VERIFICATION_CODE_SECRET),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"]
+  );
+  const sig = await crypto.subtle.sign("HMAC", key, encoder.encode(code));
+  return Array.from(new Uint8Array(sig))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+function getIp(c: any): string {
+  return c.req.header("x-forwarded-for")?.split(",")[0]?.trim() || "127.0.0.1";
+}
+
+function getUserAgent(c: any): string {
+  return c.req.header("user-agent") || "";
+}
+
+// --- Auth routes (public, before bearerAuth) ---
+const authLimit = rateLimit("dashboard-auth", 60, 60_000);
+
+app.post("/auth/signup", authLimit, async (c) => {
+  const ip = getIp(c);
+  const userAgent = getUserAgent(c);
+
+  let body: any;
+  try {
+    body = await c.req.json();
+  } catch {
+    return c.json({ error: "Invalid JSON" }, 400);
+  }
+
+  const { email, password } = body;
+  if (!email || !password) {
+    return c.json({ error: "Email and password are required" }, 400);
+  }
+
+  // Rate limit by IP
+  const rl = checkAuthRateLimit(db, "signup", ip);
+  if (!rl.allowed) {
+    c.header("Retry-After", String(rl.retryAfter));
+    return c.json({ error: "Too many signup attempts. Try again later." }, 429);
+  }
+
+  // Validate email
+  const normalized = normalizeEmail(email);
+  const emailCheck = validateEmail(normalized);
+  if (!emailCheck.valid) {
+    return c.json({ error: emailCheck.error }, 400);
+  }
+
+  // Validate password strength
+  const pwCheck = validatePassword(password);
+  if (!pwCheck.valid) {
+    return c.json({ error: pwCheck.error, score: pwCheck.score }, 400);
+  }
+
+  // Check HIBP breach
+  const breached = await isPasswordBreached(password);
+  if (breached) {
+    return c.json({ error: "This password has appeared in a data breach. Please choose a different password." }, 400);
+  }
+
+  // Check if email exists
+  const existing = db.query("SELECT id, email_verified FROM users WHERE email = ?").get(normalized) as { id: string; email_verified: number } | null;
+  if (existing && existing.email_verified) {
+    return c.json({ error: "An account with this email already exists." }, 400);
+  }
+  if (existing && !existing.email_verified) {
+    // Delete old unverified user and their codes to allow re-signup
+    db.run("DELETE FROM verification_codes WHERE user_id = ?", [existing.id]);
+    db.run("DELETE FROM credit_balances WHERE user_id = ?", [existing.id]);
+    db.run("DELETE FROM users WHERE id = ?", [existing.id]);
+  }
+
+  // Create user
+  const userId = crypto.randomUUID();
+  const passwordHash = await hashPassword(password);
+  db.run(
+    "INSERT INTO users (id, email, password_hash) VALUES (?, ?, ?)",
+    [userId, normalized, passwordHash]
+  );
+
+  // Init credit balance
+  initBalance(db, userId);
+
+  // Generate verification code
+  const code = generateVerificationCode();
+  const codeHash = await hashCode(code);
+  const codeId = crypto.randomUUID();
+
+  // Delete any prior verification codes for this user+purpose
+  db.run("DELETE FROM verification_codes WHERE user_id = ? AND purpose = 'email_verification'", [userId]);
+
+  // Insert new code with 10-minute expiry
+  db.run(
+    "INSERT INTO verification_codes (id, user_id, code_hash, purpose, expires_at) VALUES (?, ?, ?, 'email_verification', datetime('now', '+10 minutes'))",
+    [codeId, userId, codeHash]
+  );
+
+  // Send verification email
+  await sendVerificationCode(normalized, code);
+
+  // Log auth event
+  logAuthEvent(db, userId, "signup", ip, userAgent);
+
+  return c.json({ success: true, redirect: `/verify?email=${encodeURIComponent(normalized)}` });
+});
+
+app.post("/auth/verify", authLimit, async (c) => {
+  let body: any;
+  try {
+    body = await c.req.json();
+  } catch {
+    return c.json({ error: "Invalid JSON" }, 400);
+  }
+
+  const { email, code } = body;
+  if (!email || !code) {
+    return c.json({ error: "Email and code are required" }, 400);
+  }
+
+  const normalized = normalizeEmail(email);
+  const ip = getIp(c);
+  const userAgent = getUserAgent(c);
+
+  // Rate limit by email
+  const rl = checkAuthRateLimit(db, "verify-code", normalized);
+  if (!rl.allowed) {
+    c.header("Retry-After", String(rl.retryAfter));
+    return c.json({ error: "Too many verification attempts. Request a new code." }, 429);
+  }
+
+  // Find user
+  const user = db.query("SELECT id, email_verified FROM users WHERE email = ?").get(normalized) as { id: string; email_verified: number } | null;
+  if (!user) {
+    return c.json({ error: "Invalid email or verification code." }, 400);
+  }
+
+  if (user.email_verified) {
+    return c.json({ error: "Email is already verified." }, 400);
+  }
+
+  // Find valid verification code
+  const verCode = db.query(
+    "SELECT id, code_hash, attempts FROM verification_codes WHERE user_id = ? AND purpose = 'email_verification' AND expires_at > datetime('now') ORDER BY created_at DESC LIMIT 1"
+  ).get(user.id) as { id: string; code_hash: string; attempts: number } | null;
+
+  if (!verCode) {
+    return c.json({ error: "Verification code expired or not found." }, 400);
+  }
+
+  // Atomically increment attempts (only if < 3)
+  const updateResult = db.run(
+    "UPDATE verification_codes SET attempts = attempts + 1 WHERE id = ? AND attempts < 3",
+    [verCode.id]
+  );
+
+  if (updateResult.changes === 0) {
+    return c.json({ error: "Too many attempts. Request a new code." }, 400);
+  }
+
+  // Hash submitted code and compare
+  const submittedHash = await hashCode(String(code).trim());
+  if (submittedHash !== verCode.code_hash) {
+    return c.json({ error: "Invalid verification code." }, 400);
+  }
+
+  // Success: verify email, cleanup codes
+  db.run("UPDATE users SET email_verified = 1, updated_at = datetime('now') WHERE id = ?", [user.id]);
+  db.run("DELETE FROM verification_codes WHERE user_id = ? AND purpose = 'email_verification'", [user.id]);
+
+  logAuthEvent(db, user.id, "email_verified", ip, userAgent);
+
+  return c.json({ success: true, redirect: "/login" });
+});
+
+app.post("/auth/resend-code", authLimit, async (c) => {
+  let body: any;
+  try {
+    body = await c.req.json();
+  } catch {
+    return c.json({ error: "Invalid JSON" }, 400);
+  }
+
+  const { email } = body;
+  if (!email) {
+    return c.json({ error: "Email is required" }, 400);
+  }
+
+  const normalized = normalizeEmail(email);
+  const ip = getIp(c);
+
+  // Rate limit by email AND IP
+  const rlEmail = checkAuthRateLimit(db, "resend-code-email", normalized);
+  if (!rlEmail.allowed) {
+    c.header("Retry-After", String(rlEmail.retryAfter));
+    return c.json({ error: "Please wait before requesting another code." }, 429);
+  }
+
+  const rlIp = checkAuthRateLimit(db, "resend-code-ip", ip);
+  if (!rlIp.allowed) {
+    c.header("Retry-After", String(rlIp.retryAfter));
+    return c.json({ error: "Too many resend requests. Try again later." }, 429);
+  }
+
+  // Find user — return generic success even if not found (prevent enumeration)
+  const user = db.query("SELECT id, email_verified FROM users WHERE email = ?").get(normalized) as { id: string; email_verified: number } | null;
+  if (!user || user.email_verified) {
+    return c.json({ success: true });
+  }
+
+  // Delete existing codes, generate new one
+  db.run("DELETE FROM verification_codes WHERE user_id = ? AND purpose = 'email_verification'", [user.id]);
+
+  const code = generateVerificationCode();
+  const codeHash = await hashCode(code);
+  const codeId = crypto.randomUUID();
+
+  db.run(
+    "INSERT INTO verification_codes (id, user_id, code_hash, purpose, expires_at) VALUES (?, ?, ?, 'email_verification', datetime('now', '+10 minutes'))",
+    [codeId, user.id, codeHash]
+  );
+
+  await sendVerificationCode(normalized, code);
+
+  return c.json({ success: true });
 });
 
 // CORS before rate limiter so 429 responses include CORS headers
