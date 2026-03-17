@@ -15,9 +15,9 @@
 - [x] **AUTH-06**: User can log in with email and password (constant-time, no email enumeration)
 - [x] **AUTH-07**: Failed logins trigger progressive lockout (5 -> 15min, 10 -> 1hr, 20 -> 24hr)
 - [x] **AUTH-08**: User can log out and have session destroyed
-- [ ] **AUTH-09**: User can request password reset via 6-digit email code
-- [ ] **AUTH-10**: Password reset invalidates all existing sessions
-- [ ] **AUTH-11**: User can change password from settings (current + new required)
+- [x] **AUTH-09**: User can request password reset via 6-digit email code
+- [x] **AUTH-10**: Password reset invalidates all existing sessions
+- [x] **AUTH-11**: User can change password from settings (current + new required)
 
 ### Sessions
 
@@ -72,7 +72,7 @@
 
 - [x] **FE-01**: Signup page at /signup with email + password form
 - [x] **FE-02**: Login page at /login with email + password form
-- [ ] **FE-03**: Password reset page at /forgot-password
+- [x] **FE-03**: Password reset page at /forgot-password
 - [ ] **FE-04**: Account overview at /account (balance, usage chart, quick buy, active keys)
 - [ ] **FE-05**: API key management at /account/keys (create, list, revoke)
 - [ ] **FE-06**: Billing page at /account/billing (balance, tier cards, transaction history)
@@ -136,9 +136,9 @@
 | AUTH-06 | Phase 2 | Complete |
 | AUTH-07 | Phase 3 | Complete |
 | AUTH-08 | Phase 2 | Complete |
-| AUTH-09 | Phase 3 | Pending |
-| AUTH-10 | Phase 3 | Pending |
-| AUTH-11 | Phase 3 | Pending |
+| AUTH-09 | Phase 3 | Complete |
+| AUTH-10 | Phase 3 | Complete |
+| AUTH-11 | Phase 3 | Complete |
 | SESS-01 | Phase 1 | Complete |
 | SESS-02 | Phase 2 | Complete |
 | SESS-03 | Phase 2 | Complete |
@@ -175,7 +175,7 @@
 | MCP-03 | Phase 8 | Pending |
 | FE-01 | Phase 2 | Complete |
 | FE-02 | Phase 2 | Complete |
-| FE-03 | Phase 3 | Pending |
+| FE-03 | Phase 3 | Complete |
 | FE-04 | Phase 6 | Pending |
 | FE-05 | Phase 4 | Pending |
 | FE-06 | Phase 5 | Pending |

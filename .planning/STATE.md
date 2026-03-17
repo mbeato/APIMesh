@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: in-progress
-last_updated: "2026-03-17T17:10:22Z"
+last_updated: "2026-03-17T17:13:16Z"
 progress:
   total_phases: 8
   completed_phases: 2
   total_plans: 21
-  completed_plans: 7
+  completed_plans: 8
 ---
 
 # Project State
@@ -23,18 +23,18 @@ See: .planning/PROJECT.md (updated 2026-03-15)
 ## Current Position
 
 Phase: 3 of 8 (Auth Hardening & Sessions) -- IN PROGRESS
-Plan: 1 of 3 in current phase (complete)
+Plan: 2 of 3 in current phase (complete)
 Status: Executing Phase 3
-Last activity: 2026-03-17 — Completed 03-01 (Lockout & Session Limits)
+Last activity: 2026-03-17 — Completed 03-02 (Password Reset & Change)
 
-Progress: [███████░░░] 33%
+Progress: [████████░░] 38%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 7
+- Total plans completed: 8
 - Average duration: 4min
-- Total execution time: 0.41 hours
+- Total execution time: 0.49 hours
 
 **By Phase:**
 
@@ -42,11 +42,11 @@ Progress: [███████░░░] 33%
 |-------|-------|-------|----------|
 | 01-foundation | 3 | 12min | 4min |
 | 02-signup-login | 3 | 13min | 4min |
-| 03-auth-hardening-sessions | 1 | 2min | 2min |
+| 03-auth-hardening-sessions | 2 | 7min | 3.5min |
 
 **Recent Trend:**
-- Last 5 plans: 02-01 (3min), 02-02 (5min), 02-03 (5min), 03-01 (2min)
-- Trend: stable/improving
+- Last 5 plans: 02-01 (3min), 02-02 (5min), 02-03 (5min), 03-01 (2min), 03-02 (5min)
+- Trend: stable
 
 *Updated after each plan completion*
 
@@ -80,6 +80,10 @@ Recent decisions affecting current work:
 - 03-01: Lockout check runs before verifyPassword result is used but verifyPassword always executes for constant-time
 - 03-01: Locked accounts get identical 401 response to wrong-password (anti-enumeration)
 - 03-01: Session eviction uses FIFO (oldest first) when exceeding 10 active sessions
+- 03-02: Anti-enumeration on forgot-password (always returns success regardless of email existence)
+- 03-02: Password reset clears lockout (failed_logins=0, locked_until=NULL) and invalidates ALL sessions
+- 03-02: Password change keeps current session, invalidates all other sessions
+- 03-02: Two-step forgot-password UX: email entry then code + new password (no auto-submit on code widget)
 
 ### Pending Todos
 
@@ -94,5 +98,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-17
-Stopped at: Completed 03-01-PLAN.md
+Stopped at: Completed 03-02-PLAN.md
 Resume file: None

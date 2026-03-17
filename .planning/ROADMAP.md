@@ -71,7 +71,7 @@ Plans:
 
 Plans:
 - [x] 03-01: Progressive lockout and session limit enforcement (AUTH-07, SESS-04)
-- [ ] 03-02: Password reset/change flows and forgot-password page (AUTH-09, AUTH-10, AUTH-11, FE-03)
+- [x] 03-02: Password reset/change flows and forgot-password page (AUTH-09, AUTH-10, AUTH-11, FE-03)
 - [ ] 03-03: Session management UI and settings page (SESS-05, SESS-06, FE-07)
 
 ### Phase 4: API Keys
@@ -162,7 +162,7 @@ Note: Phases 3, 4, and 5 all depend on Phase 2 but are independent of each other
 |-------|----------------|--------|-----------|
 | 1. Foundation | 3/3 | Complete | 2026-03-16 |
 | 2. Signup & Login | 3/3 | Complete   | 2026-03-17 |
-| 3. Auth Hardening & Sessions | 1/3 | In progress | - |
+| 3. Auth Hardening & Sessions | 2/3 | In progress | - |
 | 4. API Keys | 0/2 | Not started | - |
 | 5. Stripe Billing | 0/3 | Not started | - |
 | 6. Credits & Account Dashboard | 0/2 | Not started | - |
