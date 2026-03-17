@@ -40,12 +40,31 @@ export async function verifyPassword(password: string, hash: string): Promise<bo
  * 30-day sliding expiry + 90-day absolute hard cap.
  * user_agent capped at 512 chars.
  */
+const MAX_SESSIONS_PER_USER = 10;
+
 export function createSession(db: Database, userId: string, ip: string, userAgent: string): string {
   const bytes = new Uint8Array(32);
   crypto.getRandomValues(bytes);
   const sessionId = Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('');
 
   const cappedUA = userAgent.slice(0, 512);
+
+  // Enforce session limit: max 10 active sessions per user
+  const { count } = db.query(
+    "SELECT COUNT(*) as count FROM sessions WHERE user_id = ? AND expires_at > datetime('now')"
+  ).get(userId) as { count: number };
+
+  if (count >= MAX_SESSIONS_PER_USER) {
+    // Delete oldest sessions to make room for exactly 1 new one
+    const excess = count - (MAX_SESSIONS_PER_USER - 1);
+    db.run(
+      `DELETE FROM sessions WHERE id IN (
+        SELECT id FROM sessions WHERE user_id = ? AND expires_at > datetime('now')
+        ORDER BY created_at ASC LIMIT ?
+      )`,
+      [userId, excess]
+    );
+  }
 
   db.run(
     `INSERT INTO sessions (id, user_id, ip_address, user_agent, expires_at, absolute_expires_at)
