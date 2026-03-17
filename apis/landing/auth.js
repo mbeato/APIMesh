@@ -659,6 +659,274 @@
   }
 
   /* ============================================================
+     Settings Page Handler (session list, revocation, change password)
+     ============================================================ */
+  function initSettings() {
+    var page = document.getElementById("settings-page");
+    if (!page) return;
+
+    /* --- Utility: relative time --- */
+    function timeAgo(dateStr) {
+      var diff = (Date.now() - new Date(dateStr + "Z").getTime()) / 1000;
+      if (diff < 60) return "just now";
+      if (diff < 3600) return Math.floor(diff / 60) + " minutes ago";
+      if (diff < 86400) return Math.floor(diff / 3600) + " hours ago";
+      return Math.floor(diff / 86400) + " days ago";
+    }
+
+    /* --- Utility: settings page error/success messages --- */
+    function showMsg(id, msg) {
+      var el = document.getElementById(id);
+      if (!el) return;
+      el.textContent = msg;
+      el.classList.add("visible");
+    }
+
+    function hideMsg(id) {
+      var el = document.getElementById(id);
+      if (!el) return;
+      el.textContent = "";
+      el.classList.remove("visible");
+    }
+
+    /* --- Session list loader --- */
+    var sessionListEl = document.getElementById("session-list");
+
+    function loadSessions() {
+      fetch("/auth/sessions")
+        .then(function (res) {
+          if (!res.ok) throw new Error("Failed to load sessions");
+          return res.json();
+        })
+        .then(function (sessions) {
+          renderSessions(sessions);
+        })
+        .catch(function () {
+          sessionListEl.innerHTML = '<div class="sessions-empty">Failed to load sessions.</div>';
+        });
+    }
+
+    function renderSessions(sessions) {
+      if (!sessions.length) {
+        sessionListEl.innerHTML = '<div class="sessions-empty">No active sessions found.</div>';
+        return;
+      }
+
+      sessionListEl.innerHTML = "";
+      sessions.forEach(function (s) {
+        var card = document.createElement("div");
+        card.className = "session-card" + (s.is_current ? " current" : "");
+
+        var info = document.createElement("div");
+        info.className = "session-info";
+
+        var device = document.createElement("div");
+        device.className = "session-device";
+        device.textContent = s.browser + " on " + s.os;
+        if (s.is_current) {
+          var badge = document.createElement("span");
+          badge.className = "session-badge";
+          badge.textContent = "Current session";
+          device.appendChild(badge);
+        }
+
+        var meta = document.createElement("div");
+        meta.className = "session-meta";
+        meta.textContent = s.ip_address + " \u00B7 " + timeAgo(s.created_at);
+
+        info.appendChild(device);
+        info.appendChild(meta);
+        card.appendChild(info);
+
+        if (!s.is_current) {
+          var actions = document.createElement("div");
+          actions.className = "session-actions";
+          var btn = document.createElement("button");
+          btn.className = "btn-revoke";
+          btn.textContent = "Revoke";
+          btn.setAttribute("data-session-id", s.id);
+          btn.addEventListener("click", function () {
+            revokeSession(s.id, card);
+          });
+          actions.appendChild(btn);
+          card.appendChild(actions);
+        }
+
+        sessionListEl.appendChild(card);
+      });
+    }
+
+    /* --- Revoke individual session --- */
+    function revokeSession(sessionId, cardEl) {
+      hideMsg("sessions-error-msg");
+      hideMsg("sessions-success-msg");
+
+      fetch("/auth/sessions/" + encodeURIComponent(sessionId), { method: "DELETE" })
+        .then(function (res) {
+          return res.json().then(function (data) {
+            return { status: res.status, data: data };
+          });
+        })
+        .then(function (result) {
+          if (result.data.success) {
+            cardEl.remove();
+            showMsg("sessions-success-msg", "Session revoked.");
+          } else {
+            showMsg("sessions-error-msg", result.data.error || "Failed to revoke session.");
+          }
+        })
+        .catch(function () {
+          showMsg("sessions-error-msg", "Network error. Please try again.");
+        });
+    }
+
+    /* --- Revoke all other sessions --- */
+    var revokeAllBtn = document.getElementById("revoke-all-btn");
+    if (revokeAllBtn) {
+      revokeAllBtn.addEventListener("click", function () {
+        if (!confirm("Revoke all other sessions? You will remain logged in on this device.")) return;
+
+        hideMsg("sessions-error-msg");
+        hideMsg("sessions-success-msg");
+        revokeAllBtn.disabled = true;
+
+        fetch("/auth/sessions", { method: "DELETE" })
+          .then(function (res) {
+            return res.json().then(function (data) {
+              return { status: res.status, data: data };
+            });
+          })
+          .then(function (result) {
+            revokeAllBtn.disabled = false;
+            if (result.data.success) {
+              showMsg("sessions-success-msg", "All other sessions revoked.");
+              loadSessions();
+            } else {
+              showMsg("sessions-error-msg", result.data.error || "Failed to revoke sessions.");
+            }
+          })
+          .catch(function () {
+            revokeAllBtn.disabled = false;
+            showMsg("sessions-error-msg", "Network error. Please try again.");
+          });
+      });
+    }
+
+    /* --- Change password form --- */
+    var pwForm = document.getElementById("change-password-form");
+    var pwBtn = document.getElementById("change-pw-btn");
+    if (pwForm && pwBtn) {
+      var pwOriginalText = pwBtn.textContent;
+
+      pwForm.addEventListener("submit", function (e) {
+        e.preventDefault();
+        hideMsg("pw-error-msg");
+        hideMsg("pw-success-msg");
+
+        var currentPassword = document.getElementById("current-password").value;
+        var newPassword = document.getElementById("new-password").value;
+        var confirmPassword = document.getElementById("confirm-new-password").value;
+
+        if (!currentPassword || !newPassword) {
+          showMsg("pw-error-msg", "All fields are required.");
+          return;
+        }
+
+        if (newPassword !== confirmPassword) {
+          showMsg("pw-error-msg", "New passwords do not match.");
+          return;
+        }
+
+        setLoading(pwBtn, true);
+
+        fetch("/auth/change-password", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ currentPassword: currentPassword, newPassword: newPassword }),
+        })
+          .then(function (res) {
+            return res.json().then(function (data) {
+              return { status: res.status, data: data };
+            });
+          })
+          .then(function (result) {
+            if (result.data.success) {
+              showMsg("pw-success-msg", "Password changed successfully.");
+              pwForm.reset();
+              /* Hide strength bar */
+              var sc = document.getElementById("strength-container");
+              if (sc) sc.classList.remove("visible");
+            } else {
+              showMsg("pw-error-msg", result.data.error || "Failed to change password.");
+            }
+            setLoading(pwBtn, false, pwOriginalText);
+          })
+          .catch(function () {
+            showMsg("pw-error-msg", "Network error. Please try again.");
+            setLoading(pwBtn, false, pwOriginalText);
+          });
+      });
+    }
+
+    /* --- Password strength bar for new password field --- */
+    var newPwInput = document.getElementById("new-password");
+    var strengthContainer = document.getElementById("strength-container");
+    var strengthFill = document.getElementById("strength-fill");
+    var strengthLabel = document.getElementById("strength-label");
+
+    if (newPwInput && strengthContainer && strengthFill && strengthLabel) {
+      var colors = ["#ef4444", "#f97316", "#eab308", "#22c55e", "#22c55e"];
+      var labels = ["Weak", "Fair", "Good", "Strong", "Strong"];
+      var widths = ["20%", "40%", "60%", "80%", "100%"];
+
+      newPwInput.addEventListener("input", function () {
+        var val = newPwInput.value;
+        if (!val) {
+          strengthContainer.classList.remove("visible");
+          return;
+        }
+        strengthContainer.classList.add("visible");
+
+        if (typeof zxcvbn === "function") {
+          var result = zxcvbn(val);
+          var score = result.score;
+          strengthFill.style.width = widths[score];
+          strengthFill.style.backgroundColor = colors[score];
+          strengthLabel.textContent = labels[score];
+          strengthLabel.style.color = colors[score];
+        } else {
+          var s = val.length < 6 ? 0 : val.length < 8 ? 1 : val.length < 12 ? 2 : 3;
+          strengthFill.style.width = widths[s];
+          strengthFill.style.backgroundColor = colors[s];
+          strengthLabel.textContent = labels[s];
+          strengthLabel.style.color = colors[s];
+        }
+      });
+    }
+
+    /* --- Danger Zone: Logout all sessions --- */
+    var logoutAllBtn = document.getElementById("logout-all-btn");
+    if (logoutAllBtn) {
+      logoutAllBtn.addEventListener("click", function () {
+        if (!confirm("Log out from ALL devices? You will be redirected to the login page.")) return;
+
+        logoutAllBtn.disabled = true;
+
+        fetch("/auth/logout", { method: "POST" })
+          .then(function () {
+            window.location.href = "/login";
+          })
+          .catch(function () {
+            window.location.href = "/login";
+          });
+      });
+    }
+
+    /* --- Initial load --- */
+    loadSessions();
+  }
+
+  /* ============================================================
      Init — run on DOMContentLoaded
      ============================================================ */
   document.addEventListener("DOMContentLoaded", function () {
@@ -671,5 +939,6 @@
     initLogout();
     initVerifyEmail();
     initForgotPassword();
+    initSettings();
   });
 })();

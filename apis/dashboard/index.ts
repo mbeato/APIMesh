@@ -982,6 +982,28 @@ app.delete("/auth/sessions", authLimit, async (c) => {
   return c.json({ success: true });
 });
 
+// --- Settings page (session-protected) ---
+app.get("/account/settings", publicLimit, async (c) => {
+  const auth = await getAuthenticatedUser(c);
+  if (!auth) {
+    return c.redirect("/login", 302);
+  }
+
+  const file = Bun.file(join(import.meta.dir, "../landing/settings.html"));
+  if (await file.exists()) {
+    return new Response(await file.text(), {
+      headers: {
+        "Content-Type": "text/html; charset=utf-8",
+        "Content-Security-Policy": "default-src 'none'; script-src 'self'; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src data:; connect-src 'self'",
+        "X-Frame-Options": "DENY",
+        "X-Content-Type-Options": "nosniff",
+        "Cache-Control": "no-store",
+      },
+    });
+  }
+  return c.text("Settings page not found", 404);
+});
+
 // --- Account page (placeholder, session-protected) ---
 app.get("/account", publicLimit, async (c) => {
   const auth = await getAuthenticatedUser(c);

@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Settings - APIMesh</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <style>
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+      :root {
+        --bg: #090909;
+        --surface: #0f0f0f;
+        --border: #1a1a1a;
+        --border-hover: #2a2a2a;
+        --text: #e8e8e8;
+        --text-secondary: #888;
+        --text-dim: #555;
+        --accent: #3ddc84;
+        --accent-dim: rgba(61, 220, 132, 0.08);
+        --danger: #ef4444;
+        --danger-dim: rgba(239, 68, 68, 0.08);
+        --font: "Space Grotesk", -apple-system, sans-serif;
+        --mono: "JetBrains Mono", "SF Mono", monospace;
+      }
+
+      body {
+        font-family: var(--font);
+        background: var(--bg);
+        color: var(--text);
+        min-height: 100vh;
+        -webkit-font-smoothing: antialiased;
+        overflow-y: auto;
+      }
+
+      #mesh {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      .settings-wrapper {
+        position: relative;
+        z-index: 1;
+        max-width: 560px;
+        margin: 0 auto;
+        padding: 40px 20px 80px;
+      }
+
+      .settings-header {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 32px;
+      }
+
+      .settings-header a {
+        color: var(--text-secondary);
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 500;
+        transition: color 0.2s;
+      }
+
+      .settings-header a:hover { color: var(--text); }
+
+      .settings-header h1 {
+        font-size: 24px;
+        font-weight: 700;
+        letter-spacing: -0.5px;
+      }
+
+      .section {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 32px;
+        margin-bottom: 24px;
+      }
+
+      .section h3 {
+        font-size: 16px;
+        font-weight: 600;
+        margin-bottom: 20px;
+        letter-spacing: -0.3px;
+      }
+
+      .form-group {
+        margin-bottom: 16px;
+      }
+
+      .form-group label {
+        display: block;
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--text-secondary);
+        margin-bottom: 6px;
+      }
+
+      .form-group input {
+        width: 100%;
+        padding: 12px 16px;
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        color: var(--text);
+        font-family: var(--mono);
+        font-size: 14px;
+        outline: none;
+        transition: border-color 0.2s ease;
+      }
+
+      .form-group input:focus {
+        border-color: var(--accent);
+      }
+
+      .form-group input::placeholder {
+        color: var(--text-dim);
+      }
+
+      /* Strength bar */
+      .strength-container {
+        margin-top: 8px;
+        opacity: 0;
+        max-height: 0;
+        overflow: hidden;
+        transition: opacity 0.25s ease, max-height 0.25s ease;
+      }
+
+      .strength-container.visible {
+        opacity: 1;
+        max-height: 40px;
+      }
+
+      .strength-track {
+        height: 4px;
+        background: var(--border);
+        border-radius: 2px;
+        overflow: hidden;
+      }
+
+      .strength-fill {
+        height: 100%;
+        width: 0;
+        border-radius: 2px;
+        transition: width 0.3s ease, background-color 0.3s ease;
+      }
+
+      .strength-label {
+        font-size: 11px;
+        font-weight: 500;
+        margin-top: 4px;
+        color: var(--text-dim);
+      }
+
+      .error-message, .success-message {
+        border-radius: 8px;
+        padding: 10px 14px;
+        font-size: 13px;
+        margin-bottom: 16px;
+        opacity: 0;
+        max-height: 0;
+        overflow: hidden;
+        transition: opacity 0.25s ease, max-height 0.25s ease, padding 0.25s ease;
+      }
+
+      .error-message {
+        background: rgba(239, 68, 68, 0.08);
+        border: 1px solid rgba(239, 68, 68, 0.2);
+        color: #ef4444;
+      }
+
+      .success-message {
+        background: rgba(61, 220, 132, 0.08);
+        border: 1px solid rgba(61, 220, 132, 0.2);
+        color: var(--accent);
+      }
+
+      .error-message.visible, .success-message.visible {
+        opacity: 1;
+        max-height: 100px;
+        padding: 10px 14px;
+      }
+
+      .btn {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 8px;
+        font-family: var(--font);
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: opacity 0.15s ease, transform 0.1s ease;
+      }
+
+      .btn:hover { opacity: 0.9; transform: translateY(-1px); }
+      .btn:active { transform: translateY(0); }
+      .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+      .btn-primary {
+        background: var(--accent);
+        color: var(--bg);
+      }
+
+      .btn-secondary {
+        background: transparent;
+        color: var(--text-secondary);
+        border: 1px solid var(--border);
+      }
+
+      .btn-secondary:hover { border-color: var(--border-hover); color: var(--text); }
+
+      .btn-danger {
+        background: transparent;
+        color: var(--danger);
+        border: 1px solid rgba(239, 68, 68, 0.3);
+      }
+
+      .btn-danger:hover { background: var(--danger-dim); }
+
+      /* Sessions list */
+      .sessions-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 16px;
+      }
+
+      .sessions-header h3 { margin-bottom: 0; }
+
+      .session-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .session-card {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 14px 16px;
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        transition: border-color 0.2s;
+      }
+
+      .session-card.current {
+        border-color: var(--accent);
+        background: var(--accent-dim);
+      }
+
+      .session-info {
+        flex: 1;
+        min-width: 0;
+      }
+
+      .session-device {
+        font-size: 14px;
+        font-weight: 500;
+        margin-bottom: 4px;
+      }
+
+      .session-meta {
+        font-size: 12px;
+        color: var(--text-secondary);
+        font-family: var(--mono);
+      }
+
+      .session-badge {
+        display: inline-block;
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--accent);
+        background: var(--accent-dim);
+        padding: 3px 8px;
+        border-radius: 4px;
+        margin-left: 8px;
+      }
+
+      .session-actions {
+        flex-shrink: 0;
+        margin-left: 12px;
+      }
+
+      .btn-revoke {
+        padding: 6px 14px;
+        font-size: 12px;
+        background: transparent;
+        color: var(--text-dim);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        font-family: var(--font);
+        font-weight: 500;
+        cursor: pointer;
+        transition: border-color 0.2s, color 0.2s;
+      }
+
+      .btn-revoke:hover {
+        border-color: var(--danger);
+        color: var(--danger);
+      }
+
+      .sessions-empty {
+        text-align: center;
+        padding: 24px;
+        color: var(--text-dim);
+        font-size: 14px;
+      }
+
+      /* Danger zone */
+      .danger-section {
+        border-color: rgba(239, 68, 68, 0.15);
+      }
+
+      .danger-section h3 {
+        color: var(--danger);
+      }
+
+      .danger-section p {
+        font-size: 13px;
+        color: var(--text-secondary);
+        margin-bottom: 16px;
+        line-height: 1.5;
+      }
+
+      @keyframes fadeUp {
+        from { opacity: 0; transform: translateY(16px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+
+      .settings-wrapper {
+        animation: fadeUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      }
+
+      @media (max-width: 480px) {
+        .settings-wrapper { padding: 24px 16px 60px; }
+        .section { padding: 24px 16px; }
+        .session-card { flex-direction: column; align-items: flex-start; gap: 10px; }
+        .session-actions { margin-left: 0; }
+        .sessions-header { flex-direction: column; align-items: flex-start; gap: 12px; }
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="mesh"></canvas>
+    <div id="settings-page" class="settings-wrapper">
+
+      <div class="settings-header">
+        <a href="/account">&larr; Account</a>
+        <h1>Settings</h1>
+      </div>
+
+      <!-- Section 1: Change Password -->
+      <div class="section">
+        <h3>Change Password</h3>
+        <div class="error-message" id="pw-error-msg"></div>
+        <div class="success-message" id="pw-success-msg"></div>
+        <form id="change-password-form" novalidate>
+          <div class="form-group">
+            <label for="current-password">Current Password</label>
+            <input type="password" id="current-password" name="current-password" placeholder="Enter current password" required autocomplete="current-password" />
+          </div>
+          <div class="form-group">
+            <label for="new-password">New Password</label>
+            <input type="password" id="new-password" name="new-password" placeholder="Enter new password" required autocomplete="new-password" />
+            <div class="strength-container" id="strength-container">
+              <div class="strength-track"><div class="strength-fill" id="strength-fill"></div></div>
+              <div class="strength-label" id="strength-label"></div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="confirm-new-password">Confirm New Password</label>
+            <input type="password" id="confirm-new-password" name="confirm-new-password" placeholder="Confirm new password" required autocomplete="new-password" />
+          </div>
+          <button type="submit" class="btn btn-primary" id="change-pw-btn">Change Password</button>
+        </form>
+      </div>
+
+      <!-- Section 2: Active Sessions -->
+      <div class="section">
+        <div class="sessions-header">
+          <h3>Active Sessions</h3>
+          <button class="btn btn-secondary" id="revoke-all-btn">Revoke all others</button>
+        </div>
+        <div class="error-message" id="sessions-error-msg"></div>
+        <div class="success-message" id="sessions-success-msg"></div>
+        <div id="session-list" class="session-list">
+          <div class="sessions-empty">Loading sessions...</div>
+        </div>
+      </div>
+
+      <!-- Section 3: Danger Zone -->
+      <div class="section danger-section">
+        <h3>Danger Zone</h3>
+        <p>Log out from all devices including this one. You will be redirected to the login page.</p>
+        <button class="btn btn-danger" id="logout-all-btn">Log out all sessions</button>
+      </div>
+
+    </div>
+    <script src="/zxcvbn.js" defer></script>
+    <script src="/auth.js" defer></script>
+  </body>
+</html>
