@@ -2,13 +2,13 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: unknown
-last_updated: "2026-03-17T06:42:59.521Z"
+status: in-progress
+last_updated: "2026-03-17T17:10:22Z"
 progress:
-  total_phases: 2
+  total_phases: 8
   completed_phases: 2
-  total_plans: 6
-  completed_plans: 6
+  total_plans: 21
+  completed_plans: 7
 ---
 
 # Project State
@@ -18,23 +18,23 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-15)
 
 **Core value:** Developers and AI agents can access web analysis APIs through a single account with one credit pool, paying with credit card or crypto.
-**Current focus:** Phase 2: Signup & Login
+**Current focus:** Phase 3: Auth Hardening & Sessions
 
 ## Current Position
 
-Phase: 2 of 8 (Signup & Login) -- COMPLETE
-Plan: 3 of 3 in current phase (complete)
-Status: Phase 2 Complete
-Last activity: 2026-03-17 — Completed 02-03 (Auth Pages)
+Phase: 3 of 8 (Auth Hardening & Sessions) -- IN PROGRESS
+Plan: 1 of 3 in current phase (complete)
+Status: Executing Phase 3
+Last activity: 2026-03-17 — Completed 03-01 (Lockout & Session Limits)
 
-Progress: [██████░░░░] 29%
+Progress: [███████░░░] 33%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 6
+- Total plans completed: 7
 - Average duration: 4min
-- Total execution time: 0.38 hours
+- Total execution time: 0.41 hours
 
 **By Phase:**
 
@@ -42,10 +42,11 @@ Progress: [██████░░░░] 29%
 |-------|-------|-------|----------|
 | 01-foundation | 3 | 12min | 4min |
 | 02-signup-login | 3 | 13min | 4min |
+| 03-auth-hardening-sessions | 1 | 2min | 2min |
 
 **Recent Trend:**
-- Last 5 plans: 01-03 (5min), 02-01 (3min), 02-02 (5min), 02-03 (5min)
-- Trend: stable
+- Last 5 plans: 02-01 (3min), 02-02 (5min), 02-03 (5min), 03-01 (2min)
+- Trend: stable/improving
 
 *Updated after each plan completion*
 
@@ -76,6 +77,9 @@ Recent decisions affecting current work:
 - 02-03: Auto-login after email verification (session created in /auth/verify, redirect to /account)
 - 02-03: Confirm password field on signup with client-side validation
 - 02-03: Rate limiter dev-mode bypass (fallback to 127.0.0.1 when no x-real-ip)
+- 03-01: Lockout check runs before verifyPassword result is used but verifyPassword always executes for constant-time
+- 03-01: Locked accounts get identical 401 response to wrong-password (anti-enumeration)
+- 03-01: Session eviction uses FIFO (oldest first) when exceeding 10 active sessions
 
 ### Pending Todos
 
@@ -90,5 +94,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-17
-Stopped at: Completed 02-03-PLAN.md (Phase 2 complete)
+Stopped at: Completed 03-01-PLAN.md
 Resume file: None

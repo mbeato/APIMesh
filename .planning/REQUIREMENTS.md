@@ -13,7 +13,7 @@
 - [x] **AUTH-04**: User can verify email by entering 6-digit code (expires 10min, 3 attempts max)
 - [x] **AUTH-05**: User can resend verification code (1 per 60s per email, 5 per IP per hour)
 - [x] **AUTH-06**: User can log in with email and password (constant-time, no email enumeration)
-- [ ] **AUTH-07**: Failed logins trigger progressive lockout (5 -> 15min, 10 -> 1hr, 20 -> 24hr)
+- [x] **AUTH-07**: Failed logins trigger progressive lockout (5 -> 15min, 10 -> 1hr, 20 -> 24hr)
 - [x] **AUTH-08**: User can log out and have session destroyed
 - [ ] **AUTH-09**: User can request password reset via 6-digit email code
 - [ ] **AUTH-10**: Password reset invalidates all existing sessions
@@ -24,7 +24,7 @@
 - [x] **SESS-01**: Sessions stored server-side in SQLite with crypto-random 256-bit IDs
 - [x] **SESS-02**: Session cookie is httpOnly, Secure, SameSite=Strict, 30-day expiry
 - [x] **SESS-03**: Session expiry uses sliding window (refreshed on each authenticated request)
-- [ ] **SESS-04**: Maximum 10 active sessions per user (oldest auto-revoked on new login)
+- [x] **SESS-04**: Maximum 10 active sessions per user (oldest auto-revoked on new login)
 - [ ] **SESS-05**: User can view active sessions (IP, user agent, created date)
 - [ ] **SESS-06**: User can revoke individual sessions or all sessions
 - [x] **SESS-07**: All auth events logged to audit table (signup, login, failed, logout, password change/reset, key create/revoke)
@@ -134,7 +134,7 @@
 | AUTH-04 | Phase 2 | Complete |
 | AUTH-05 | Phase 2 | Complete |
 | AUTH-06 | Phase 2 | Complete |
-| AUTH-07 | Phase 3 | Pending |
+| AUTH-07 | Phase 3 | Complete |
 | AUTH-08 | Phase 2 | Complete |
 | AUTH-09 | Phase 3 | Pending |
 | AUTH-10 | Phase 3 | Pending |
@@ -142,7 +142,7 @@
 | SESS-01 | Phase 1 | Complete |
 | SESS-02 | Phase 2 | Complete |
 | SESS-03 | Phase 2 | Complete |
-| SESS-04 | Phase 3 | Pending |
+| SESS-04 | Phase 3 | Complete |
 | SESS-05 | Phase 3 | Pending |
 | SESS-06 | Phase 3 | Pending |
 | SESS-07 | Phase 1 | Complete |
