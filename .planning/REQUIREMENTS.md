@@ -25,8 +25,8 @@
 - [x] **SESS-02**: Session cookie is httpOnly, Secure, SameSite=Strict, 30-day expiry
 - [x] **SESS-03**: Session expiry uses sliding window (refreshed on each authenticated request)
 - [x] **SESS-04**: Maximum 10 active sessions per user (oldest auto-revoked on new login)
-- [ ] **SESS-05**: User can view active sessions (IP, user agent, created date)
-- [ ] **SESS-06**: User can revoke individual sessions or all sessions
+- [x] **SESS-05**: User can view active sessions (IP, user agent, created date)
+- [x] **SESS-06**: User can revoke individual sessions or all sessions
 - [x] **SESS-07**: All auth events logged to audit table (signup, login, failed, logout, password change/reset, key create/revoke)
 
 ### API Keys
@@ -76,7 +76,7 @@
 - [ ] **FE-04**: Account overview at /account (balance, usage chart, quick buy, active keys)
 - [ ] **FE-05**: API key management at /account/keys (create, list, revoke)
 - [ ] **FE-06**: Billing page at /account/billing (balance, tier cards, transaction history)
-- [ ] **FE-07**: Settings page at /account/settings (change password, active sessions, logout all)
+- [x] **FE-07**: Settings page at /account/settings (change password, active sessions, logout all)
 - [x] **FE-08**: All account pages use server-rendered HTML + vanilla JS (no React)
 - [x] **FE-09**: Design matches existing landing page (Space Grotesk, JetBrains Mono, dark theme)
 - [ ] **FE-10**: Landing page updated with "Sign Up" CTA and reframed copy
@@ -143,8 +143,8 @@
 | SESS-02 | Phase 2 | Complete |
 | SESS-03 | Phase 2 | Complete |
 | SESS-04 | Phase 3 | Complete |
-| SESS-05 | Phase 3 | Pending |
-| SESS-06 | Phase 3 | Pending |
+| SESS-05 | Phase 3 | Complete |
+| SESS-06 | Phase 3 | Complete |
 | SESS-07 | Phase 1 | Complete |
 | KEY-01 | Phase 4 | Pending |
 | KEY-02 | Phase 1 | Complete |
@@ -179,7 +179,7 @@
 | FE-04 | Phase 6 | Pending |
 | FE-05 | Phase 4 | Pending |
 | FE-06 | Phase 5 | Pending |
-| FE-07 | Phase 3 | Pending |
+| FE-07 | Phase 3 | Complete |
 | FE-08 | Phase 2 | Complete |
 | FE-09 | Phase 2 | Complete |
 | FE-10 | Phase 8 | Pending |

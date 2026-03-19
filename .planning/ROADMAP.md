@@ -14,7 +14,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Foundation** - Migration runner, database schema, shared modules, email domain setup
 - [x] **Phase 2: Signup & Login** - User registration, email verification, login, logout, session cookies (completed 2026-03-17)
-- [ ] **Phase 3: Auth Hardening & Sessions** - Lockout, password reset, password change, session management UI
+- [x] **Phase 3: Auth Hardening & Sessions** - Lockout, password reset, password change, session management UI (completed 2026-03-17)
 - [ ] **Phase 4: API Keys** - Key creation, display, revocation, management page
 - [ ] **Phase 5: Stripe Billing** - Checkout integration, webhook handler, credit purchases
 - [ ] **Phase 6: Credits & Account Dashboard** - Balance display, transaction history, low-balance alerts, account overview
@@ -162,7 +162,7 @@ Note: Phases 3, 4, and 5 all depend on Phase 2 but are independent of each other
 |-------|----------------|--------|-----------|
 | 1. Foundation | 3/3 | Complete | 2026-03-16 |
 | 2. Signup & Login | 3/3 | Complete   | 2026-03-17 |
-| 3. Auth Hardening & Sessions | 2/3 | In progress | - |
+| 3. Auth Hardening & Sessions | 3/3 | Complete   | 2026-03-17 |
 | 4. API Keys | 0/2 | Not started | - |
 | 5. Stripe Billing | 0/3 | Not started | - |
 | 6. Credits & Account Dashboard | 0/2 | Not started | - |
