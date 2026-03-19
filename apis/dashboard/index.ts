@@ -1234,6 +1234,30 @@ app.post("/billing/alert-threshold", authLimit, async (c) => {
   return c.json({ success: true, threshold_microdollars });
 });
 
+// --- Account overview API (single request for dashboard data) ---
+app.get("/account/overview", authLimit, async (c) => {
+  const auth = await getAuthenticatedUser(c);
+  if (!auth) return c.json({ error: "Unauthorized" }, 401);
+
+  const balance = getBalance(db, auth.userId);
+  const keys = getUserKeys(db, auth.userId);
+  const activeKeys = keys.filter((k: any) => !k.revoked_at).length;
+  const recentTransactions = getTransactions(db, auth.userId, 5, 0);
+
+  const alertRow = db.query(
+    "SELECT alert_threshold_microdollars FROM credit_balances WHERE user_id = ?"
+  ).get(auth.userId) as { alert_threshold_microdollars: number | null } | null;
+
+  return c.json({
+    balance_microdollars: balance,
+    active_key_count: activeKeys,
+    total_key_count: keys.length,
+    max_keys: 5,
+    recent_transactions: recentTransactions,
+    alert_threshold_microdollars: alertRow?.alert_threshold_microdollars ?? null,
+  });
+});
+
 // --- Billing page (session-protected) ---
 app.get("/account/billing", publicLimit, async (c) => {
   const auth = await getAuthenticatedUser(c);
