@@ -1,4 +1,4 @@
-import { paymentMiddleware, x402ResourceServer } from "@x402/hono";
+import { paymentMiddleware as _rawPaymentMiddleware, x402ResourceServer } from "@x402/hono";
 import { ExactEvmScheme } from "@x402/evm/exact/server";
 import { HTTPFacilitatorClient } from "@x402/core/server";
 import { declareDiscoveryExtension } from "@x402/extensions/bazaar";
@@ -112,4 +112,19 @@ export function paidRouteWithDiscovery(price: string, description: string, disco
   };
 }
 
-export { paymentMiddleware };
+// Internal auth bypass secret — generated at startup, used by api-key-auth middleware
+// to skip x402 payment for API-key-authenticated requests
+export const INTERNAL_AUTH_SECRET = crypto.randomUUID();
+
+// Wrap paymentMiddleware to support internal auth bypass
+export function paymentMiddleware(routes: any, server: any) {
+  const originalMiddleware = _rawPaymentMiddleware(routes, server);
+  return async (c: any, next: any) => {
+    // If request has valid internal auth header, skip payment
+    const internalAuth = c.req.header("x-apimesh-internal");
+    if (internalAuth === INTERNAL_AUTH_SECRET) {
+      return next();
+    }
+    return originalMiddleware(c, next);
+  };
+}
