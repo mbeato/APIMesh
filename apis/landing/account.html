@@ -20,6 +20,7 @@
         --text-dim: #555;
         --accent: #3ddc84;
         --accent-dim: rgba(61, 220, 132, 0.08);
+        --danger: #ef4444;
         --font: "Space Grotesk", -apple-system, sans-serif;
         --mono: "JetBrains Mono", "SF Mono", monospace;
       }
@@ -30,10 +31,7 @@
         color: var(--text);
         min-height: 100vh;
         -webkit-font-smoothing: antialiased;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        overflow: hidden;
+        overflow-y: auto;
       }
 
       #mesh {
@@ -46,20 +44,22 @@
         z-index: 0;
       }
 
-      .auth-container {
+      .overview-wrapper {
         position: relative;
         z-index: 1;
-        width: 100%;
-        max-width: 600px;
-        padding: 20px;
+        max-width: 720px;
+        margin: 0 auto;
+        padding: 40px 20px 80px;
       }
 
-      .wordmark {
-        text-align: center;
+      .overview-header {
+        display: flex;
+        align-items: center;
+        gap: 16px;
         margin-bottom: 32px;
       }
 
-      .wordmark a {
+      .overview-header .wordmark a {
         font-family: var(--font);
         font-size: 20px;
         font-weight: 700;
@@ -68,26 +68,229 @@
         letter-spacing: -0.5px;
       }
 
-      .auth-card {
+      .overview-header h1 {
+        font-size: 24px;
+        font-weight: 700;
+        letter-spacing: -0.5px;
+      }
+
+      /* Dashboard grid */
+      .overview-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        margin-bottom: 24px;
+      }
+
+      .overview-card {
         background: var(--surface);
         border: 1px solid var(--border);
         border-radius: 12px;
-        padding: 48px 40px;
-        text-align: center;
+        padding: 24px;
       }
 
-      .auth-card h2 {
-        font-size: 26px;
+      .overview-card.balance-card {
+        border-color: rgba(61, 220, 132, 0.15);
+      }
+
+      .overview-card-label {
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--text-dim);
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        margin-bottom: 8px;
+      }
+
+      .overview-card-value {
+        font-size: 28px;
         font-weight: 700;
-        letter-spacing: -0.5px;
-        margin-bottom: 12px;
+        font-family: var(--mono);
+        letter-spacing: -1px;
       }
 
-      .auth-card p {
-        font-size: 15px;
+      .overview-card.balance-card .overview-card-value {
+        color: var(--accent);
+      }
+
+      .overview-card-sub {
+        font-size: 12px;
+        color: var(--text-dim);
+        margin-top: 4px;
+        font-family: var(--mono);
+      }
+
+      /* Quick actions */
+      .overview-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-bottom: 24px;
+      }
+
+      .btn-action {
+        display: block;
+        padding: 12px 20px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        text-decoration: none;
+        color: var(--text);
+        font-family: var(--font);
+        font-size: 14px;
+        font-weight: 600;
+        text-align: center;
+        cursor: pointer;
+        transition: border-color 0.2s, background 0.2s;
+      }
+
+      .btn-action:hover {
+        border-color: var(--border-hover);
+        background: rgba(255, 255, 255, 0.02);
+      }
+
+      .btn-action.primary {
+        background: var(--accent);
+        color: var(--bg);
+        border-color: var(--accent);
+      }
+
+      .btn-action.primary:hover {
+        opacity: 0.9;
+        background: var(--accent);
+      }
+
+      /* Recent transactions */
+      .overview-txn-section {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 20px 24px;
+        margin-bottom: 24px;
+      }
+
+      .overview-txn-section h3 {
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 16px;
+        letter-spacing: -0.3px;
+      }
+
+      .overview-txn-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 8px 0;
+        border-bottom: 1px solid rgba(26, 26, 26, 0.5);
+      }
+
+      .overview-txn-row:last-child { border-bottom: none; }
+
+      .overview-txn-left {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 0;
+      }
+
+      .overview-txn-type {
+        display: inline-block;
+        font-size: 10px;
+        font-weight: 600;
+        text-transform: uppercase;
+        padding: 2px 5px;
+        border-radius: 3px;
+        letter-spacing: 0.3px;
+        flex-shrink: 0;
+      }
+
+      .overview-txn-type.purchase { color: var(--accent); background: var(--accent-dim); }
+      .overview-txn-type.usage { color: #ef4444; background: rgba(239, 68, 68, 0.08); }
+      .overview-txn-type.refund { color: #3b82f6; background: rgba(59, 130, 246, 0.08); }
+      .overview-txn-type.adjustment { color: #a855f7; background: rgba(168, 85, 247, 0.08); }
+
+      .overview-txn-desc {
+        font-size: 13px;
         color: var(--text-secondary);
-        margin-bottom: 32px;
-        line-height: 1.5;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .overview-txn-amount {
+        font-family: var(--mono);
+        font-size: 13px;
+        font-weight: 500;
+        flex-shrink: 0;
+        margin-left: 12px;
+      }
+
+      .overview-txn-amount.positive { color: var(--accent); }
+      .overview-txn-amount.negative { color: #ef4444; }
+
+      .overview-txn-empty {
+        text-align: center;
+        color: var(--text-dim);
+        padding: 16px;
+        font-size: 13px;
+      }
+
+      .overview-txn-footer {
+        text-align: center;
+        margin-top: 12px;
+      }
+
+      .overview-txn-footer a {
+        font-size: 13px;
+        color: var(--text-secondary);
+        text-decoration: none;
+        transition: color 0.2s;
+      }
+
+      .overview-txn-footer a:hover { color: var(--text); }
+
+      /* Nav links */
+      .overview-nav {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-bottom: 24px;
+      }
+
+      .overview-nav-link {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 14px 20px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        text-decoration: none;
+        color: var(--text);
+        transition: border-color 0.2s;
+      }
+
+      .overview-nav-link:hover { border-color: var(--border-hover); }
+
+      .overview-nav-link-title {
+        font-size: 14px;
+        font-weight: 600;
+      }
+
+      .overview-nav-link-desc {
+        font-size: 12px;
+        color: var(--text-secondary);
+        margin-top: 2px;
+      }
+
+      .overview-nav-link-arrow {
+        color: var(--text-dim);
+        font-size: 16px;
+      }
+
+      /* Logout */
+      .overview-footer {
+        text-align: center;
       }
 
       .btn-logout {
@@ -114,25 +317,88 @@
         to { opacity: 1; transform: translateY(0); }
       }
 
-      .auth-container {
+      .overview-wrapper {
         animation: fadeUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
       }
 
-      @media (max-width: 480px) {
-        .auth-card { padding: 32px 20px; }
-        .auth-container { padding: 16px; }
+      @media (max-width: 560px) {
+        .overview-wrapper { padding: 24px 16px 60px; }
+        .overview-grid { grid-template-columns: 1fr; }
+        .overview-actions { grid-template-columns: 1fr; }
+        .overview-card-value { font-size: 24px; }
       }
     </style>
   </head>
   <body>
     <canvas id="mesh"></canvas>
-    <div class="auth-container">
-      <div class="wordmark"><a href="/">APIMesh</a></div>
-      <div class="auth-card">
-        <h2>Welcome to APIMesh</h2>
-        <p>Your account is ready. Dashboard features coming soon.</p>
+    <div id="account-overview" class="overview-wrapper">
+
+      <div class="overview-header">
+        <div class="wordmark"><a href="/">APIMesh</a></div>
+        <h1>Account</h1>
+      </div>
+
+      <!-- Dashboard cards -->
+      <div class="overview-grid">
+        <div class="overview-card balance-card">
+          <div class="overview-card-label">Credit Balance</div>
+          <div class="overview-card-value" id="overview-balance">--</div>
+          <div class="overview-card-sub">microdollars</div>
+        </div>
+        <div class="overview-card">
+          <div class="overview-card-label">Active API Keys</div>
+          <div class="overview-card-value" id="overview-active-keys">--</div>
+          <div class="overview-card-sub" id="overview-alert-status">--</div>
+        </div>
+      </div>
+
+      <!-- Quick actions -->
+      <div class="overview-actions">
+        <a href="/account/billing" class="btn-action primary">Buy Credits</a>
+        <a href="/account/keys" class="btn-action">Manage Keys</a>
+      </div>
+
+      <!-- Recent transactions -->
+      <div class="overview-txn-section">
+        <h3>Recent Transactions</h3>
+        <div id="overview-txn-list">
+          <div class="overview-txn-empty">Loading...</div>
+        </div>
+        <div class="overview-txn-footer">
+          <a href="/account/billing">View all transactions &rarr;</a>
+        </div>
+      </div>
+
+      <!-- Navigation -->
+      <div class="overview-nav">
+        <a href="/account/keys" class="overview-nav-link">
+          <div>
+            <div class="overview-nav-link-title">API Keys</div>
+            <div class="overview-nav-link-desc">Create and manage your API keys</div>
+          </div>
+          <span class="overview-nav-link-arrow">&rsaquo;</span>
+        </a>
+        <a href="/account/billing" class="overview-nav-link">
+          <div>
+            <div class="overview-nav-link-title">Credits &amp; Billing</div>
+            <div class="overview-nav-link-desc">Purchase credits, view transactions, set alerts</div>
+          </div>
+          <span class="overview-nav-link-arrow">&rsaquo;</span>
+        </a>
+        <a href="/account/settings" class="overview-nav-link">
+          <div>
+            <div class="overview-nav-link-title">Settings</div>
+            <div class="overview-nav-link-desc">Change password, manage sessions</div>
+          </div>
+          <span class="overview-nav-link-arrow">&rsaquo;</span>
+        </a>
+      </div>
+
+      <!-- Logout -->
+      <div class="overview-footer">
         <button class="btn-logout" id="logout-btn">Log out</button>
       </div>
+
     </div>
     <script src="/auth.js" defer></script>
   </body>
