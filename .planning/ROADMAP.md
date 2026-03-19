@@ -15,7 +15,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 1: Foundation** - Migration runner, database schema, shared modules, email domain setup
 - [x] **Phase 2: Signup & Login** - User registration, email verification, login, logout, session cookies (completed 2026-03-17)
 - [x] **Phase 3: Auth Hardening & Sessions** - Lockout, password reset, password change, session management UI (completed 2026-03-17)
-- [ ] **Phase 4: API Keys** - Key creation, display, revocation, management page
+- [x] **Phase 4: API Keys** - Key creation, display, revocation, management page (completed 2026-03-18)
 - [ ] **Phase 5: Stripe Billing** - Checkout integration, webhook handler, credit purchases
 - [ ] **Phase 6: Credits & Account Dashboard** - Balance display, transaction history, low-balance alerts, account overview
 - [ ] **Phase 7: API Key Auth Middleware** - Branching middleware across all 21 APIs, credit deduction, Caddy routes
@@ -86,8 +86,8 @@ Plans:
 **Plans**: TBD
 
 Plans:
-- [ ] 04-01: API key CRUD routes and storage
-- [ ] 04-02: Key management page (/account/keys)
+- [x] 04-01: API key CRUD routes (POST/GET/DELETE /auth/keys, session-protected, event logging)
+- [x] 04-02: Key management page (/account/keys) with create, list, copy, revoke UI
 
 ### Phase 5: Stripe Billing
 **Goal**: Users can purchase credits via Stripe Checkout with webhook-confirmed grants
@@ -99,12 +99,12 @@ Plans:
   3. Credits appear in the user's balance only after webhook confirmation (never on client redirect)
   4. Processing the same Stripe payment_intent twice does not double-grant credits
   5. Webhook signature is verified with timing-safe comparison and events older than 5 minutes are rejected
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 05-01: Stripe Checkout session creation and billing routes
-- [ ] 05-02: Webhook handler with idempotency and signature verification
-- [ ] 05-03: Billing page (/account/billing) with tier cards
+- [x] 05-01: Stripe Checkout session creation and billing routes
+- [x] 05-02: Webhook handler with idempotency and signature verification
+- [x] 05-03: Billing page (/account/billing) with tier cards
 
 ### Phase 6: Credits & Account Dashboard
 **Goal**: Users have full visibility into their credit balance, usage, and account status
@@ -115,11 +115,11 @@ Plans:
   2. User can browse transaction history showing purchases, usage deductions, and timestamps
   3. User receives an email alert when credits drop below their configured threshold
   4. Account overview page shows balance, usage chart, quick-buy button, and active key count
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 06-01: Transaction history and balance display
-- [ ] 06-02: Low-balance email alerts and account overview page
+- [ ] 06-01: Transaction history API, billing page extension, alert threshold migration
+- [ ] 06-02: Low-balance alert integration in deductAndRecord, account overview dashboard
 
 ### Phase 7: API Key Auth Middleware
 **Goal**: All 21 APIs accept API key authentication as an alternative to x402, with atomic credit deduction
@@ -131,12 +131,12 @@ Plans:
   3. Insufficient credits returns 402 with balance info; invalid/revoked key returns 401
   4. API responses include X-Credits-Remaining header when authenticated via API key
   5. The middleware is inserted at one place in the router (not 21 separate insertions)
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 07-01: ApiKeyOrX402 branching middleware
-- [ ] 07-02: Credit deduction integration and response headers
-- [ ] 07-03: Caddy route configuration and integration testing
+- [ ] 07-01: API key auth middleware module and x402 payment bypass (shared/api-key-auth.ts, shared/x402.ts)
+- [ ] 07-02: Router integration and request logging (apis/router.ts, shared/db.ts)
+- [ ] 07-03: Caddy route configuration for auth/account/billing paths (caddy/Caddyfile)
 
 ### Phase 8: MCP & Landing Page
 **Goal**: MCP server supports API key auth and landing page drives signups
@@ -146,11 +146,11 @@ Plans:
   1. Setting APIMESH_API_KEY env var causes the MCP server to pass it as Authorization: Bearer on all API calls
   2. MCP server without APIMESH_API_KEY continues to work via x402/free previews (no regression)
   3. Landing page at apimesh.xyz has a visible "Sign Up" CTA that links to /signup
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 08-01: MCP server API key support
-- [ ] 08-02: Landing page update with signup CTA
+- [ ] 08-01: MCP server API key support (APIMESH_API_KEY env var, callApi() header injection, version bump to 1.5.0)
+- [ ] 08-02: Landing page update with signup CTA (nav links, hero button, copy reframing)
 
 ## Progress
 
@@ -163,8 +163,8 @@ Note: Phases 3, 4, and 5 all depend on Phase 2 but are independent of each other
 | 1. Foundation | 3/3 | Complete | 2026-03-16 |
 | 2. Signup & Login | 3/3 | Complete   | 2026-03-17 |
 | 3. Auth Hardening & Sessions | 3/3 | Complete   | 2026-03-17 |
-| 4. API Keys | 0/2 | Not started | - |
-| 5. Stripe Billing | 0/3 | Not started | - |
+| 4. API Keys | 2/2 | Complete | 2026-03-18 |
+| 5. Stripe Billing | 3/3 | Complete | 2026-03-18 |
 | 6. Credits & Account Dashboard | 0/2 | Not started | - |
 | 7. API Key Auth Middleware | 0/3 | Not started | - |
-| 8. MCP & Landing Page | 0/2 | Not started | - |
+| 8. MCP & Landing Page | 0/2 | Planned | - |

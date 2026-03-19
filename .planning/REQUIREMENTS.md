@@ -47,9 +47,9 @@
 - [ ] **BILL-04**: Webhook handler is idempotent (UNIQUE constraint on stripe_payment_intent)
 - [ ] **BILL-05**: Webhook signature verified with timing-safe comparison, reject events >5min old
 - [x] **BILL-06**: Credit balance stored in integer microdollars (no floating point)
-- [ ] **BILL-07**: User can view transaction history (purchases, usage, refunds) in dashboard
+- [x] **BILL-07**: User can view transaction history (purchases, usage, refunds) in dashboard
 - [ ] **BILL-08**: User receives email alert when credits drop below configurable threshold
-- [ ] **BILL-09**: Credit balance visible in account overview dashboard
+- [x] **BILL-09**: Credit balance visible in account overview dashboard
 
 ### API Key Auth Integration
 
@@ -159,9 +159,9 @@
 | BILL-04 | Phase 5 | Pending |
 | BILL-05 | Phase 5 | Pending |
 | BILL-06 | Phase 1 | Complete |
-| BILL-07 | Phase 6 | Pending |
+| BILL-07 | Phase 6 | Complete |
 | BILL-08 | Phase 6 | Pending |
-| BILL-09 | Phase 6 | Pending |
+| BILL-09 | Phase 6 | Complete |
 | INT-01 | Phase 7 | Pending |
 | INT-02 | Phase 7 | Pending |
 | INT-03 | Phase 7 | Pending |

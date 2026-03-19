@@ -2,13 +2,13 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: in-progress
-last_updated: "2026-03-17T18:09:02Z"
+status: executing
+last_updated: "2026-03-18T00:00:00.000Z"
 progress:
   total_phases: 8
-  completed_phases: 3
-  total_plans: 21
-  completed_plans: 9
+  completed_phases: 5
+  total_plans: 16
+  completed_plans: 15
 ---
 
 # Project State
@@ -18,23 +18,23 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-15)
 
 **Core value:** Developers and AI agents can access web analysis APIs through a single account with one credit pool, paying with credit card or crypto.
-**Current focus:** Phase 3: Auth Hardening & Sessions
+**Current focus:** Phase 6: Credits Dashboard (executing plan 2 of 2)
 
 ## Current Position
 
-Phase: 3 of 8 (Auth Hardening & Sessions) -- COMPLETE
-Plan: 3 of 3 in current phase (complete)
-Status: Phase 3 Complete
-Last activity: 2026-03-17 — Completed 03-03 (Settings Page & Session Management)
+Phase: 6 of 8 — Phase 6 executing
+Plan: 1 of 2 in Phase 6 (06-01 complete, 06-02 next)
+Status: Phase 6 Executing
+Last activity: 2026-03-18 — Completed 06-01 (transaction history, alert schema, billing UI)
 
-Progress: [█████████░] 43%
+Progress: [██████████████░░] 75%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 9
+- Total plans completed: 14
 - Average duration: 4min
-- Total execution time: 0.64 hours
+- Total execution time: ~0.93 hours
 
 **By Phase:**
 
@@ -43,9 +43,11 @@ Progress: [█████████░] 43%
 | 01-foundation | 3 | 12min | 4min |
 | 02-signup-login | 3 | 13min | 4min |
 | 03-auth-hardening-sessions | 3 | 16min | 5min |
+| 04-api-keys | 2 | 7min | 3.5min |
+| 05-stripe-billing | 3 | ~12min | ~4min |
 
 **Recent Trend:**
-- Last 5 plans: 02-02 (5min), 02-03 (5min), 03-01 (2min), 03-02 (5min), 03-03 (9min)
+- Last 5 plans: 04-01 (3min), 04-02 (4min), 05-01 (~4min), 05-02 (~4min), 05-03 (~4min)
 - Trend: stable
 
 *Updated after each plan completion*
@@ -87,6 +89,18 @@ Recent decisions affecting current work:
 - 03-03: Settings page uses three stacked sections (no tabs/sidebar) per CONTEXT.md
 - 03-03: Full session IDs returned in API (user already has session token in cookie)
 - 03-03: Danger Zone logout-all reuses POST /auth/logout then redirects to /login
+- 04-01: Label validation: required, max 64 chars, trimmed whitespace (server-side)
+- 04-01: DELETE /auth/keys/:id returns 404 for non-existent or already-revoked keys
+- 04-02: Copy-to-clipboard uses navigator.clipboard.writeText with textarea fallback
+- 04-02: Revoked keys shown inline with reduced opacity and strikethrough (not separate section)
+- 04-02: Account page updated with nav links replacing "coming soon" placeholder
+- 05-01: No Stripe SDK — all interaction via fetch() with form-encoded bodies
+- 05-01: Checkout session metadata includes user_id, tier, credits_amount
+- 05-02: Webhook route placed at line 41 (before all middleware) for raw body access
+- 05-02: User existence verified before credit granting in webhook
+- 05-02: Always returns 200 to Stripe to prevent unnecessary retries
+- 05-03: Billing page max-width 720px for 2-column tier grid layout
+- 05-03: Balance displayed as dollars (microdollars / 100000)
 
 ### Pending Todos
 
@@ -95,11 +109,12 @@ None yet.
 ### Blockers/Concerns
 
 - ~~INFRA-06: Resend domain verification requires DNS propagation time~~ RESOLVED 2026-03-16
-- Phase 5: Stripe API version string needs verification from Stripe Dashboard at implementation time
-- Phase 7: Middleware insertion strategy (router-level vs per-API) needs validation against router.ts
+- ~~Phase 5: STRIPE_SECRET_KEY and STRIPE_WEBHOOK_SECRET env vars must be configured before testing~~ Code complete, env vars needed for live testing
+- Phase 5: Stripe webhook endpoint must be registered in Stripe Dashboard (URL: https://apimesh.xyz/billing/webhook, event: checkout.session.completed)
+- ~~Phase 7: Middleware insertion strategy (router-level vs per-API) needs validation against router.ts~~ RESOLVED: Router-level in apis/router.ts catch-all, with x402 bypass via wrapped paymentMiddleware in shared/x402.ts
 
 ## Session Continuity
 
-Last session: 2026-03-17
-Stopped at: Completed 03-03-PLAN.md (Phase 3 complete)
-Resume file: None
+Last session: 2026-03-18
+Stopped at: Phase 7 planned. Ready for execution (07-01: Auth middleware module + x402 bypass, 07-02: Router integration + request logging, 07-03: Caddy configuration).
+Resume file: .planning/phases/07-api-key-auth-middleware/07-01-PLAN.md (execute next)

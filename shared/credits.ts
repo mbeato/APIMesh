@@ -1,4 +1,5 @@
 import { Database } from "bun:sqlite";
+import { sendLowBalanceAlert } from "./email";
 
 export interface CreditTransaction {
   id: string;
@@ -75,6 +76,41 @@ export function addCredits(
 }
 
 /**
+ * Check if balance dropped below alert threshold and send email if needed.
+ * Fire-and-forget: does not block the caller. 24-hour debounce.
+ */
+function checkLowBalanceAlert(db: Database, userId: string, newBalance: number): void {
+  try {
+    const row = db.query(
+      `SELECT cb.alert_threshold_microdollars, cb.last_alert_sent_at, u.email
+       FROM credit_balances cb
+       JOIN users u ON u.id = cb.user_id
+       WHERE cb.user_id = ?
+       AND cb.alert_threshold_microdollars IS NOT NULL
+       AND cb.balance_microdollars <= cb.alert_threshold_microdollars`
+    ).get(userId) as { alert_threshold_microdollars: number; last_alert_sent_at: string | null; email: string } | null;
+
+    if (!row) return;
+
+    // 24-hour debounce
+    const lastSent = row.last_alert_sent_at ? new Date(row.last_alert_sent_at + "Z").getTime() : 0;
+    const dayAgo = Date.now() - 24 * 60 * 60 * 1000;
+    if (lastSent > dayAgo) return;
+
+    // Update last_alert_sent_at immediately (before sending) to prevent race conditions
+    db.run("UPDATE credit_balances SET last_alert_sent_at = datetime('now') WHERE user_id = ?", [userId]);
+
+    // Fire-and-forget email
+    sendLowBalanceAlert(row.email, newBalance, row.alert_threshold_microdollars).catch((err) => {
+      console.error("[credits] Failed to send low balance alert:", err);
+    });
+  } catch (err) {
+    // Never let alert check break the deduction flow
+    console.error("[credits] Alert check error:", err);
+  }
+}
+
+/**
  * Atomically deduct credits, record the transaction, and update api_key last_used_at.
  * Uses BEGIN IMMEDIATE to prevent concurrent deductions from causing negative balances.
  * All three operations (balance, ledger, last_used_at) are in one transaction.
@@ -118,7 +154,12 @@ export function deductAndRecord(
 
   // Use .immediate() for BEGIN IMMEDIATE transaction
   try {
-    return txn.immediate();
+    const result = txn.immediate();
+    // Fire-and-forget alert check (only on success)
+    if (result.success) {
+      checkLowBalanceAlert(db, userId, result.newBalance);
+    }
+    return result;
   } catch (err: any) {
     if (err.message === "INSUFFICIENT_CREDITS") {
       return { success: false, newBalance: -1 };
