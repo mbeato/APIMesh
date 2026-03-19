@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Credits &amp; Billing - APIMesh</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <style>
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+      :root {
+        --bg: #090909;
+        --surface: #0f0f0f;
+        --border: #1a1a1a;
+        --border-hover: #2a2a2a;
+        --text: #e8e8e8;
+        --text-secondary: #888;
+        --text-dim: #555;
+        --accent: #3ddc84;
+        --accent-dim: rgba(61, 220, 132, 0.08);
+        --danger: #ef4444;
+        --font: "Space Grotesk", -apple-system, sans-serif;
+        --mono: "JetBrains Mono", "SF Mono", monospace;
+      }
+
+      body {
+        font-family: var(--font);
+        background: var(--bg);
+        color: var(--text);
+        min-height: 100vh;
+        -webkit-font-smoothing: antialiased;
+        overflow-y: auto;
+      }
+
+      #mesh {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      .billing-wrapper {
+        position: relative;
+        z-index: 1;
+        max-width: 720px;
+        margin: 0 auto;
+        padding: 40px 20px 80px;
+      }
+
+      .billing-header {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 32px;
+      }
+
+      .billing-header a {
+        color: var(--text-secondary);
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 500;
+        transition: color 0.2s;
+      }
+
+      .billing-header a:hover { color: var(--text); }
+
+      .billing-header h1 {
+        font-size: 24px;
+        font-weight: 700;
+        letter-spacing: -0.5px;
+      }
+
+      .nav-links {
+        display: flex;
+        gap: 16px;
+        margin-bottom: 24px;
+      }
+
+      .nav-links a {
+        color: var(--text-secondary);
+        text-decoration: none;
+        font-size: 13px;
+        font-weight: 500;
+        transition: color 0.2s;
+      }
+
+      .nav-links a:hover { color: var(--text); }
+
+      /* Feedback messages */
+      .error-message, .success-message {
+        border-radius: 8px;
+        padding: 10px 14px;
+        font-size: 13px;
+        margin-bottom: 16px;
+        opacity: 0;
+        max-height: 0;
+        overflow: hidden;
+        transition: opacity 0.25s ease, max-height 0.25s ease, padding 0.25s ease;
+      }
+
+      .error-message {
+        background: rgba(239, 68, 68, 0.08);
+        border: 1px solid rgba(239, 68, 68, 0.2);
+        color: #ef4444;
+      }
+
+      .success-message {
+        background: rgba(61, 220, 132, 0.08);
+        border: 1px solid rgba(61, 220, 132, 0.2);
+        color: var(--accent);
+      }
+
+      .error-message.visible, .success-message.visible {
+        opacity: 1;
+        max-height: 100px;
+        padding: 10px 14px;
+      }
+
+      /* Balance section */
+      .balance-section {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 28px 32px;
+        margin-bottom: 28px;
+        text-align: center;
+      }
+
+      .balance-label {
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 8px;
+      }
+
+      .balance-amount {
+        font-size: 36px;
+        font-weight: 700;
+        font-family: var(--mono);
+        color: var(--accent);
+        letter-spacing: -1px;
+      }
+
+      .balance-sub {
+        font-size: 12px;
+        color: var(--text-dim);
+        margin-top: 4px;
+        font-family: var(--mono);
+      }
+
+      /* Tier grid */
+      .tier-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+        margin-bottom: 28px;
+      }
+
+      .tier-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 24px;
+        transition: border-color 0.2s;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+      }
+
+      .tier-card:hover {
+        border-color: var(--border-hover);
+      }
+
+      .tier-name {
+        font-size: 16px;
+        font-weight: 600;
+        margin-bottom: 4px;
+        letter-spacing: -0.3px;
+      }
+
+      .tier-price {
+        font-size: 28px;
+        font-weight: 700;
+        font-family: var(--mono);
+        color: var(--text);
+        margin-bottom: 12px;
+        letter-spacing: -1px;
+      }
+
+      .tier-credits {
+        font-size: 13px;
+        color: var(--text-secondary);
+        font-family: var(--mono);
+        margin-bottom: 4px;
+      }
+
+      .tier-rate {
+        font-size: 12px;
+        color: var(--text-dim);
+        font-family: var(--mono);
+        margin-bottom: 16px;
+      }
+
+      .tier-bonus {
+        display: inline-block;
+        position: absolute;
+        top: 16px;
+        right: 16px;
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--accent);
+        background: var(--accent-dim);
+        padding: 3px 8px;
+        border-radius: 4px;
+      }
+
+      .btn-buy {
+        margin-top: auto;
+        width: 100%;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 8px;
+        font-family: var(--font);
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        background: var(--accent);
+        color: var(--bg);
+        transition: opacity 0.15s ease, transform 0.1s ease;
+      }
+
+      .btn-buy:hover { opacity: 0.9; transform: translateY(-1px); }
+      .btn-buy:active { transform: translateY(0); }
+      .btn-buy:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+      @keyframes fadeUp {
+        from { opacity: 0; transform: translateY(16px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+
+      .billing-wrapper {
+        animation: fadeUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      }
+
+      /* Alert threshold section */
+      .alert-section {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 20px 24px;
+        margin-bottom: 28px;
+      }
+
+      .alert-section h3 {
+        font-size: 15px;
+        font-weight: 600;
+        margin-bottom: 12px;
+        letter-spacing: -0.3px;
+      }
+
+      .alert-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .alert-input {
+        flex: 1;
+        max-width: 180px;
+        padding: 8px 12px;
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        color: var(--text);
+        font-family: var(--mono);
+        font-size: 14px;
+        outline: none;
+        transition: border-color 0.2s;
+      }
+
+      .alert-input:focus { border-color: var(--accent); }
+      .alert-input::placeholder { color: var(--text-dim); }
+
+      .btn-alert {
+        padding: 8px 16px;
+        border: none;
+        border-radius: 6px;
+        font-family: var(--font);
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        background: var(--accent);
+        color: var(--bg);
+        transition: opacity 0.15s ease;
+      }
+
+      .btn-alert:hover { opacity: 0.9; }
+      .btn-alert:disabled { opacity: 0.5; cursor: not-allowed; }
+
+      .btn-alert-clear {
+        padding: 8px 16px;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        font-family: var(--font);
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        background: transparent;
+        color: var(--text-secondary);
+        transition: border-color 0.2s, color 0.2s;
+      }
+
+      .btn-alert-clear:hover { border-color: var(--border-hover); color: var(--text); }
+
+      .alert-status {
+        font-size: 12px;
+        color: var(--text-dim);
+        margin-top: 8px;
+        font-family: var(--mono);
+      }
+
+      /* Transaction history section */
+      .txn-section {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 24px;
+        margin-bottom: 28px;
+      }
+
+      .txn-section h3 {
+        font-size: 15px;
+        font-weight: 600;
+        margin-bottom: 16px;
+        letter-spacing: -0.3px;
+      }
+
+      .txn-table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      .txn-table th {
+        text-align: left;
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--text-dim);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 0 8px 10px;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .txn-table td {
+        padding: 10px 8px;
+        font-size: 13px;
+        border-bottom: 1px solid rgba(26, 26, 26, 0.5);
+        vertical-align: middle;
+      }
+
+      .txn-table tr:last-child td { border-bottom: none; }
+
+      .txn-type {
+        display: inline-block;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        padding: 2px 6px;
+        border-radius: 3px;
+        letter-spacing: 0.3px;
+      }
+
+      .txn-type.purchase { color: var(--accent); background: var(--accent-dim); }
+      .txn-type.usage { color: #ef4444; background: rgba(239, 68, 68, 0.08); }
+      .txn-type.refund { color: #3b82f6; background: rgba(59, 130, 246, 0.08); }
+      .txn-type.adjustment { color: #a855f7; background: rgba(168, 85, 247, 0.08); }
+
+      .txn-amount {
+        font-family: var(--mono);
+        font-size: 13px;
+        font-weight: 500;
+        text-align: right;
+      }
+
+      .txn-amount.positive { color: var(--accent); }
+      .txn-amount.negative { color: #ef4444; }
+
+      .txn-desc {
+        color: var(--text-secondary);
+        max-width: 200px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .txn-date {
+        font-family: var(--mono);
+        font-size: 12px;
+        color: var(--text-dim);
+        white-space: nowrap;
+      }
+
+      .txn-empty {
+        text-align: center;
+        color: var(--text-dim);
+        padding: 24px;
+        font-size: 13px;
+      }
+
+      .btn-load-more {
+        display: block;
+        width: 100%;
+        padding: 10px;
+        margin-top: 12px;
+        background: transparent;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        color: var(--text-secondary);
+        font-family: var(--font);
+        font-size: 13px;
+        cursor: pointer;
+        transition: border-color 0.2s, color 0.2s;
+      }
+
+      .btn-load-more:hover { border-color: var(--border-hover); color: var(--text); }
+      .btn-load-more:disabled { opacity: 0.5; cursor: not-allowed; }
+
+      @media (max-width: 560px) {
+        .billing-wrapper { padding: 24px 16px 60px; }
+        .tier-grid { grid-template-columns: 1fr; }
+        .balance-section { padding: 24px 16px; }
+        .balance-amount { font-size: 28px; }
+        .txn-desc { max-width: 120px; }
+        .alert-row { flex-wrap: wrap; }
+        .alert-input { max-width: none; }
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="mesh"></canvas>
+    <div id="billing-page" class="billing-wrapper">
+
+      <div class="billing-header">
+        <a href="/account">&larr; Account</a>
+        <h1>Credits &amp; Billing</h1>
+      </div>
+
+      <div class="nav-links">
+        <a href="/account">Account</a>
+        <a href="/account/settings">Settings</a>
+      </div>
+
+      <div class="error-message" id="error-msg"></div>
+      <div class="success-message" id="success-msg"></div>
+
+      <!-- Balance display -->
+      <div class="balance-section">
+        <div class="balance-label">Current Balance</div>
+        <div class="balance-amount" id="balance-display">--</div>
+        <div class="balance-sub">microdollars (1 credit = $0.00001)</div>
+      </div>
+
+      <!-- Tier cards -->
+      <div class="tier-grid">
+        <div class="tier-card">
+          <div class="tier-name">Starter</div>
+          <div class="tier-price">$5</div>
+          <div class="tier-credits">500,000 credits</div>
+          <div class="tier-rate">$0.01 per 1,000</div>
+          <button class="btn-buy" data-tier="starter">Buy</button>
+        </div>
+
+        <div class="tier-card">
+          <span class="tier-bonus">+10%</span>
+          <div class="tier-name">Builder</div>
+          <div class="tier-price">$20</div>
+          <div class="tier-credits">2,200,000 credits</div>
+          <div class="tier-rate">$0.009 per 1,000</div>
+          <button class="btn-buy" data-tier="builder">Buy</button>
+        </div>
+
+        <div class="tier-card">
+          <span class="tier-bonus">+20%</span>
+          <div class="tier-name">Pro</div>
+          <div class="tier-price">$50</div>
+          <div class="tier-credits">6,000,000 credits</div>
+          <div class="tier-rate">$0.008 per 1,000</div>
+          <button class="btn-buy" data-tier="pro">Buy</button>
+        </div>
+
+        <div class="tier-card">
+          <span class="tier-bonus">+30%</span>
+          <div class="tier-name">Scale</div>
+          <div class="tier-price">$100</div>
+          <div class="tier-credits">13,000,000 credits</div>
+          <div class="tier-rate">$0.008 per 1,000</div>
+          <button class="btn-buy" data-tier="scale">Buy</button>
+        </div>
+      </div>
+
+      <!-- Low balance alert -->
+      <div class="alert-section">
+        <h3>Low Balance Alert</h3>
+        <div class="alert-row">
+          <input type="text" class="alert-input" id="alert-threshold-input" placeholder="e.g. 5.00" />
+          <button class="btn-alert" id="set-alert-btn">Set Alert</button>
+          <button class="btn-alert-clear" id="clear-alert-btn">Disable</button>
+        </div>
+        <div class="alert-status" id="alert-status">Loading...</div>
+      </div>
+
+      <!-- Transaction history -->
+      <div class="txn-section">
+        <h3>Transaction History</h3>
+        <table class="txn-table">
+          <thead>
+            <tr>
+              <th>Type</th>
+              <th>Description</th>
+              <th style="text-align:right">Amount</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody id="txn-body">
+            <tr><td colspan="4" class="txn-empty">Loading...</td></tr>
+          </tbody>
+        </table>
+        <button class="btn-load-more" id="load-more-btn" style="display:none">Load more</button>
+      </div>
+
+    </div>
+    <script src="/auth.js" defer></script>
+  </body>
+</html>
