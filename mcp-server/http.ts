@@ -2,7 +2,18 @@
 import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js";
 import { createServer } from "./server.js";
 
-const PORT = 3002;
+function resolvePort(envVar: string, defaultPort: number): number {
+  const raw = process.env[envVar];
+  if (!raw) return defaultPort;
+  const port = parseInt(raw, 10);
+  if (isNaN(port) || port < 1024 || port > 65535) {
+    console.error(`FATAL: ${envVar}=${raw} is not a valid port (1024-65535)`);
+    process.exit(1);
+  }
+  return port;
+}
+
+const PORT = resolvePort("MCP_PORT", 3002);
 
 // Track transports by session ID for stateful mode
 const transports = new Map<string, WebStandardStreamableHTTPServerTransport>();

@@ -21,6 +21,7 @@ report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
 .env.test.local
 .env.production.local
 .env.local
+.env.staging
 
 # caches
 .eslintcache
@@ -60,6 +61,13 @@ SETUP.md
 
 # Deploy and server infra scripts
 scripts/deploy.sh
+scripts/deploy-staging.sh
 scripts/conway-deploy-restart.sh
 scripts/harden-server.sh
 scripts/install-services.sh
+scripts/install-staging-services.sh
+scripts/fix-staging-restart.sh
+.planning/
+
+# External repos
+awesome-x402-1/

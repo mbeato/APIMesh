@@ -1,8 +1,25 @@
 import { Database } from "bun:sqlite";
-import { join } from "path";
+import { join, resolve } from "path";
 import { migrate } from "./migrate";
 
-const dataDir = join(import.meta.dir, "..", "data");
+const ALLOWED_DATA_PREFIXES = [
+  "/opt/conway-agent/data",
+  "/opt/conway-staging/data",
+];
+
+function resolveDataDir(): string {
+  const raw = process.env.DATA_DIR;
+  if (!raw) return join(import.meta.dir, "..", "data");
+  const resolved = resolve(raw);
+  const allowed = ALLOWED_DATA_PREFIXES.some(p => resolved === p || resolved.startsWith(p + "/"));
+  if (!allowed) {
+    console.error(`FATAL: DATA_DIR '${resolved}' is not in allowed paths: ${ALLOWED_DATA_PREFIXES.join(", ")}`);
+    process.exit(1);
+  }
+  return resolved;
+}
+
+const dataDir = resolveDataDir();
 Bun.spawnSync(["mkdir", "-p", dataDir]);
 
 const DB_PATH = join(dataDir, "agent.db");

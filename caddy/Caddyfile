@@ -107,3 +107,113 @@ mcp.apimesh.xyz {
         header_up -X-APIMesh-Internal
     }
 }
+
+# --- Staging environment ---
+# Shorter HSTS, no preload — staging is not production
+
+(staging_security_headers) {
+    header {
+        Strict-Transport-Security "max-age=3600; includeSubDomains"
+        X-Content-Type-Options "nosniff"
+        X-Frame-Options "DENY"
+        Referrer-Policy "strict-origin-when-cross-origin"
+        Content-Security-Policy "default-src 'none'; frame-ancestors 'none'"
+        Permissions-Policy "geolocation=(), camera=(), microphone=()"
+        -Server
+    }
+}
+
+(staging_dashboard_headers) {
+    header {
+        Strict-Transport-Security "max-age=3600; includeSubDomains"
+        X-Content-Type-Options "nosniff"
+        X-Frame-Options "DENY"
+        Referrer-Policy "strict-origin-when-cross-origin"
+        Content-Security-Policy "default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src data:; connect-src 'self'"
+        Permissions-Policy "geolocation=(), camera=(), microphone=()"
+        -Server
+    }
+}
+
+staging.apimesh.xyz {
+    request_body {
+        max_size 64KB
+    }
+
+    tls {
+        dns cloudflare {env.CF_API_TOKEN}
+    }
+
+    handle /.well-known/* {
+        root * /opt/conway-staging/public
+        file_server
+    }
+
+    @landing path /
+    handle @landing {
+        import staging_dashboard_headers
+        reverse_proxy localhost:3010 {
+            header_up X-Real-IP {remote_host}
+            header_up -X-Forwarded-For
+        }
+    }
+
+    handle /dashboard {
+        import staging_dashboard_headers
+        reverse_proxy localhost:3010 {
+            header_up X-Real-IP {remote_host}
+            header_up -X-Forwarded-For
+        }
+    }
+
+    @auth_paths path /auth/* /signup /login /verify /forgot-password /account /account/* /billing/*
+    handle @auth_paths {
+        import staging_dashboard_headers
+        header Cache-Control "no-store"
+        reverse_proxy localhost:3010 {
+            header_up X-Real-IP {remote_host}
+            header_up -X-Forwarded-For
+        }
+    }
+
+    handle {
+        import staging_security_headers
+        reverse_proxy localhost:3010 {
+            header_up X-Real-IP {remote_host}
+            header_up -X-Forwarded-For
+        }
+    }
+}
+
+mcp.staging.apimesh.xyz {
+    import staging_security_headers
+
+    tls {
+        dns cloudflare {env.CF_API_TOKEN}
+    }
+
+    request_body {
+        max_size 64KB
+    }
+    reverse_proxy localhost:3012 {
+        header_up X-Real-IP {remote_host}
+        header_up -X-Forwarded-For
+    }
+}
+
+*.staging.apimesh.xyz {
+    import staging_security_headers
+
+    tls {
+        dns cloudflare {env.CF_API_TOKEN}
+    }
+
+    request_body {
+        max_size 16KB
+    }
+    reverse_proxy localhost:3011 {
+        header_up X-Real-IP {remote_host}
+        header_up -X-Forwarded-For
+        header_up -X-APIMesh-Internal
+    }
+}

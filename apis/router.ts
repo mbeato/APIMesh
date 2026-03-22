@@ -3,7 +3,19 @@ import { registry } from "./registry";
 import { apiKeyAuth } from "../shared/api-key-auth";
 
 const router = new Hono();
-const PORT = 3001;
+
+function resolvePort(envVar: string, defaultPort: number): number {
+  const raw = process.env[envVar];
+  if (!raw) return defaultPort;
+  const port = parseInt(raw, 10);
+  if (isNaN(port) || port < 1024 || port > 65535) {
+    console.error(`FATAL: ${envVar}=${raw} is not a valid port (1024-65535)`);
+    process.exit(1);
+  }
+  return port;
+}
+
+const PORT = resolvePort("ROUTER_PORT", 3001);
 
 // Per-subdomain paid route mapping for .well-known/x402 discovery
 const subdomainRoutes: Record<string, string[]> = {
@@ -77,13 +89,21 @@ router.all("*", async (c) => {
 });
 
 function extractSubdomain(host: string): string | null {
-  // Remove port if present
   const hostname = host.split(":")[0];
-  // Match *.apimesh.xyz
-  const match = hostname.match(/^([^.]+)\.apimesh\.xyz$/);
-  if (match) return match[1];
-  // Local testing only: allow <name>.localhost (disabled in production)
-  if (process.env.NODE_ENV !== "production" && hostname.endsWith(".localhost")) return hostname.split(".")[0];
+  if (process.env.NODE_ENV === "production") {
+    // Production: only accept *.apimesh.xyz
+    const match = hostname.match(/^([^.]+)\.apimesh\.xyz$/);
+    if (match) return match[1];
+  } else if (process.env.NODE_ENV === "staging") {
+    // Staging: only accept *.staging.apimesh.xyz
+    const match = hostname.match(/^([^.]+)\.staging\.apimesh\.xyz$/);
+    if (match) return match[1];
+  } else {
+    // Development: accept both patterns + localhost
+    const match = hostname.match(/^([^.]+)\.(?:staging\.)?apimesh\.xyz$/);
+    if (match) return match[1];
+    if (hostname.endsWith(".localhost")) return hostname.split(".")[0];
+  }
   return null;
 }
 

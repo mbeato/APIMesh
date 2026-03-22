@@ -16,7 +16,19 @@ import { isPasswordBreached } from "../../shared/hibp";
 import { createApiKey, getUserKeys, revokeApiKey } from "../../shared/api-key";
 
 const app = new Hono();
-const PORT = 3000;
+
+function resolvePort(envVar: string, defaultPort: number): number {
+  const raw = process.env[envVar];
+  if (!raw) return defaultPort;
+  const port = parseInt(raw, 10);
+  if (isNaN(port) || port < 1024 || port > 65535) {
+    console.error(`FATAL: ${envVar}=${raw} is not a valid port (1024-65535)`);
+    process.exit(1);
+  }
+  return port;
+}
+
+const PORT = resolvePort("DASHBOARD_PORT", 3000);
 
 const DASHBOARD_TOKEN = process.env.DASHBOARD_TOKEN;
 if (!DASHBOARD_TOKEN) {
@@ -33,6 +45,7 @@ const DUMMY_HASH_PROMISE = hashPassword("dummy-password-for-constant-time-login"
 
 // Rate limit for public routes (higher limit, still bounded)
 const publicLimit = rateLimit("dashboard-public", 120, 60_000);
+const webhookLimit = rateLimit("billing-webhook", 30, 60_000);
 
 // Health check — no rate limit, must work from localhost monitoring
 app.get("/health", (c) => c.json({ status: "ok" }));
@@ -418,7 +431,6 @@ function csrfCheck(c: any): boolean {
 
 // --- Auth routes (public, before bearerAuth) ---
 const authLimit = rateLimit("dashboard-auth", 60, 60_000);
-const webhookLimit = rateLimit("billing-webhook", 30, 60_000);
 
 app.post("/auth/signup", authLimit, async (c) => {
   if (!csrfCheck(c)) return c.json({ error: "Forbidden" }, 403);

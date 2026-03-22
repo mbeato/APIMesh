@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>API Keys - APIMesh</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <style>
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+      :root {
+        --bg: #090909;
+        --surface: #0f0f0f;
+        --border: #1a1a1a;
+        --border-hover: #2a2a2a;
+        --text: #e8e8e8;
+        --text-secondary: #888;
+        --text-dim: #555;
+        --accent: #3ddc84;
+        --accent-dim: rgba(61, 220, 132, 0.08);
+        --danger: #ef4444;
+        --danger-dim: rgba(239, 68, 68, 0.08);
+        --font: "Space Grotesk", -apple-system, sans-serif;
+        --mono: "JetBrains Mono", "SF Mono", monospace;
+      }
+
+      body {
+        font-family: var(--font);
+        background: var(--bg);
+        color: var(--text);
+        min-height: 100vh;
+        -webkit-font-smoothing: antialiased;
+        overflow-y: auto;
+      }
+
+      #mesh {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      .keys-wrapper {
+        position: relative;
+        z-index: 1;
+        max-width: 560px;
+        margin: 0 auto;
+        padding: 40px 20px 80px;
+      }
+
+      .keys-header {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 32px;
+      }
+
+      .keys-header a {
+        color: var(--text-secondary);
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 500;
+        transition: color 0.2s;
+      }
+
+      .keys-header a:hover { color: var(--text); }
+
+      .keys-header h1 {
+        font-size: 24px;
+        font-weight: 700;
+        letter-spacing: -0.5px;
+      }
+
+      .section {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 32px;
+        margin-bottom: 24px;
+      }
+
+      .section h3 {
+        font-size: 16px;
+        font-weight: 600;
+        margin-bottom: 20px;
+        letter-spacing: -0.3px;
+      }
+
+      .form-row {
+        display: flex;
+        gap: 12px;
+        align-items: flex-end;
+      }
+
+      .form-row .form-group { flex: 1; margin-bottom: 0; }
+
+      .form-group {
+        margin-bottom: 16px;
+      }
+
+      .form-group label {
+        display: block;
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--text-secondary);
+        margin-bottom: 6px;
+      }
+
+      .form-group input {
+        width: 100%;
+        padding: 12px 16px;
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        color: var(--text);
+        font-family: var(--font);
+        font-size: 14px;
+        outline: none;
+        transition: border-color 0.2s ease;
+      }
+
+      .form-group input:focus {
+        border-color: var(--accent);
+      }
+
+      .form-group input::placeholder {
+        color: var(--text-dim);
+      }
+
+      .error-message, .success-message {
+        border-radius: 8px;
+        padding: 10px 14px;
+        font-size: 13px;
+        margin-bottom: 16px;
+        opacity: 0;
+        max-height: 0;
+        overflow: hidden;
+        transition: opacity 0.25s ease, max-height 0.25s ease, padding 0.25s ease;
+      }
+
+      .error-message {
+        background: rgba(239, 68, 68, 0.08);
+        border: 1px solid rgba(239, 68, 68, 0.2);
+        color: #ef4444;
+      }
+
+      .success-message {
+        background: rgba(61, 220, 132, 0.08);
+        border: 1px solid rgba(61, 220, 132, 0.2);
+        color: var(--accent);
+      }
+
+      .error-message.visible, .success-message.visible {
+        opacity: 1;
+        max-height: 100px;
+        padding: 10px 14px;
+      }
+
+      .btn {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 8px;
+        font-family: var(--font);
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: opacity 0.15s ease, transform 0.1s ease;
+      }
+
+      .btn:hover { opacity: 0.9; transform: translateY(-1px); }
+      .btn:active { transform: translateY(0); }
+      .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+      .btn-primary {
+        background: var(--accent);
+        color: var(--bg);
+      }
+
+      .btn-secondary {
+        background: transparent;
+        color: var(--text-secondary);
+        border: 1px solid var(--border);
+      }
+
+      .btn-secondary:hover { border-color: var(--border-hover); color: var(--text); }
+
+      .key-count {
+        font-size: 13px;
+        color: var(--text-secondary);
+        margin-bottom: 16px;
+      }
+
+      /* One-time key display */
+      .new-key-section {
+        display: none;
+      }
+
+      .new-key-section.visible {
+        display: block;
+      }
+
+      .new-key-box {
+        background: var(--bg);
+        border: 1px solid var(--accent);
+        border-radius: 8px;
+        padding: 16px;
+        margin-bottom: 12px;
+      }
+
+      .new-key-value {
+        font-family: var(--mono);
+        font-size: 13px;
+        color: var(--accent);
+        word-break: break-all;
+        line-height: 1.6;
+        margin-bottom: 12px;
+      }
+
+      .new-key-actions {
+        display: flex;
+        gap: 8px;
+      }
+
+      .btn-copy {
+        padding: 6px 14px;
+        font-size: 12px;
+        background: var(--accent-dim);
+        color: var(--accent);
+        border: 1px solid rgba(61, 220, 132, 0.2);
+        border-radius: 6px;
+        font-family: var(--font);
+        font-weight: 500;
+        cursor: pointer;
+        transition: background 0.2s;
+      }
+
+      .btn-copy:hover { background: rgba(61, 220, 132, 0.15); }
+
+      .btn-dismiss {
+        padding: 6px 14px;
+        font-size: 12px;
+        background: transparent;
+        color: var(--text-secondary);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        font-family: var(--font);
+        font-weight: 500;
+        cursor: pointer;
+        transition: border-color 0.2s, color 0.2s;
+      }
+
+      .btn-dismiss:hover { border-color: var(--border-hover); color: var(--text); }
+
+      .new-key-warning {
+        font-size: 13px;
+        color: var(--danger);
+        font-weight: 500;
+        margin-top: 10px;
+      }
+
+      /* Key list */
+      .key-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .key-card {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 14px 16px;
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        transition: border-color 0.2s;
+      }
+
+      .key-card.revoked {
+        opacity: 0.45;
+      }
+
+      .key-info {
+        flex: 1;
+        min-width: 0;
+      }
+
+      .key-top-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 4px;
+      }
+
+      .key-status {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        flex-shrink: 0;
+      }
+
+      .key-status.active { background: var(--accent); }
+      .key-status.revoked { background: var(--text-dim); }
+
+      .key-prefix {
+        font-family: var(--mono);
+        font-size: 13px;
+        color: var(--text);
+      }
+
+      .key-card.revoked .key-prefix {
+        text-decoration: line-through;
+        color: var(--text-dim);
+      }
+
+      .key-label {
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--text);
+      }
+
+      .key-meta {
+        font-size: 12px;
+        color: var(--text-secondary);
+        font-family: var(--mono);
+        margin-left: 18px;
+      }
+
+      .key-actions {
+        flex-shrink: 0;
+        margin-left: 12px;
+      }
+
+      .btn-revoke {
+        padding: 6px 14px;
+        font-size: 12px;
+        background: transparent;
+        color: var(--text-dim);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        font-family: var(--font);
+        font-weight: 500;
+        cursor: pointer;
+        transition: border-color 0.2s, color 0.2s;
+      }
+
+      .btn-revoke:hover {
+        border-color: var(--danger);
+        color: var(--danger);
+      }
+
+      .key-revoked-label {
+        font-size: 12px;
+        color: var(--text-dim);
+        font-style: italic;
+      }
+
+      .keys-empty {
+        text-align: center;
+        padding: 24px;
+        color: var(--text-dim);
+        font-size: 14px;
+      }
+
+      @keyframes fadeUp {
+        from { opacity: 0; transform: translateY(16px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+
+      .keys-wrapper {
+        animation: fadeUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      }
+
+      @media (max-width: 480px) {
+        .keys-wrapper { padding: 24px 16px 60px; }
+        .section { padding: 24px 16px; }
+        .form-row { flex-direction: column; }
+        .key-card { flex-direction: column; align-items: flex-start; gap: 10px; }
+        .key-actions { margin-left: 0; }
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="mesh"></canvas>
+    <div id="keys-page" class="keys-wrapper">
+
+      <div class="keys-header">
+        <a href="/account">&larr; Account</a>
+        <h1>API Keys</h1>
+      </div>
+
+      <!-- Create Key Section -->
+      <div class="section" id="create-key-section">
+        <h3>Create New Key</h3>
+        <div class="error-message" id="keys-error-msg"></div>
+        <div class="success-message" id="keys-success-msg"></div>
+        <div class="key-count" id="key-count"></div>
+        <form id="create-key-form" novalidate>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="key-label">Label</label>
+              <input type="text" id="key-label" name="label" placeholder="e.g. Production Server" maxlength="64" required autocomplete="off" />
+            </div>
+            <button type="submit" class="btn btn-primary" id="create-key-btn">Create Key</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- One-Time Key Display (hidden initially) -->
+      <div class="section new-key-section" id="new-key-display">
+        <h3>Your New API Key</h3>
+        <div class="new-key-box">
+          <div class="new-key-value" id="new-key-value"></div>
+          <div class="new-key-actions">
+            <button class="btn-copy" id="copy-key-btn">Copy</button>
+            <button class="btn-dismiss" id="dismiss-key-btn">Done</button>
+          </div>
+        </div>
+        <div class="new-key-warning">Save this key now. It will never be shown again.</div>
+      </div>
+
+      <!-- Key List Section -->
+      <div class="section">
+        <h3>Your Keys</h3>
+        <div id="key-list" class="key-list">
+          <div class="keys-empty">Loading keys...</div>
+        </div>
+      </div>
+
+    </div>
+    <script src="/auth.js" defer></script>
+  </body>
+</html>
