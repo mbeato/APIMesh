@@ -54,6 +54,14 @@ apimesh.xyz {
         }
     }
 
+    # Stripe webhook — no CSP, no cache headers
+    handle /billing/webhook {
+        reverse_proxy localhost:3000 {
+            header_up X-Real-IP {remote_host}
+            header_up -X-Forwarded-For
+        }
+    }
+
     # Auth, account, and billing pages — no caching of sensitive content
     @auth_paths path /auth/* /signup /login /verify /forgot-password /account /account/* /billing/*
     handle @auth_paths {
@@ -160,6 +168,14 @@ staging.apimesh.xyz {
 
     handle /dashboard {
         import staging_dashboard_headers
+        reverse_proxy localhost:3010 {
+            header_up X-Real-IP {remote_host}
+            header_up -X-Forwarded-For
+        }
+    }
+
+    # Stripe webhook — no CSP, no cache headers
+    handle /billing/webhook {
         reverse_proxy localhost:3010 {
             header_up X-Real-IP {remote_host}
             header_up -X-Forwarded-For
