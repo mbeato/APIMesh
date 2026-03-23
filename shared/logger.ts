@@ -24,7 +24,11 @@ export function apiLogger(apiName: string, priceUsd: number = 0): MiddlewareHand
     // Payer wallet set by extractPayerWallet() middleware
     const payerWallet: string | undefined = c.get("payerWallet");
 
-    logRequest(apiName, path, c.req.method, c.res.status, ms, paid, amount, clientIp, payerWallet);
+    // API key auth context — set by apiKeyAuth() on forwarded requests
+    const userId = c.req.header("x-apimesh-user-id") || undefined;
+    const apiKeyId = c.req.header("x-apimesh-key-id") || undefined;
+
+    logRequest(apiName, path, c.req.method, c.res.status, ms, paid, amount, clientIp, payerWallet, userId, apiKeyId);
 
     if (paid && amount > 0) {
       // Attempt to extract txHash from settlement response

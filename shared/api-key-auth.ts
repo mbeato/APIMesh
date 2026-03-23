@@ -70,6 +70,8 @@ export async function apiKeyAuth(
     const forwardHeaders = new Headers(req.headers);
     forwardHeaders.delete("authorization"); // sub-app doesn't need the raw key
     forwardHeaders.set("X-APIMesh-Internal", INTERNAL_AUTH_SECRET);
+    forwardHeaders.set("X-APIMesh-User-Id", keyInfo.user_id);
+    forwardHeaders.set("X-APIMesh-Key-Id", keyInfo.id);
     const modifiedReq = new Request(req, { headers: forwardHeaders });
     const response = await subApp.fetch(modifiedReq);
     // Strip internal header from response
@@ -110,6 +112,8 @@ export async function apiKeyAuth(
   const forwardHeaders = new Headers(req.headers);
   forwardHeaders.delete("authorization"); // sub-app doesn't need the raw key
   forwardHeaders.set("X-APIMesh-Internal", INTERNAL_AUTH_SECRET);
+  forwardHeaders.set("X-APIMesh-User-Id", keyInfo.user_id);
+  forwardHeaders.set("X-APIMesh-Key-Id", keyInfo.id);
   const modifiedReq = new Request(req, { headers: forwardHeaders });
 
   const response = await subApp.fetch(modifiedReq);
