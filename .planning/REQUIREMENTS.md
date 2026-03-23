@@ -22,7 +22,7 @@
 ### Sessions
 
 - [x] **SESS-01**: Sessions stored server-side in SQLite with crypto-random 256-bit IDs
-- [ ] **SESS-02**: Session cookie is httpOnly, Secure, SameSite=Strict, 30-day expiry
+- [x] **SESS-02**: Session cookie is httpOnly, Secure, SameSite=Strict, 30-day expiry
 - [x] **SESS-03**: Session expiry uses sliding window (refreshed on each authenticated request)
 - [x] **SESS-04**: Maximum 10 active sessions per user (oldest auto-revoked on new login)
 - [x] **SESS-05**: User can view active sessions (IP, user agent, created date)
@@ -60,7 +60,7 @@
 - [ ] **INT-05**: Invalid or revoked key returns 401
 - [ ] **INT-06**: No Bearer header falls through to existing x402 flow (zero breaking changes)
 - [ ] **INT-07**: API responses include X-Credits-Remaining header for API key users
-- [ ] **INT-08**: API key usage logged in requests table (user_id + api_key_id columns)
+- [x] **INT-08**: API key usage logged in requests table (user_id + api_key_id columns)
 
 ### MCP Integration
 
@@ -86,7 +86,7 @@
 - [x] **INFRA-01**: Proper DB migration runner (replaces existing try/catch ALTER TABLE pattern)
 - [x] **INFRA-02**: 7 new SQLite tables + 2 ALTER TABLE on requests + indexes
 - [ ] **INFRA-03**: Caddy route blocks for /auth/*, /account*, /billing/* with Cache-Control: no-store
-- [ ] **INFRA-04**: Webhook route with separate handler (no CSP, larger body limit)
+- [x] **INFRA-04**: Webhook route with separate handler (no CSP, larger body limit)
 - [x] **INFRA-05**: Auth-specific rate limiters separate from API rate limits
 - [x] **INFRA-06**: Resend domain verification (SPF, DKIM, DMARC for apimesh.xyz)
 
@@ -140,7 +140,7 @@
 | AUTH-10 | Phase 3 | Complete |
 | AUTH-11 | Phase 3 | Complete |
 | SESS-01 | Phase 1 | Complete |
-| SESS-02 | Phase 9 | Pending |
+| SESS-02 | Phase 9 | Complete |
 | SESS-03 | Phase 2 | Complete |
 | SESS-04 | Phase 3 | Complete |
 | SESS-05 | Phase 3 | Complete |
@@ -169,7 +169,7 @@
 | INT-05 | Phase 7 | Pending |
 | INT-06 | Phase 7 | Pending |
 | INT-07 | Phase 7 | Pending |
-| INT-08 | Phase 9 | Pending |
+| INT-08 | Phase 9 | Complete |
 | MCP-01 | Phase 8 | Complete |
 | MCP-02 | Phase 8 | Complete |
 | MCP-03 | Phase 8 | Complete |
@@ -186,7 +186,7 @@
 | INFRA-01 | Phase 1 | Complete |
 | INFRA-02 | Phase 1 | Complete |
 | INFRA-03 | Phase 10 | Pending |
-| INFRA-04 | Phase 9 | Pending |
+| INFRA-04 | Phase 9 | Complete |
 | INFRA-05 | Phase 1 | Complete |
 | INFRA-06 | Phase 1 | Complete |
 

@@ -20,7 +20,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 6: Credits & Account Dashboard** - Balance display, transaction history, low-balance alerts, account overview (completed 2026-03-18)
 - [x] **Phase 7: API Key Auth Middleware** - Branching middleware across all 21 APIs, credit deduction, Caddy routes (completed 2026-03-18)
 - [x] **Phase 8: MCP & Landing Page** - MCP server API key support, landing page signup CTA (completed 2026-03-18)
-- [ ] **Phase 9: Bug Fixes & Code Gaps** - Fix SESS-02 cookie, INT-08 request logging, INFRA-04 Caddy webhook
+- [x] **Phase 9: Bug Fixes & Code Gaps** - Fix SESS-02 cookie, INT-08 request logging, INFRA-04 Caddy webhook (completed 2026-03-23)
 - [ ] **Phase 10: Verification & Traceability** - VERIFICATION.md for phases 1/4/5/7, traceability updates
 
 ## Phase Details
@@ -166,7 +166,7 @@ Plans:
 **Plans**: TBD
 
 Plans:
-- [ ] 09-01: Fix SESS-02 cookie bug, INT-08 request logging, INFRA-04 Caddy webhook block
+- [x] 09-01: Fix SESS-02 cookie bug, INT-08 request logging, INFRA-04 Caddy webhook block
 
 ### Phase 10: Verification & Traceability
 **Goal**: Create VERIFICATION.md for unverified phases and update all traceability checkboxes
@@ -200,5 +200,5 @@ Phase 9 fixes code bugs from audit. Phase 10 creates verification artifacts and 
 | 6. Credits & Account Dashboard | 2/2 | Complete | 2026-03-18 |
 | 7. API Key Auth Middleware | 3/3 | Complete | 2026-03-18 |
 | 8. MCP & Landing Page | 2/2 | Complete | 2026-03-18 |
-| 9. Bug Fixes & Code Gaps | 0/1 | Not started | - |
+| 9. Bug Fixes & Code Gaps | 1/1 | Complete | 2026-03-23 |
 | 10. Verification & Traceability | 0/1 | Not started | - |
