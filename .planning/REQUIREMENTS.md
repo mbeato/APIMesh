@@ -31,13 +31,13 @@
 
 ### API Keys
 
-- [ ] **KEY-01**: User can create API keys with custom labels (max 5 active per account)
+- [x] **KEY-01**: User can create API keys with custom labels (max 5 active per account)
 - [x] **KEY-02**: API key format is sk_live_ + 32 bytes hex (256-bit entropy)
-- [ ] **KEY-03**: API key shown exactly once at creation with copy button and warning
+- [x] **KEY-03**: API key shown exactly once at creation with copy button and warning
 - [x] **KEY-04**: API keys stored as SHA-256 hash only (plaintext never persisted)
-- [ ] **KEY-05**: User can list keys showing prefix, label, last used, status
-- [ ] **KEY-06**: User can revoke keys (soft delete, preserves audit trail)
-- [ ] **KEY-07**: Per-key last_used_at tracking updated on each API call
+- [x] **KEY-05**: User can list keys showing prefix, label, last used, status
+- [x] **KEY-06**: User can revoke keys (soft delete, preserves audit trail)
+- [x] **KEY-07**: Per-key last_used_at tracking updated on each API call
 
 ### Credits & Billing
 
@@ -74,7 +74,7 @@
 - [x] **FE-02**: Login page at /login with email + password form
 - [x] **FE-03**: Password reset page at /forgot-password
 - [x] **FE-04**: Account overview at /account (balance, usage chart, quick buy, active keys)
-- [ ] **FE-05**: API key management at /account/keys (create, list, revoke)
+- [x] **FE-05**: API key management at /account/keys (create, list, revoke)
 - [x] **FE-06**: Billing page at /account/billing (balance, tier cards, transaction history)
 - [x] **FE-07**: Settings page at /account/settings (change password, active sessions, logout all)
 - [x] **FE-08**: All account pages use server-rendered HTML + vanilla JS (no React)
@@ -146,13 +146,13 @@
 | SESS-05 | Phase 3 | Complete |
 | SESS-06 | Phase 3 | Complete |
 | SESS-07 | Phase 1 | Complete |
-| KEY-01 | Phase 4 | Pending |
+| KEY-01 | Phase 4 | Complete |
 | KEY-02 | Phase 1 | Complete |
-| KEY-03 | Phase 4 | Pending |
+| KEY-03 | Phase 4 | Complete |
 | KEY-04 | Phase 1 | Complete |
-| KEY-05 | Phase 4 | Pending |
-| KEY-06 | Phase 4 | Pending |
-| KEY-07 | Phase 4 | Pending |
+| KEY-05 | Phase 4 | Complete |
+| KEY-06 | Phase 4 | Complete |
+| KEY-07 | Phase 4 | Complete |
 | BILL-01 | Phase 5 | Complete |
 | BILL-02 | Phase 5 | Complete |
 | BILL-03 | Phase 5 | Complete |
@@ -177,7 +177,7 @@
 | FE-02 | Phase 2 | Complete |
 | FE-03 | Phase 3 | Complete |
 | FE-04 | Phase 6 | Complete |
-| FE-05 | Phase 4 | Pending |
+| FE-05 | Phase 4 | Complete |
 | FE-06 | Phase 5 | Complete |
 | FE-07 | Phase 3 | Complete |
 | FE-08 | Phase 2 | Complete |
