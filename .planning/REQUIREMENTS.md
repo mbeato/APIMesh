@@ -41,11 +41,11 @@
 
 ### Credits & Billing
 
-- [ ] **BILL-01**: User can purchase credits via Stripe Checkout at 4 tiers ($5/$20/$50/$100)
-- [ ] **BILL-02**: Volume bonuses applied: 0%/10%/20%/30% per tier
-- [ ] **BILL-03**: Credits granted only on Stripe webhook confirmation (never on client redirect)
-- [ ] **BILL-04**: Webhook handler is idempotent (UNIQUE constraint on stripe_payment_intent)
-- [ ] **BILL-05**: Webhook signature verified with timing-safe comparison, reject events >5min old
+- [x] **BILL-01**: User can purchase credits via Stripe Checkout at 4 tiers ($5/$20/$50/$100)
+- [x] **BILL-02**: Volume bonuses applied: 0%/10%/20%/30% per tier
+- [x] **BILL-03**: Credits granted only on Stripe webhook confirmation (never on client redirect)
+- [x] **BILL-04**: Webhook handler is idempotent (UNIQUE constraint on stripe_payment_intent)
+- [x] **BILL-05**: Webhook signature verified with timing-safe comparison, reject events >5min old
 - [x] **BILL-06**: Credit balance stored in integer microdollars (no floating point)
 - [x] **BILL-07**: User can view transaction history (purchases, usage, refunds) in dashboard
 - [x] **BILL-08**: User receives email alert when credits drop below configurable threshold
@@ -53,13 +53,13 @@
 
 ### API Key Auth Integration
 
-- [ ] **INT-01**: APIs accept Authorization: Bearer sk_live_... as alternative to x402 payment
-- [ ] **INT-02**: API key auth middleware branches at router level (one place, all 21 APIs)
-- [ ] **INT-03**: Credit deduction is atomic (BEGIN IMMEDIATE + UPDATE WHERE balance_cents >= cost)
-- [ ] **INT-04**: Insufficient credits returns 402 with balance info
-- [ ] **INT-05**: Invalid or revoked key returns 401
-- [ ] **INT-06**: No Bearer header falls through to existing x402 flow (zero breaking changes)
-- [ ] **INT-07**: API responses include X-Credits-Remaining header for API key users
+- [x] **INT-01**: APIs accept Authorization: Bearer sk_live_... as alternative to x402 payment
+- [x] **INT-02**: API key auth middleware branches at router level (one place, all 21 APIs)
+- [x] **INT-03**: Credit deduction is atomic (BEGIN IMMEDIATE + UPDATE WHERE balance_cents >= cost)
+- [x] **INT-04**: Insufficient credits returns 402 with balance info
+- [x] **INT-05**: Invalid or revoked key returns 401
+- [x] **INT-06**: No Bearer header falls through to existing x402 flow (zero breaking changes)
+- [x] **INT-07**: API responses include X-Credits-Remaining header for API key users
 - [x] **INT-08**: API key usage logged in requests table (user_id + api_key_id columns)
 
 ### MCP Integration
@@ -75,7 +75,7 @@
 - [x] **FE-03**: Password reset page at /forgot-password
 - [x] **FE-04**: Account overview at /account (balance, usage chart, quick buy, active keys)
 - [ ] **FE-05**: API key management at /account/keys (create, list, revoke)
-- [ ] **FE-06**: Billing page at /account/billing (balance, tier cards, transaction history)
+- [x] **FE-06**: Billing page at /account/billing (balance, tier cards, transaction history)
 - [x] **FE-07**: Settings page at /account/settings (change password, active sessions, logout all)
 - [x] **FE-08**: All account pages use server-rendered HTML + vanilla JS (no React)
 - [x] **FE-09**: Design matches existing landing page (Space Grotesk, JetBrains Mono, dark theme)
@@ -85,7 +85,7 @@
 
 - [x] **INFRA-01**: Proper DB migration runner (replaces existing try/catch ALTER TABLE pattern)
 - [x] **INFRA-02**: 7 new SQLite tables + 2 ALTER TABLE on requests + indexes
-- [ ] **INFRA-03**: Caddy route blocks for /auth/*, /account*, /billing/* with Cache-Control: no-store
+- [x] **INFRA-03**: Caddy route blocks for /auth/*, /account*, /billing/* with Cache-Control: no-store
 - [x] **INFRA-04**: Webhook route with separate handler (no CSP, larger body limit)
 - [x] **INFRA-05**: Auth-specific rate limiters separate from API rate limits
 - [x] **INFRA-06**: Resend domain verification (SPF, DKIM, DMARC for apimesh.xyz)
@@ -153,22 +153,22 @@
 | KEY-05 | Phase 4 | Pending |
 | KEY-06 | Phase 4 | Pending |
 | KEY-07 | Phase 4 | Pending |
-| BILL-01 | Phase 5 | Pending |
-| BILL-02 | Phase 5 | Pending |
-| BILL-03 | Phase 5 | Pending |
-| BILL-04 | Phase 5 | Pending |
-| BILL-05 | Phase 5 | Pending |
+| BILL-01 | Phase 5 | Complete |
+| BILL-02 | Phase 5 | Complete |
+| BILL-03 | Phase 5 | Complete |
+| BILL-04 | Phase 5 | Complete |
+| BILL-05 | Phase 5 | Complete |
 | BILL-06 | Phase 1 | Complete |
 | BILL-07 | Phase 6 | Complete |
 | BILL-08 | Phase 6 | Complete |
 | BILL-09 | Phase 6 | Complete |
-| INT-01 | Phase 7 | Pending |
-| INT-02 | Phase 7 | Pending |
-| INT-03 | Phase 7 | Pending |
-| INT-04 | Phase 7 | Pending |
-| INT-05 | Phase 7 | Pending |
-| INT-06 | Phase 7 | Pending |
-| INT-07 | Phase 7 | Pending |
+| INT-01 | Phase 7 | Complete |
+| INT-02 | Phase 7 | Complete |
+| INT-03 | Phase 7 | Complete |
+| INT-04 | Phase 7 | Complete |
+| INT-05 | Phase 7 | Complete |
+| INT-06 | Phase 7 | Complete |
+| INT-07 | Phase 7 | Complete |
 | INT-08 | Phase 9 | Complete |
 | MCP-01 | Phase 8 | Complete |
 | MCP-02 | Phase 8 | Complete |
@@ -178,14 +178,14 @@
 | FE-03 | Phase 3 | Complete |
 | FE-04 | Phase 6 | Complete |
 | FE-05 | Phase 4 | Pending |
-| FE-06 | Phase 5 | Pending |
+| FE-06 | Phase 5 | Complete |
 | FE-07 | Phase 3 | Complete |
 | FE-08 | Phase 2 | Complete |
 | FE-09 | Phase 2 | Complete |
 | FE-10 | Phase 8 | Complete |
 | INFRA-01 | Phase 1 | Complete |
 | INFRA-02 | Phase 1 | Complete |
-| INFRA-03 | Phase 10 | Pending |
+| INFRA-03 | Phase 10 | Complete |
 | INFRA-04 | Phase 9 | Complete |
 | INFRA-05 | Phase 1 | Complete |
 | INFRA-06 | Phase 1 | Complete |
