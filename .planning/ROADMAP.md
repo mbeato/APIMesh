@@ -23,7 +23,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 9: Bug Fixes & Code Gaps** - Fix SESS-02 cookie, INT-08 request logging, INFRA-04 Caddy webhook (completed 2026-03-23)
 - [x] **Phase 10: Verification & Traceability** - VERIFICATION.md for phases 1/4/5/7, traceability updates (completed 2026-03-24)
 - [x] **Phase 11: Platform Analytics & Security Hardening** - Fix split accounting, user enumeration, Caddy header stripping (completed 2026-03-26)
-- [ ] **Phase 12: Documentation Backfill** - Fill SUMMARY frontmatter gaps in Phase 2 plans
+- [x] **Phase 12: Documentation Backfill** - Fill SUMMARY frontmatter gaps in Phase 2 plans (completed 2026-03-26)
 
 ## Phase Details
 
@@ -201,8 +201,8 @@ Plans:
 
 Plans:
 - [x] 11-01: Fix apiLogger split accounting and revenue analytics
-- [ ] 11-02: Fix user enumeration on unverified accounts
-- [ ] 11-03: Strip internal headers in Caddy wildcard block
+- [x] 11-02: Fix user enumeration on unverified accounts
+- [x] 11-03: Strip internal headers in Caddy wildcard block
 
 ### Phase 12: Documentation Backfill
 **Goal**: Fill SUMMARY frontmatter gaps in Phase 2 plans
@@ -214,7 +214,7 @@ Plans:
 **Plans**: 1 plan
 
 Plans:
-- [ ] 12-01: Add requirements-completed frontmatter to Phase 2 SUMMARY files
+- [x] 12-01: Add requirements-completed frontmatter to Phase 2 SUMMARY files
 
 ## Progress
 
@@ -236,4 +236,4 @@ Phase 9 fixes code bugs from audit. Phase 10 creates verification artifacts and 
 | 9. Bug Fixes & Code Gaps | 1/1 | Complete | 2026-03-23 |
 | 10. Verification & Traceability | 3/3 | Complete    | 2026-03-24 |
 | 11. Platform Analytics & Security Hardening | 0/3 | Complete    | 2026-03-26 |
-| 12. Documentation Backfill | 0/1 | Pending | — |
+| 12. Documentation Backfill | 1/1 | Complete | 2026-03-26 |
