@@ -114,6 +114,7 @@ export async function apiKeyAuth(
   forwardHeaders.set("X-APIMesh-Internal", INTERNAL_AUTH_SECRET);
   forwardHeaders.set("X-APIMesh-User-Id", keyInfo.user_id);
   forwardHeaders.set("X-APIMesh-Key-Id", keyInfo.id);
+  forwardHeaders.set("X-APIMesh-Paid", String(cost / 100_000)); // microdollars -> USD
   const modifiedReq = new Request(req, { headers: forwardHeaders });
 
   const response = await subApp.fetch(modifiedReq);
