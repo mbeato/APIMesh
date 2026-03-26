@@ -113,6 +113,9 @@ mcp.apimesh.xyz {
         header_up X-Real-IP {remote_host}
         header_up -X-Forwarded-For
         header_up -X-APIMesh-Internal
+        header_up -X-APIMesh-User-Id
+        header_up -X-APIMesh-Key-Id
+        header_up -X-APIMesh-Paid
     }
 }
 
@@ -231,5 +234,8 @@ mcp.staging.apimesh.xyz {
         header_up X-Real-IP {remote_host}
         header_up -X-Forwarded-For
         header_up -X-APIMesh-Internal
+        header_up -X-APIMesh-User-Id
+        header_up -X-APIMesh-Key-Id
+        header_up -X-APIMesh-Paid
     }
 }
