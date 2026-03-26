@@ -2,6 +2,9 @@ import { createHmac, timingSafeEqual } from "crypto";
 
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY || "";
 const STRIPE_API_BASE = "https://api.stripe.com/v1";
+const BASE_URL = process.env.NODE_ENV === "staging"
+  ? "https://staging.apimesh.xyz"
+  : "https://apimesh.xyz";
 
 export const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET || "";
 
@@ -51,8 +54,8 @@ export async function createCheckoutSession(
 
   const params = new URLSearchParams();
   params.set("mode", "payment");
-  params.set("success_url", "https://apimesh.xyz/account/billing?billing=success");
-  params.set("cancel_url", "https://apimesh.xyz/account/billing?billing=cancelled");
+  params.set("success_url", `${BASE_URL}/account/billing?billing=success`);
+  params.set("cancel_url", `${BASE_URL}/account/billing?billing=cancelled`);
   params.set("customer_email", email);
   params.set("line_items[0][price_data][currency]", "usd");
   params.set("line_items[0][price_data][product_data][name]", `APIMesh Credits — ${tierConfig.label}`);

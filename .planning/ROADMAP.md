@@ -37,7 +37,7 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. Credits module can atomically deduct from a balance and reject when insufficient (unit test passes)
   4. API key module can generate a key, store only its hash, and look it up by hash
   5. Resend domain verification is complete (SPF, DKIM, DMARC records propagated for apimesh.xyz)
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
 - [x] 01-01: Migration runner and database schema
@@ -54,7 +54,7 @@ Plans:
   3. User can log in and their session persists across browser restarts (httpOnly Secure cookie, 30-day sliding window)
   4. User can log out and the session is destroyed (cookie cleared, server-side record deleted)
   5. Signup and login pages render with the existing dark theme (Space Grotesk, JetBrains Mono) and work without JavaScript frameworks
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
 - [x] 02-01: Signup flow (registration, HIBP check, zxcvbn, email verification)
@@ -71,7 +71,7 @@ Plans:
   3. User can change their password from settings (requires current password) and continue their session
   4. User can view active sessions (showing IP, user agent, created date) and revoke any individual session or all sessions
   5. Creating an 11th session auto-revokes the oldest session (max 10 active)
-**Plans**: 3 plans
+**Plans**: 1 plan
 
 Plans:
 - [x] 03-01: Progressive lockout and session limit enforcement (AUTH-07, SESS-04)
@@ -87,7 +87,7 @@ Plans:
   2. User can list their keys showing prefix (sk_live_...), label, last used date, and status
   3. User can revoke a key and it immediately stops working for API calls
   4. Maximum 5 active keys per account is enforced; creating a 6th is rejected
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
 - [x] 04-01: API key CRUD routes (POST/GET/DELETE /auth/keys, session-protected, event logging)
@@ -103,7 +103,7 @@ Plans:
   3. Credits appear in the user's balance only after webhook confirmation (never on client redirect)
   4. Processing the same Stripe payment_intent twice does not double-grant credits
   5. Webhook signature is verified with timing-safe comparison and events older than 5 minutes are rejected
-**Plans**: 3 plans
+**Plans**: 1 plan
 
 Plans:
 - [x] 05-01: Stripe Checkout session creation and billing routes
@@ -135,7 +135,7 @@ Plans:
   3. Insufficient credits returns 402 with balance info; invalid/revoked key returns 401
   4. API responses include X-Credits-Remaining header when authenticated via API key
   5. The middleware is inserted at one place in the router (not 21 separate insertions)
-**Plans**: 3 plans
+**Plans**: 1 plan
 
 Plans:
 - [x] 07-01: API key auth middleware module and x402 payment bypass (shared/api-key-auth.ts, shared/x402.ts)
@@ -165,7 +165,7 @@ Plans:
   1. `/auth/verify` auto-login cookie uses `sameSite: "Strict"` and `maxAge: 30 * 24 * 60 * 60` (matching `/auth/login`)
   2. API key calls populate `requests.user_id` and `requests.api_key_id` columns (no longer NULL)
   3. Caddy has a dedicated `handle /billing/webhook` block before `@auth_paths` with no CSP headers
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
 - [x] 09-01: Fix SESS-02 cookie bug, INT-08 request logging, INFRA-04 Caddy webhook block
@@ -197,7 +197,7 @@ Plans:
   2. `getRevenueByApi` and `getTotalRevenue` accurately reflect API key revenue
   3. Wrong password on unverified account returns the same response as wrong password on verified account (no enumeration)
   4. Caddy `*.apimesh.xyz` block strips `X-APIMesh-User-Id` and `X-APIMesh-Key-Id` headers from external requests
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
 - [x] 11-01: Fix apiLogger split accounting and revenue analytics
@@ -211,7 +211,7 @@ Plans:
 **Gap Closure:** Closes SUMMARY frontmatter tech debt from v1.0 audit
 **Success Criteria** (what must be TRUE):
   1. Plans 02-02 and 02-03 have `requirements-completed` YAML frontmatter listing AUTH-06, AUTH-08, SESS-03, FE-01, FE-02, FE-08, FE-09
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
 - [ ] 12-01: Add requirements-completed frontmatter to Phase 2 SUMMARY files
@@ -235,5 +235,5 @@ Phase 9 fixes code bugs from audit. Phase 10 creates verification artifacts and 
 | 8. MCP & Landing Page | 2/2 | Complete | 2026-03-18 |
 | 9. Bug Fixes & Code Gaps | 1/1 | Complete | 2026-03-23 |
 | 10. Verification & Traceability | 3/3 | Complete    | 2026-03-24 |
-| 11. Platform Analytics & Security Hardening | 0/3 | Pending | — |
+| 11. Platform Analytics & Security Hardening | 0/3 | Planned    |  |
 | 12. Documentation Backfill | 0/1 | Pending | — |

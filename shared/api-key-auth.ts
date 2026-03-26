@@ -3,6 +3,10 @@ import { deductAndRecord, getBalance } from "./credits";
 import { INTERNAL_AUTH_SECRET } from "./x402";
 import db from "./db";
 
+const BASE_URL = process.env.NODE_ENV === "staging"
+  ? "https://staging.apimesh.xyz"
+  : "https://apimesh.xyz";
+
 // Prices in microdollars (1 USD = 100,000 microdollars)
 // Must match the per-API PRICE constants in each API's index.ts
 export const API_PRICES: Record<string, number> = {
@@ -102,7 +106,7 @@ export async function apiKeyAuth(
         error: "Insufficient credits",
         balance_microdollars: balance,
         cost_microdollars: cost,
-        topup_url: "https://apimesh.xyz/account/billing",
+        topup_url: `${BASE_URL}/account/billing`,
       },
       { status: 402, headers: { "Content-Type": "application/json" } }
     );

@@ -55,6 +55,12 @@ export function addCredits(
       [id, userId, amount, description, stripePaymentIntent ?? null]
     );
 
+    // Ensure balance row exists (may be missing if signup re-created the user)
+    db.run(
+      `INSERT OR IGNORE INTO credit_balances (user_id, balance_microdollars) VALUES (?, 0)`,
+      [userId]
+    );
+
     db.run(
       `UPDATE credit_balances SET balance_microdollars = balance_microdollars + ?, updated_at = datetime('now')
        WHERE user_id = ?`,

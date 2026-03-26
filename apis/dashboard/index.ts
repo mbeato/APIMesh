@@ -590,7 +590,7 @@ app.post("/auth/verify", authLimit, async (c) => {
   setCookie(c, "session", sessionToken, {
     httpOnly: true,
     secure: true,
-    sameSite: "Strict",
+    sameSite: "Lax",
     path: "/",
     maxAge: 30 * 24 * 60 * 60,
   });
@@ -741,7 +741,7 @@ app.post("/auth/login", authLimit, async (c) => {
     path: "/",
     httpOnly: true,
     secure: true,
-    sameSite: "Strict",
+    sameSite: "Lax",
     maxAge: 30 * 24 * 60 * 60, // 30 days
   });
 
@@ -765,7 +765,7 @@ app.post("/auth/logout", authLimit, async (c) => {
     }
   }
 
-  deleteCookie(c, "session", { path: "/", httpOnly: true, secure: true, sameSite: "Strict" });
+  deleteCookie(c, "session", { path: "/", httpOnly: true, secure: true, sameSite: "Lax" });
 
   return c.json({ success: true, redirect: "/login" });
 });
@@ -950,7 +950,7 @@ app.post("/auth/reset-password", authLimit, async (c) => {
   setCookie(c, "session", sessionToken, {
     httpOnly: true,
     secure: true,
-    sameSite: "Strict",
+    sameSite: "Lax",
     path: "/",
     maxAge: 30 * 24 * 60 * 60,
   });
@@ -1434,10 +1434,13 @@ app.get("/zxcvbn.js", publicLimit, async (c) => {
 
 // CORS before rate limiter so 429 responses include CORS headers
 const ALLOWED_ORIGIN = (() => {
-  const o = process.env.CORS_ORIGIN || "https://apimesh.xyz";
+  const defaultOrigin = process.env.NODE_ENV === "staging"
+    ? "https://staging.apimesh.xyz"
+    : "https://apimesh.xyz";
+  const o = process.env.CORS_ORIGIN || defaultOrigin;
   if (o === "*") {
-    console.warn("[security] CORS_ORIGIN=* is not permitted for the dashboard; defaulting to https://apimesh.xyz");
-    return "https://apimesh.xyz";
+    console.warn(`[security] CORS_ORIGIN=* is not permitted for the dashboard; defaulting to ${defaultOrigin}`);
+    return defaultOrigin;
   }
   return o;
 })();

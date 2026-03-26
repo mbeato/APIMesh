@@ -62,7 +62,18 @@
 - Middleware: `shared/x402-wallet.ts` (`extractPayerWallet()`)
 - EVM address (`0x...`) stored as `payer_wallet` in `requests` and `revenue` tables
 
-**No user accounts, sessions, or OAuth** — the system is account-free by design
+**User Auth (Phase 01 — Foundation):**
+- Argon2id password hashing via `shared/auth.ts`
+- 256-bit session tokens, SHA-256 hashed in DB
+- Auth event logging (login, register, password reset)
+- Auth rate limiting via `shared/auth-rate-limit.ts` (login: 5/15min, register: 3/hr, reset: 3/hr per IP)
+
+**Transactional Email:**
+- Resend — verification emails, password resets
+  - SDK/Client: `resend` npm package
+  - Auth: `RESEND_API_KEY` env var (required in production)
+  - Implementation: `shared/email.ts`
+  - Domain: `apimesh.xyz` (requires DNS verification in Resend dashboard)
 
 ## Monitoring & Observability
 
@@ -133,6 +144,7 @@
 - `WALLET_ADDRESS` - EVM address to receive USDC payments (e.g. `0x...`)
 - `DASHBOARD_TOKEN` - Bearer token for dashboard API (min 32 chars)
 - `CF_API_TOKEN` - Cloudflare API token for Caddy wildcard TLS DNS challenge
+- `RESEND_API_KEY` - Resend API key for transactional email (required in production)
 
 **Optional env vars:**
 - `CDP_API_KEY_ID` + `CDP_API_KEY_SECRET` - Coinbase CDP credentials (both required together for mainnet; omit both for testnet)
