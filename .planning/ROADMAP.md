@@ -200,7 +200,7 @@ Plans:
 **Plans**: TBD
 
 Plans:
-- [ ] 11-01: Fix apiLogger split accounting and revenue analytics
+- [x] 11-01: Fix apiLogger split accounting and revenue analytics
 - [ ] 11-02: Fix user enumeration on unverified accounts
 - [ ] 11-03: Strip internal headers in Caddy wildcard block
 
