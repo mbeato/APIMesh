@@ -728,7 +728,7 @@ app.post("/auth/login", authLimit, async (c) => {
     return c.json({
       error: "email_not_verified",
       redirect: `/verify?email=${encodeURIComponent(normalized)}`,
-    });
+    }, 401);
   }
 
   // Password valid, email verified — reset lockout counter and create session
