@@ -123,7 +123,7 @@ async function fetchPage(url: string): Promise<FetchedPage> {
   }
 
   const response = await safeFetch(url, {
-    timeoutMs: 10_000,
+    timeoutMs: 20_000,
     headers: { "User-Agent": "seo-audit/1.0 apimesh.xyz" },
   });
 
@@ -326,7 +326,7 @@ async function checkLinks(urls: string[]): Promise<LinkResult[]> {
 
           const res = await safeFetch(url, {
             method: "HEAD",
-            timeoutMs: 3_000,
+            timeoutMs: 8_000,
             headers: { "User-Agent": "seo-audit/1.0 apimesh.xyz" },
           });
 

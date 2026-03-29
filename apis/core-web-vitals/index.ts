@@ -58,8 +58,10 @@ app.get("/preview", rateLimit("core-web-vitals-preview", 15, 60_000), async (c) 
     const result = await analyzePreview(check.url.toString());
     return c.json(result);
   } catch (e: any) {
-    console.error(`[${new Date().toISOString()}] ${API_NAME} preview error:`, e?.message ?? e);
-    return c.json({ error: "Failed to analyze URL" }, 502);
+    const msg = e instanceof Error ? e.message : String(e);
+    console.error(`[${new Date().toISOString()}] ${API_NAME} preview error:`, msg);
+    const status = msg.includes("timeout") || msg.includes("timed out") ? 504 : 502;
+    return c.json({ error: "Analysis temporarily unavailable", detail: msg }, status);
   }
 });
 
@@ -108,8 +110,10 @@ app.get("/check", async (c) => {
     if (typeof e === "object" && e !== null && "getResponse" in e) {
       return (e as any).getResponse();
     }
-    console.error(`[${new Date().toISOString()}] ${API_NAME} error:`, e?.message ?? e);
-    return c.json({ error: "Failed to analyze URL" }, 502);
+    const msg = e instanceof Error ? e.message : String(e);
+    console.error(`[${new Date().toISOString()}] ${API_NAME} error:`, msg);
+    const status = msg.includes("timeout") || msg.includes("timed out") ? 504 : 502;
+    return c.json({ error: "Analysis temporarily unavailable", detail: msg }, status);
   }
 });
 

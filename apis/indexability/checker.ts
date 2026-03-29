@@ -244,7 +244,7 @@ async function checkRobotsTxt(parsedUrl: URL): Promise<RobotsTxtCheck> {
   const robotsUrl = `${parsedUrl.origin}/robots.txt`;
 
   try {
-    const res = await safeFetch(robotsUrl, { timeoutMs: 5000 });
+    const res = await safeFetch(robotsUrl, { timeoutMs: 10000 });
     const status = res.status;
 
     // 4xx = allowed (no restrictions)
