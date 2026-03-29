@@ -315,20 +315,35 @@ function render(data) {
   }
 }
 
-// --- API Detail Panel ---
+// --- API Detail Modal ---
+function closeApiModal() {
+  var overlay = document.getElementById("api-modal-overlay");
+  if (overlay) overlay.remove();
+}
+
 async function loadApiDetail(name) {
   var tok = gt(); if (!tok) return;
-  var panel = document.getElementById("api-detail-panel");
-  if (!panel) {
-    // Create panel if it doesn't exist
-    var container = document.getElementById("apis-table").closest(".panel");
-    panel = document.createElement("div");
-    panel.id = "api-detail-panel";
-    panel.className = "panel";
-    panel.style.marginTop = "12px";
-    container.parentNode.insertBefore(panel, container.nextSibling);
-  }
-  panel.innerHTML = '<div class="panel-header">Loading ' + esc(name) + '...</div>';
+
+  // Remove existing modal
+  closeApiModal();
+
+  // Create modal overlay
+  var overlay = document.createElement("div");
+  overlay.id = "api-modal-overlay";
+  overlay.style.cssText = "position:fixed;inset:0;z-index:200;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;padding:24px";
+  overlay.addEventListener("click", function(e) { if (e.target === overlay) closeApiModal(); });
+
+  var modal = document.createElement("div");
+  modal.style.cssText = "background:#141414;border:1px solid #222;border-radius:8px;width:100%;max-width:900px;max-height:85vh;overflow-y:auto;padding:24px";
+  modal.id = "api-detail-panel";
+  modal.innerHTML = '<div class="panel-header">Loading ' + esc(name) + '...</div>';
+
+  overlay.appendChild(modal);
+  document.body.appendChild(overlay);
+
+  // Close on Escape
+  var escHandler = function(e) { if (e.key === "Escape") { closeApiModal(); document.removeEventListener("keydown", escHandler); } };
+  document.addEventListener("keydown", escHandler);
 
   try {
     var res = await fetch(B + "/api/api-detail?name=" + encodeURIComponent(name) + "&range=" + currentRange, {
@@ -344,7 +359,7 @@ async function loadApiDetail(name) {
 
 function renderApiDetail(d, panel) {
   var html = '<div class="panel-header">' + esc(d.name) + ' — Detail (' + esc(d.range) + ')' +
-    '<span style="float:right;cursor:pointer;font-size:12px;opacity:0.5" onclick="this.closest(\'#api-detail-panel\').remove()">close</span></div>';
+    '<span style="float:right;cursor:pointer;font-size:12px;opacity:0.5" onclick="closeApiModal()">&#x2715; close</span></div>';
 
   // Status breakdown
   if (d.status_breakdown && d.status_breakdown.length) {
