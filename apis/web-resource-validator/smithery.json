@@ -1,0 +1,16 @@
+{
+  "name": "web-resource-validator",
+  "description": "Validate the presence and correctness of common web resources like robots.txt, sitemap.xml, openapi.json, and agent.json to ensure API and security compliance.",
+  "url": "https://web-resource-validator.apimesh.xyz",
+  "protocol": "x402",
+  "tools": [
+    {
+      "name": "web-resource-validator",
+      "description": "Validate the presence and correctness of common web resources like robots.txt, sitemap.xml, openapi.json, and agent.json to ensure API and security compliance.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    }
+  ]
+}

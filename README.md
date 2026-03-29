@@ -2,14 +2,14 @@
 
 [![npm version](https://img.shields.io/npm/v/@mbeato/apimesh-mcp-server)](https://www.npmjs.com/package/@mbeato/apimesh-mcp-server)
 [![npm downloads](https://img.shields.io/npm/dm/@mbeato/apimesh-mcp-server)](https://www.npmjs.com/package/@mbeato/apimesh-mcp-server)
-[![APIs](https://img.shields.io/badge/APIs-20-brightgreen)](https://apimesh.xyz)
+[![APIs](https://img.shields.io/badge/APIs-23-brightgreen)](https://apimesh.xyz)
 [![MCP Tools](https://img.shields.io/badge/MCP%20tools-16-blue)](https://www.npmjs.com/package/@mbeato/apimesh-mcp-server)
 [![License: MIT](https://img.shields.io/badge/license-MIT-yellow)](LICENSE)
 [![Payments](https://img.shields.io/badge/payments-x402%20%7C%20MPP%20%7C%20API%20key-orange)](#payment-methods)
 
 **Pay-per-call web analysis APIs for AI agents and developers.** Security audits, performance monitoring, SEO analysis, email verification, tech stack detection, and more -- no signup required, just pay with USDC on Base and get your response.
 
-APIMesh is a collection of 20 focused web analysis APIs, each on its own subdomain, with a 16-tool MCP server for direct use in Claude, Cursor, Windsurf, Cline, and any MCP-compatible client. Every endpoint supports three payment methods: crypto micropayments via [x402](https://www.x402.org/), card payments via [Stripe MPP](https://mpp.dev), and traditional API keys via [Stripe checkout](https://apimesh.xyz/signup).
+APIMesh is a collection of 23 focused web analysis APIs, each on its own subdomain, with a 16-tool MCP server for direct use in Claude, Cursor, Windsurf, Cline, and any MCP-compatible client. Every endpoint supports three payment methods: crypto micropayments via [x402](https://www.x402.org/), card payments via [Stripe MPP](https://mpp.dev), and traditional API keys via [Stripe checkout](https://apimesh.xyz/signup).
 
 [**Live Site**](https://apimesh.xyz) -- [**Dashboard**](https://apimesh.xyz/dashboard) -- [**npm**](https://www.npmjs.com/package/@mbeato/apimesh-mcp-server) -- [**MCP Registry**](https://registry.modelcontextprotocol.io) -- [**Smithery**](https://smithery.ai/servers/apimesh/apimesh-mcp-server)
 
@@ -94,6 +94,18 @@ Every API lives on its own subdomain: `https://{api-name}.apimesh.xyz`
 | **Status Code Checker** | `GET /check?code=` | $0.001 | Lookup HTTP status code meaning and usage |
 | **Swagger Docs Creator** | `POST /generate` | $0.002 | Generate OpenAPI 3.0 documentation for your API endpoints |
 
+### Autonomously Built APIs
+
+These APIs were built, tested, and deployed by APIMesh's autonomous brain loop — no human wrote the code:
+
+| API | Endpoint | Price | Description |
+|-----|----------|-------|-------------|
+| **Web Resource Validator** | `GET /validate?resource=` | $0.005 | Validate presence of robots.txt, sitemap.xml, openapi.json, agent.json |
+| **Website Security Header Info** | `GET /check?url=` | $0.01 | Analyze security-related HTTP headers (CSP, HSTS, X-Frame-Options, etc.) |
+| **Website Vulnerability Scan** | `GET /scan?url=` | $0.01 | Comprehensive security audit combining SSL, headers, cookies, and CSP analysis |
+
+New APIs are added automatically as the brain discovers demand and builds solutions. See [How the Brain Works](#the-autonomous-brain) below.
+
 ### Wallet & Spend Tracking (free, no auth)
 
 | Endpoint | Description |
@@ -148,19 +160,47 @@ Most APIs offer free `/preview` endpoints so agents can verify functionality bef
 
 ---
 
+## The Autonomous Brain
+
+APIMesh has an autonomous build loop that runs daily on the server. It discovers demand, generates APIs, tests them, and deploys to production — no human in the loop.
+
+```
+Monitor → Scout → Build → Security Audit → Staging → Prod
+  │         │        │          │              │        │
+  │         │        │          │              │        └─ verify health
+  ��         │        │          │              └─ deploy + test endpoints
+  │         │        │          └─ static analysis (secrets, SSRF, eval, etc.)
+  │         │        └─ LLM generates multi-file Hono API (up to 6 retries)
+  │         └─ gather market signals, score opportunities with LLM
+  └─ check API health, revenue, error rates
+```
+
+**Hardened against prompt injection:** external signal data is sanitized, LLM prompts use system-role security rules, generated code is audited for 14+ vulnerability patterns, and the test environment is sandboxed with `.env` isolation.
+
+The brain currently uses OpenAI (`gpt-4.1-mini`) for code generation and scores opportunities based on demand, implementation depth, and competitive differentiation.
+
+---
+
 ## Tech Stack
 
 - [Bun](https://bun.sh) -- runtime and bundler
 - [Hono](https://hono.dev) -- web framework
-- [x402](https://www.x402.org/) -- payment protocol
+- [x402](https://www.x402.org/) + [MPP](https://mpp.dev) -- payment protocols
 - [Caddy](https://caddyserver.com) -- reverse proxy with automatic HTTPS
 - SQLite -- analytics and usage tracking
+- OpenAI -- autonomous API generation
+
+---
+
+## Related
+
+- [awesome-mpp](https://github.com/mbeato/awesome-mpp) -- the MPP ecosystem registry (100+ projects)
 
 ---
 
 ## Contributing
 
-Contributions are welcome. If you find a bug or want to suggest a new API tool, [open an issue](https://github.com/mbeato/conway/issues).
+Contributions are welcome. If you find a bug or want to suggest a new API tool, [open an issue](https://github.com/mbeato/conway/issues) or [start a discussion](https://github.com/mbeato/conway/discussions).
 
 To run locally:
 
@@ -168,7 +208,7 @@ To run locally:
 git clone https://github.com/mbeato/conway.git
 cd conway
 bun install
-bun run dev
+bun --hot apis/router.ts
 ```
 
 ---
