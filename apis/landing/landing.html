@@ -571,105 +571,8 @@
           <span class="section-title">Tools</span>
           <span class="section-count">23 endpoints</span>
         </div>
-        <div class="tool-grid">
-          <div class="tool stagger">
-            <div class="tool-header">
-              <span class="tool-name">SEO Audit</span>
-              <span class="tool-price">$0.005</span>
-            </div>
-            <div class="tool-desc">Full SEO analysis with 0-100 score</div>
-          </div>
-          <div class="tool stagger">
-            <div class="tool-header">
-              <span class="tool-name">Security Headers</span>
-              <span class="tool-price">$0.005</span>
-            </div>
-            <div class="tool-desc">Grade security headers A+ to F</div>
-          </div>
-          <div class="tool stagger">
-            <div class="tool-header">
-              <span class="tool-name">Core Web Vitals</span>
-              <span class="tool-price">$0.01</span>
-            </div>
-            <div class="tool-desc">Performance metrics via PageSpeed API</div>
-          </div>
-          <div class="tool stagger">
-            <div class="tool-header">
-              <span class="tool-name">Domain Availability</span>
-              <span class="tool-price">$0.005</span>
-            </div>
-            <div class="tool-desc">Check across TLDs, GitHub, npm, PyPI</div>
-          </div>
-          <div class="tool stagger">
-            <div class="tool-header">
-              <span class="tool-name">Email Security</span>
-              <span class="tool-price">$0.005</span>
-            </div>
-            <div class="tool-desc">SPF, DKIM, DMARC analysis</div>
-          </div>
-          <div class="tool stagger">
-            <div class="tool-header">
-              <span class="tool-name">Redirect Chain</span>
-              <span class="tool-price">$0.003</span>
-            </div>
-            <div class="tool-desc">Trace full redirect path with status codes</div>
-          </div>
-          <div class="tool stagger">
-            <div class="tool-header">
-              <span class="tool-name">Robots.txt Parser</span>
-              <span class="tool-price">$0.001</span>
-            </div>
-            <div class="tool-desc">Parse and analyze crawl directives</div>
-          </div>
-          <div class="tool stagger">
-            <div class="tool-header">
-              <span class="tool-name">Brand Assets</span>
-              <span class="tool-price">$0.003</span>
-            </div>
-            <div class="tool-desc">Extract favicons, logos, brand colors</div>
-          </div>
-          <div class="tool stagger">
-            <div class="tool-header">
-              <span class="tool-name">Indexability</span>
-              <span class="tool-price">$0.003</span>
-            </div>
-            <div class="tool-desc">Check if pages are search-indexable</div>
-          </div>
-          <div class="tool stagger">
-            <div class="tool-header">
-              <span class="tool-name">HTTP Status</span>
-              <span class="tool-price">$0.001</span>
-            </div>
-            <div class="tool-desc">Check response codes and redirects</div>
-          </div>
-          <div class="tool stagger">
-            <div class="tool-header">
-              <span class="tool-name">Favicon Checker</span>
-              <span class="tool-price">$0.001</span>
-            </div>
-            <div class="tool-desc">Detect and validate all favicon formats</div>
-          </div>
-          <div class="tool stagger">
-            <div class="tool-header">
-              <span class="tool-name">Health Check</span>
-              <span class="tool-price">$0.001</span>
-            </div>
-            <div class="tool-desc">Monitor endpoint availability and latency</div>
-          </div>
-          <div class="tool stagger">
-            <div class="tool-header">
-              <span class="tool-name">Email Verify</span>
-              <span class="tool-price">$0.001</span>
-            </div>
-            <div class="tool-desc">Syntax, MX, disposable, and deliverability check</div>
-          </div>
-          <div class="tool stagger">
-            <div class="tool-header">
-              <span class="tool-name">Tech Stack</span>
-              <span class="tool-price">$0.003</span>
-            </div>
-            <div class="tool-desc">Detect CMS, frameworks, analytics, and hosting</div>
-          </div>
+        <div class="tool-grid" id="tool-grid">
+          <div class="tool stagger"><div class="tool-desc" style="opacity:0.4">Loading tools...</div></div>
         </div>
       </div>
 
@@ -701,6 +604,19 @@
             <span>Response</span>
           </div>
           <div class="code-body" id="code-typed"><span class="code-cursor"></span></div>
+        </div>
+      </div>
+
+      <div class="section reveal" id="brain">
+        <div class="section-header">
+          <span class="section-title">Self-building</span>
+        </div>
+        <div class="steps">
+          <div class="step stagger">
+            <div class="step-desc" style="font-size:15px;line-height:1.6;opacity:0.85">
+              APIMesh has an autonomous build loop that runs daily. It scans market signals, generates new APIs with AI, runs security audits on the code, deploys to staging, tests endpoints, and promotes to production — no human in the loop. New tools appear automatically as demand is detected.
+            </div>
+          </div>
         </div>
       </div>
 

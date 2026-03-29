@@ -180,3 +180,31 @@ document.querySelectorAll('a[href^="#"]').forEach(function(a) {
     }
   });
 });
+
+/* --- Dynamic tool grid --- */
+(function() {
+  fetch('/api/tools')
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      var grid = document.getElementById('tool-grid');
+      var count = document.querySelector('.section-count');
+      if (count) count.textContent = data.count + ' endpoints';
+      // Update hero count
+      var heroLabel = document.querySelector('.hero-label');
+      if (heroLabel) heroLabel.innerHTML = '<span class="dot"></span> ' + data.count + ' tools live on Base';
+
+      grid.innerHTML = data.tools.map(function(t) {
+        var name = t.name.replace(/-/g, ' ').replace(/\b\w/g, function(c) { return c.toUpperCase(); });
+        var desc = t.description;
+        if (desc.length > 80) desc = desc.substring(0, 77) + '...';
+        return '<a href="https://' + t.subdomain + '.apimesh.xyz" target="_blank" class="tool stagger" style="text-decoration:none;color:inherit">' +
+          '<div class="tool-header">' +
+            '<span class="tool-name">' + name + '</span>' +
+            '<span class="tool-price">' + t.price + '</span>' +
+          '</div>' +
+          '<div class="tool-desc">' + desc + '</div>' +
+        '</a>';
+      }).join('');
+    })
+    .catch(function() {});
+})();

@@ -282,6 +282,49 @@ app.get("/landing.js", publicLimit, async (c) => {
   return c.text("Not found", 404);
 });
 
+// --- Public tools endpoint for landing page (no auth) ---
+app.get("/api/tools", publicLimit, (c) => {
+  const apis = getActiveApis();
+  const tools = apis.map((api) => {
+    const detail = getApiDetailedStats(api.name);
+    // Get price from source
+    let price = "$0.005";
+    try {
+      const src = Bun.file(join(import.meta.dir, `../${api.name}/index.ts`)).textSync?.() ?? "";
+      const priceMatch = src.match(/paidRoute(?:WithDiscovery)?\(\s*["'](\$[\d.]+)["']/);
+      if (priceMatch) price = priceMatch[1];
+      else {
+        const loggerMatch = src.match(/apiLogger\(\s*\w+\s*,\s*([\d.]+)\s*\)/);
+        if (loggerMatch) price = `$${loggerMatch[1]}`;
+      }
+    } catch {}
+    // Get description
+    let description = `${api.name} API`;
+    const backlog = db.query("SELECT description FROM backlog WHERE name = ?").get(api.name) as { description: string } | null;
+    if (backlog?.description) description = backlog.description;
+    else {
+      try {
+        const src = Bun.file(join(import.meta.dir, `../${api.name}/index.ts`)).textSync?.() ?? "";
+        const infoBlock = src.match(/app\.get\(\s*["']\/["'][\s\S]{0,500}?description:\s*["']([^"']{15,300})["']/);
+        if (infoBlock) description = infoBlock[1];
+        else {
+          const descMatch = src.match(/description:\s*["']([^"']{30,300})["']/);
+          if (descMatch) description = descMatch[1];
+        }
+      } catch {}
+    }
+    return {
+      name: api.name,
+      subdomain: api.subdomain,
+      price,
+      description,
+      total_requests: detail.total_requests,
+      created_at: api.created_at,
+    };
+  });
+  return c.json({ tools, count: tools.length });
+});
+
 // --- Public wallet endpoints (no auth, rate-limited) ---
 const walletLimit = rateLimit("dashboard-wallet", 30, 60_000);
 const WALLET_RE = /^0x[0-9a-fA-F]{40}$/;
