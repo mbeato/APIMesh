@@ -349,11 +349,11 @@ async function loadApiDetail(name) {
     var res = await fetch(B + "/api/api-detail?name=" + encodeURIComponent(name) + "&range=" + currentRange, {
       headers: { Authorization: "Bearer " + tok }
     });
-    if (!res.ok) { panel.innerHTML = '<div class="panel-header">Error loading details</div>'; return; }
+    if (!res.ok) { modal.innerHTML = '<div class="panel-header">Error loading details (' + res.status + ')</div>'; return; }
     var d = await res.json();
-    renderApiDetail(d, panel);
+    renderApiDetail(d, modal);
   } catch(e) {
-    panel.innerHTML = '<div class="panel-header">Error: ' + esc(e.message) + '</div>';
+    modal.innerHTML = '<div class="panel-header">Error: ' + esc(e.message) + '</div>';
   }
 }
 
