@@ -53,15 +53,8 @@ export async function prune(): Promise<string[]> {
     const errorInfo = getErrorRate(api.name, 7);
     const requests7d = getRequestCount(api.name, 7).count;
 
-    // Check 1: Zero revenue for 14+ days
-    if (revenue14d === 0) {
-      console.log(`[prune] ${api.name}: $0 revenue for ${ZERO_REVENUE_DAYS}d — PRUNING`);
-      await pruneApi(api.name);
-      pruned.push(api.name);
-      continue;
-    }
-
-    // Check 2: High error rate with sufficient traffic
+    // Only prune on sustained high error rates — keep everything else running.
+    // Zero-revenue APIs still have value: traffic stats, portfolio, discoverability.
     if (errorInfo.total >= MIN_REQUESTS_FOR_ERROR_CHECK && errorInfo.rate > ERROR_RATE_THRESHOLD) {
       console.log(`[prune] ${api.name}: ${(errorInfo.rate * 100).toFixed(1)}% error rate (${errorInfo.errors}/${errorInfo.total}) — PRUNING`);
       await pruneApi(api.name);

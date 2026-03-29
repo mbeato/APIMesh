@@ -1,0 +1,20 @@
+{
+  "actorSpecification": 1,
+  "name": "apimesh-web-checker",
+  "title": "Brand & Domain Name Availability Checker",
+  "description": "Check brand/product name availability across domains (.com, .io, .dev, .app, .xyz), GitHub, npm, PyPI, and Reddit.",
+  "version": "1.0.0",
+  "input": {
+    "schemaVersion": 1,
+    "title": "Input",
+    "type": "object",
+    "properties": {
+      "name": {
+        "title": "Name to check",
+        "type": "string",
+        "description": "Brand or product name to check availability for (2-50 alphanumeric characters)"
+      }
+    },
+    "required": ["name"]
+  }
+}

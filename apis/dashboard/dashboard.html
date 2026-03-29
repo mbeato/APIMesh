@@ -223,17 +223,63 @@
         font-size: 12px;
         color: #555;
       }
+      .chart-range-pills {
+        display: flex;
+        gap: 2px;
+        background: #111;
+        border-radius: 6px;
+        padding: 2px;
+      }
+      .chart-range-pill {
+        padding: 4px 12px;
+        font-size: 12px;
+        font-weight: 500;
+        color: #555;
+        background: transparent;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-family: inherit;
+        transition: color 0.15s, background 0.15s;
+      }
+      .chart-range-pill:hover { color: #999; }
+      .chart-range-pill.active { color: #ededed; background: #222; }
       .chart-container {
         border: 1px solid #1a1a1a;
         border-radius: 8px;
         padding: 20px 20px 12px;
         background: #0a0a0a;
+        position: relative;
       }
       .chart-area {
         width: 100%;
-        height: 140px;
+        height: 180px;
       }
-      .chart-area svg { width: 100%; height: 100%; display: block; }
+      .chart-area svg { display: block; width: 100%; height: auto; }
+      .chart-tooltip {
+        position: absolute;
+        background: #1a1a1a;
+        border: 1px solid #333;
+        border-radius: 6px;
+        padding: 8px 12px;
+        font-size: 12px;
+        color: #ededed;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.15s;
+        z-index: 10;
+        white-space: nowrap;
+      }
+      .chart-tooltip.visible { opacity: 1; }
+      .chart-tooltip-label { color: #666; margin-bottom: 2px; }
+      .chart-tooltip-value { font-weight: 600; font-family: "SF Mono", "Fira Code", monospace; }
+      .chart-dot { transition: r 0.1s; }
+      .chart-hit:hover + .chart-dot { r: 5; }
+      .chart-section-header > div:first-child {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
 
       /* --- Two column layout --- */
       .cols {
@@ -534,7 +580,7 @@
           </div>
         </div>
         <div class="card">
-          <div class="card-label">Requests (7d)</div>
+          <div class="card-label" id="requests-range-label">Requests (24h)</div>
           <div class="card-row">
             <div class="card-value" id="total-requests">&mdash;</div>
             <div class="card-spark" id="spark-req"></div>
@@ -544,11 +590,25 @@
 
       <div class="chart-section">
         <div class="chart-section-header">
-          <span class="chart-section-title">Requests</span>
-          <span class="chart-section-sub">Last 24h</span>
+          <div>
+            <span class="chart-section-title">Requests</span>
+            <span class="chart-section-sub" id="chart-range-label">Last 24 hours</span>
+          </div>
+          <div class="chart-range-pills" id="chart-range-pills">
+            <button class="chart-range-pill active" data-range="24h">24h</button>
+            <button class="chart-range-pill" data-range="7d">7d</button>
+            <button class="chart-range-pill" data-range="14d">14d</button>
+            <button class="chart-range-pill" data-range="30d">30d</button>
+            <button class="chart-range-pill" data-range="90d">90d</button>
+            <button class="chart-range-pill" data-range="all">All</button>
+          </div>
         </div>
         <div class="chart-container">
           <div class="chart-area" id="chart-hourly"></div>
+          <div class="chart-tooltip" id="chart-tooltip">
+            <div class="chart-tooltip-label" id="tooltip-label"></div>
+            <div class="chart-tooltip-value" id="tooltip-value"></div>
+          </div>
         </div>
       </div>
 
@@ -559,13 +619,18 @@
             <thead>
               <tr>
                 <th>Name</th>
-                <th>Requests</th>
-                <th>Errors</th>
+                <th>Created</th>
+                <th id="api-req-header">Reqs (24h)</th>
+                <th>Total</th>
+                <th id="api-err-header">Err %</th>
+                <th>Avg ms</th>
+                <th>P95 ms</th>
+                <th>Callers</th>
                 <th>Revenue</th>
               </tr>
             </thead>
             <tbody id="apis-table">
-              <tr><td colspan="4" class="loading-row">Loading...</td></tr>
+              <tr><td colspan="9" class="loading-row">Loading...</td></tr>
             </tbody>
           </table>
         </div>

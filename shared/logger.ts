@@ -1,6 +1,7 @@
 import type { MiddlewareHandler } from "hono";
 import { logRequest, logRevenue } from "./db";
 import { NETWORK } from "./x402";
+import { parseMppPayerFromReceipt } from "./mpp-wallet";
 
 function sanitizeLogField(value: string, maxLen = 512): string {
   return value.replace(/[\r\n\t\x00-\x1f\x7f]/g, " ").slice(0, maxLen);
@@ -16,13 +17,17 @@ export function apiLogger(apiName: string, priceUsd: number = 0): MiddlewareHand
     const paymentResponse = c.res.headers.get("PAYMENT-RESPONSE") || c.res.headers.get("X-PAYMENT-RESPONSE");
     const x402Paid = !!paymentResponse && c.res.status < 400;
 
+    // MPP sets Payment-Receipt header after successful payment verification
+    const mppReceipt = c.res.headers.get("Payment-Receipt");
+    const mppPaid = !!mppReceipt && c.res.status < 400;
+
     // API key auth sets X-APIMesh-Paid header with USD amount when credits were deducted
     const apiKeyPaidHeader = c.req.header("x-apimesh-paid");
     const apiKeyPaid = !!apiKeyPaidHeader && c.res.status < 400;
     const apiKeyAmount = apiKeyPaid ? parseFloat(apiKeyPaidHeader!) : 0;
 
-    const paid = x402Paid || apiKeyPaid;
-    const amount = x402Paid ? priceUsd : (apiKeyPaid ? apiKeyAmount : 0);
+    const paid = x402Paid || mppPaid || apiKeyPaid;
+    const amount = x402Paid ? priceUsd : (mppPaid ? priceUsd : (apiKeyPaid ? apiKeyAmount : 0));
 
     // Trust x-real-ip set by Caddy — "direct" means request bypassed proxy
     const clientIp = sanitizeLogField(c.req.header("x-real-ip") || "direct");
@@ -49,6 +54,20 @@ export function apiLogger(apiName: string, priceUsd: number = 0): MiddlewareHand
           // Settlement header may not be base64 JSON — log without txHash
         }
         logRevenue(apiName, amount, txHash, NETWORK, payerWallet);
+      } else if (mppPaid) {
+        // MPP payment — extract reference from Payment-Receipt
+        let reference = "";
+        let mppMethod = "mpp";
+        try {
+          const decoded = Buffer.from(mppReceipt!, "base64url").toString("utf-8");
+          const receipt = JSON.parse(decoded);
+          reference = receipt?.reference ?? "";
+          mppMethod = receipt?.method === "stripe" ? "mpp-stripe" : (receipt?.method === "tempo" ? "mpp-tempo" : "mpp");
+        } catch {
+          // Receipt may not be parseable — log without reference
+        }
+        const mppPayer = parseMppPayerFromReceipt(mppReceipt!) ?? payerWallet;
+        logRevenue(apiName, amount, reference, mppMethod, mppPayer);
       } else if (apiKeyPaid) {
         // API key credit deduction — log with network="credits"
         logRevenue(apiName, amount, "", "credits", undefined);

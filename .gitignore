@@ -39,6 +39,11 @@ report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
 *.db-wal
 *.db-shm
 
+# Private keys and certificates
+*.pem
+*.key
+wallet.json
+
 # MCP config (contains API keys)
 .mcp.json
 
@@ -68,6 +73,7 @@ scripts/install-services.sh
 scripts/install-staging-services.sh
 scripts/fix-staging-restart.sh
 .planning/
+.claude/
 
 # External repos
 awesome-x402-1/

@@ -1,0 +1,20 @@
+{
+  "actorSpecification": 1,
+  "name": "apimesh-email-verify",
+  "title": "Email Address Verifier",
+  "description": "Verify email addresses with syntax validation, MX record check, disposable domain detection, role-address detection, and deliverability assessment.",
+  "version": "1.0.0",
+  "input": {
+    "schemaVersion": 1,
+    "title": "Input",
+    "type": "object",
+    "properties": {
+      "email": {
+        "title": "Email address",
+        "type": "string",
+        "description": "The email address to verify (e.g. user@example.com)"
+      }
+    },
+    "required": ["email"]
+  }
+}

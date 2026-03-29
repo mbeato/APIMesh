@@ -1,4 +1,3 @@
-import { createMcpClient } from "../../shared/mcp";
 import {
   getActiveApis,
   getApiRevenue,
@@ -21,45 +20,16 @@ export interface HealthReport {
   }[];
 }
 
-// Estimated weekly cost (Conway terminal credits + server)
-const ESTIMATED_WEEKLY_COST_USD = 0.50;
+// Estimated weekly cost: server only (~$2.50/week for Hetzner VPS)
+// LLM API costs tracked separately when brain Phase 2 lands
+const ESTIMATED_WEEKLY_COST_USD = 2.50;
 
 export async function monitor(): Promise<HealthReport> {
   console.log("[monitor] Checking health...");
 
-  let balanceUsd = 0;
-  let creditsUsd = 0;
-
-  // Query wallet and credits via MCP
-  try {
-    const client = await createMcpClient(15_000);
-    try {
-      const balanceRaw = await client.getBalance();
-      try {
-        const balanceData = JSON.parse(balanceRaw);
-        balanceUsd = balanceData.balance?.usdc ?? 0;
-      } catch {
-        const balanceMatch = balanceRaw.match(/(\d+\.?\d*)\s*(USDC|USD)/i);
-        balanceUsd = balanceMatch ? parseFloat(balanceMatch[1]) : 0;
-      }
-
-      const creditsRaw = await client.getCredits();
-      try {
-        const creditsData = JSON.parse(creditsRaw);
-        creditsUsd = (creditsData.credits_cents ?? 0) / 100;
-      } catch {
-        const creditsMatch = creditsRaw.match(/\$?(\d+\.?\d*)/);
-        creditsUsd = creditsMatch ? parseFloat(creditsMatch[1]) : 0;
-      }
-    } finally {
-      client.close();
-    }
-  } catch (e) {
-    console.warn("[monitor] MCP client unavailable, using $0 for wallet/credits:", e);
-  }
-
-  // Revenue metrics
+  // Revenue metrics from local DB (no external dependency)
   const totalRev = getTotalRevenue(7);
+  const totalRev30 = getTotalRevenue(30);
 
   // Per-API metrics
   const apis = getActiveApis();
@@ -70,23 +40,27 @@ export async function monitor(): Promise<HealthReport> {
     errorRate: getErrorRate(api.name, 7).rate,
   }));
 
-  const totalFunds = balanceUsd + creditsUsd;
-  const runwayWeeks = ESTIMATED_WEEKLY_COST_USD > 0 ? totalFunds / ESTIMATED_WEEKLY_COST_USD : Infinity;
+  // Runway based on 30-day revenue trend vs costs
+  // If revenue > costs, runway is infinite (self-sustaining)
+  // Otherwise, estimate how long current trajectory lasts
+  const weeklyRevenue = totalRev30.total_usd / 4.3;
+  const netWeekly = weeklyRevenue - ESTIMATED_WEEKLY_COST_USD;
+  const runwayWeeks = netWeekly >= 0 ? Infinity : Math.abs(weeklyRevenue / ESTIMATED_WEEKLY_COST_USD) * 52;
 
   const report: HealthReport = {
-    balanceUsd,
-    creditsUsd,
+    balanceUsd: 0, // No longer tracking external wallet balance
+    creditsUsd: 0, // Conway Terminal credits deprecated
     weeklyCostUsd: ESTIMATED_WEEKLY_COST_USD,
-    runwayWeeks,
+    runwayWeeks: Math.min(runwayWeeks, 52), // Cap at 1 year for display
     totalRevenue7d: totalRev.total_usd,
     apiReports,
   };
 
   // Log summary
   console.log("[monitor] --- Health Report ---");
-  console.log(`  Wallet: $${balanceUsd.toFixed(2)} USDC`);
-  console.log(`  Credits: $${creditsUsd.toFixed(2)}`);
-  console.log(`  Runway: ${runwayWeeks.toFixed(1)} weeks`);
+  console.log(`  Weekly Revenue: $${weeklyRevenue.toFixed(4)}`);
+  console.log(`  Weekly Cost: $${ESTIMATED_WEEKLY_COST_USD.toFixed(2)}`);
+  console.log(`  Runway: ${report.runwayWeeks.toFixed(1)} weeks`);
   console.log(`  Revenue (7d): $${totalRev.total_usd.toFixed(4)}`);
   for (const api of apiReports) {
     console.log(`  ${api.name}: $${api.revenue7d.toFixed(4)} rev, ${api.requests7d} reqs, ${(api.errorRate * 100).toFixed(1)}% errors`);

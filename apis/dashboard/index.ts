@@ -3,7 +3,7 @@ import { cors } from "hono/cors";
 import { bearerAuth } from "hono/bearer-auth";
 import { setCookie, getCookie, deleteCookie } from "hono/cookie";
 import { resolve, join } from "path";
-import db, { getRevenueByApi, getTotalRevenue, getRequestCount, getErrorRate, getApiRevenue, getRecentRequests, getActiveApis, getDailyRevenue, getDailyRequests, getHourlyRequests, getAuditLog, getWalletSummaries, getAllSpendCaps, upsertSpendCap, deleteSpendCap, getWalletSpend, getSpendCap } from "../../shared/db";
+import db, { getRevenueByApi, getTotalRevenue, getRequestCount, getErrorRate, getApiRevenue, getRecentRequests, getActiveApis, getDailyRevenue, getDailyRequests, getHourlyRequests, getAuditLog, getWalletSummaries, getAllSpendCaps, upsertSpendCap, deleteSpendCap, getWalletSpend, getSpendCap, getApiDetailedStats } from "../../shared/db";
 import { WALLET_ADDRESS } from "../../shared/x402";
 import { rateLimit } from "../../shared/rate-limit";
 import { hashPassword, verifyPassword, createSession, getSession, deleteSession, deleteUserSessions, refreshSessionExpiry, logAuthEvent } from "../../shared/auth";
@@ -481,9 +481,13 @@ app.post("/auth/signup", authLimit, async (c) => {
     return c.json({ error: "An account with this email already exists." }, 400);
   }
   if (existing && !existing.email_verified) {
-    // Delete old unverified user and their codes to allow re-signup
-    db.run("DELETE FROM verification_codes WHERE user_id = ?", [existing.id]);
+    // Delete old unverified user and all referencing rows to allow re-signup
+    db.run("DELETE FROM auth_events WHERE user_id = ?", [existing.id]);
+    db.run("DELETE FROM sessions WHERE user_id = ?", [existing.id]);
+    db.run("DELETE FROM api_keys WHERE user_id = ?", [existing.id]);
+    db.run("DELETE FROM credit_transactions WHERE user_id = ?", [existing.id]);
     db.run("DELETE FROM credit_balances WHERE user_id = ?", [existing.id]);
+    db.run("DELETE FROM verification_codes WHERE user_id = ?", [existing.id]);
     db.run("DELETE FROM users WHERE id = ?", [existing.id]);
   }
 
@@ -1476,35 +1480,76 @@ app.get("/", (c) => {
 });
 
 app.get("/api/stats", (c) => {
+  const chartRange = c.req.query("chart_range") || "24h";
+  const validRanges = ["24h", "7d", "14d", "30d", "90d", "all"];
+  const range = validRanges.includes(chartRange) ? chartRange : "24h";
+
+  // Determine the effective days for range-aware stats
+  const rangeDays = range === "24h" ? 1 : range === "all" ? 365 : parseInt(range);
+
   const revenue7d = getTotalRevenue(7);
   const revenue30d = getTotalRevenue(30);
   const revenueByApi = getRevenueByApi(7);
   const activeApis = getActiveApis();
 
-  const apis = activeApis.map((api) => ({
-    name: api.name,
-    subdomain: api.subdomain,
-    status: api.status,
-    requests_7d: getRequestCount(api.name, 7).count,
-    error_rate_7d: getErrorRate(api.name, 7),
-    revenue_7d: getApiRevenue(api.name, 7),
-  }));
+  const apis = activeApis.map((api) => {
+    const detailed = getApiDetailedStats(api.name);
+    return {
+      name: api.name,
+      subdomain: api.subdomain,
+      status: api.status,
+      created_at: api.created_at,
+      requests_range: getRequestCount(api.name, rangeDays).count,
+      error_rate_range: getErrorRate(api.name, rangeDays),
+      revenue_7d: getApiRevenue(api.name, 7),
+      total_requests: detailed.total_requests,
+      total_errors: detailed.total_errors,
+      paid_requests: detailed.paid_requests,
+      total_revenue_usd: detailed.total_revenue_usd,
+      avg_latency_ms: detailed.avg_latency_ms,
+      p95_latency_ms: detailed.p95_latency_ms,
+      unique_callers: detailed.unique_callers,
+      first_request_at: detailed.first_request_at,
+      last_request_at: detailed.last_request_at,
+    };
+  });
 
-  const totalRequests7d = apis.reduce((sum, a) => sum + a.requests_7d, 0);
+  const totalRequestsRange = apis.reduce((sum, a) => sum + a.requests_range, 0);
+
+  // Build chart data based on requested range
+  let chartData: { labels: string[]; values: number[]; mode: string };
+  if (range === "24h") {
+    const hourly = getHourlyRequests(24);
+    chartData = {
+      labels: hourly.map(h => h.hour),
+      values: hourly.map(h => h.total),
+      mode: "hourly",
+    };
+  } else {
+    const days = range === "all" ? 365 : parseInt(range);
+    const daily = getDailyRequests(days);
+    chartData = {
+      labels: daily.map(d => d.date),
+      values: daily.map(d => d.total),
+      mode: "daily",
+    };
+  }
 
   return c.json({
     revenue_7d: revenue7d.total_usd,
     revenue_30d: revenue30d.total_usd,
     revenue_by_api: revenueByApi,
     apis,
-    total_requests_7d: totalRequests7d,
+    total_requests: totalRequestsRange,
     recent_requests: getRecentRequests(20),
     charts: {
       daily_revenue_7d: getDailyRevenue(7),
       daily_revenue_30d: getDailyRevenue(30),
       daily_requests_7d: getDailyRequests(7),
       hourly_requests_24h: getHourlyRequests(24),
+      range_data: chartData,
     },
+    chart_range: range,
     wallet: WALLET_ADDRESS,
     timestamp: new Date().toISOString(),
   });
@@ -1621,10 +1666,10 @@ app.onError((err, c) => {
 
 app.notFound((c) => c.json({ error: "Not found" }, 404));
 
-console.log(`dashboard listening on port ${PORT}`);
-
-export default {
+const server = Bun.serve({
   port: PORT,
   hostname: "127.0.0.1",
   fetch: app.fetch,
-};
+});
+
+console.log(`dashboard listening on ${server.hostname}:${server.port}`);

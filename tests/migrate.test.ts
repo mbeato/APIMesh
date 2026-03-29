@@ -15,12 +15,14 @@ describe("migrate", () => {
     db.exec("PRAGMA foreign_keys=ON;");
   });
 
-  test("creates _migrations table with 2 rows (001, 002)", () => {
+  test("creates _migrations table with 4 rows", () => {
     migrate(db, MIGRATIONS_DIR);
     const rows = db.query("SELECT name FROM _migrations ORDER BY name").all() as { name: string }[];
-    expect(rows).toHaveLength(2);
+    expect(rows).toHaveLength(4);
     expect(rows[0].name).toBe("001_existing_tables.sql");
     expect(rows[1].name).toBe("002_auth_tables.sql");
+    expect(rows[2].name).toBe("003_auth_events_nullable_user.sql");
+    expect(rows[3].name).toBe("004_alert_threshold.sql");
   });
 
   test("all 13 tables exist after migration", () => {
@@ -80,7 +82,7 @@ describe("migrate", () => {
     expect(() => migrate(db, MIGRATIONS_DIR)).not.toThrow();
 
     const rows = db.query("SELECT name FROM _migrations ORDER BY name").all() as { name: string }[];
-    expect(rows).toHaveLength(2);
+    expect(rows).toHaveLength(4);
   });
 
   test("foreign keys work - inserting session with nonexistent user_id fails", () => {

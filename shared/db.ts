@@ -163,6 +163,53 @@ export function deactivateApi(name: string) {
   db.run(`UPDATE api_registry SET status = 'inactive', updated_at = datetime('now') WHERE name = ?`, [name]);
 }
 
+export function getApiDetailedStats(apiName: string) {
+  const allTime = db.query(`
+    SELECT COUNT(*) as total_requests,
+           SUM(CASE WHEN status_code >= 500 THEN 1 ELSE 0 END) as total_errors,
+           SUM(CASE WHEN paid = 1 THEN 1 ELSE 0 END) as paid_requests,
+           ROUND(AVG(response_time_ms), 1) as avg_latency_ms,
+           ROUND(MAX(response_time_ms), 1) as max_latency_ms,
+           MIN(created_at) as first_request_at,
+           MAX(created_at) as last_request_at
+    FROM requests WHERE api_name = ?
+  `).get(apiName) as {
+    total_requests: number; total_errors: number; paid_requests: number;
+    avg_latency_ms: number | null; max_latency_ms: number | null;
+    first_request_at: string | null; last_request_at: string | null;
+  };
+
+  const totalRevenue = db.query(`
+    SELECT COALESCE(SUM(amount_usd), 0) as total_usd FROM revenue WHERE api_name = ?
+  `).get(apiName) as { total_usd: number };
+
+  const uniqueCallers = db.query(`
+    SELECT COUNT(DISTINCT COALESCE(payer_wallet, client_ip)) as count
+    FROM requests WHERE api_name = ?
+  `).get(apiName) as { count: number };
+
+  // P95 latency (approximate via percentile)
+  const p95 = db.query(`
+    SELECT response_time_ms FROM requests
+    WHERE api_name = ? AND response_time_ms IS NOT NULL
+    ORDER BY response_time_ms ASC
+    LIMIT 1 OFFSET (SELECT CAST(COUNT(*) * 0.95 AS INTEGER) FROM requests WHERE api_name = ? AND response_time_ms IS NOT NULL)
+  `).get(apiName, apiName) as { response_time_ms: number } | null;
+
+  return {
+    total_requests: allTime.total_requests,
+    total_errors: allTime.total_errors ?? 0,
+    paid_requests: allTime.paid_requests ?? 0,
+    avg_latency_ms: allTime.avg_latency_ms,
+    p95_latency_ms: p95?.response_time_ms ?? null,
+    max_latency_ms: allTime.max_latency_ms,
+    total_revenue_usd: totalRevenue.total_usd,
+    unique_callers: uniqueCallers.count,
+    first_request_at: allTime.first_request_at,
+    last_request_at: allTime.last_request_at,
+  };
+}
+
 export function getErrorRate(apiName: string, days: number = 7): { total: number; errors: number; rate: number } {
   const result = db.query(`
     SELECT

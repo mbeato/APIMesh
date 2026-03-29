@@ -2,6 +2,7 @@ import { paymentMiddleware as _rawPaymentMiddleware, x402ResourceServer } from "
 import { ExactEvmScheme } from "@x402/evm/exact/server";
 import { HTTPFacilitatorClient } from "@x402/core/server";
 import { declareDiscoveryExtension } from "@x402/extensions/bazaar";
+import { MPP_ENABLED, mppInstance, mppChargeMiddleware } from "./mpp";
 
 const WALLET_ADDRESS_RAW = process.env.WALLET_ADDRESS;
 if (!WALLET_ADDRESS_RAW) {
@@ -116,15 +117,51 @@ export function paidRouteWithDiscovery(price: string, description: string, disco
 // to skip x402 payment for API-key-authenticated requests
 export const INTERNAL_AUTH_SECRET = crypto.randomUUID();
 
-// Wrap paymentMiddleware to support internal auth bypass
+// Wrap paymentMiddleware to support internal auth bypass + MPP dual-rail
 export function paymentMiddleware(routes: any, server: any) {
-  const originalMiddleware = _rawPaymentMiddleware(routes, server);
+  const x402Middleware = _rawPaymentMiddleware(routes, server);
+
+  // Pre-compute MPP charge middlewares for each route (if MPP enabled)
+  // routes is Record<"METHOD /path", { accepts: [...], ... }>
+  const mppMiddlewares = new Map<string, ReturnType<typeof mppChargeMiddleware>>();
+  if (MPP_ENABLED && mppInstance) {
+    for (const [routeKey, config] of Object.entries(routes)) {
+      const price = (config as any)?.accepts?.[0]?.price;
+      if (price) {
+        mppMiddlewares.set(routeKey, mppChargeMiddleware(price));
+      }
+    }
+  }
+
   return async (c: any, next: any) => {
-    // If request has valid internal auth header, skip payment
+    // 1. Internal auth bypass (API key credits) — skip all payment
     const internalAuth = c.req.header("x-apimesh-internal");
     if (internalAuth === INTERNAL_AUTH_SECRET) {
       return next();
     }
-    return originalMiddleware(c, next);
+
+    // 2. MPP payment — check for "Authorization: Payment ..." header
+    if (MPP_ENABLED && mppInstance) {
+      const authHeader = c.req.header("authorization") || "";
+      const hasPaymentScheme = /^Payment\s+/i.test(authHeader) ||
+        authHeader.split(",").some((s: string) => /^Payment\s+/i.test(s.trim()));
+
+      if (hasPaymentScheme) {
+        // Find the matching MPP middleware for this route
+        const method = c.req.method;
+        const path = new URL(c.req.url).pathname;
+        const routeKey = `${method} ${path}`;
+        const mppMw = mppMiddlewares.get(routeKey);
+
+        if (mppMw) {
+          // Use the mppx Hono payment middleware directly
+          return mppMw(c, next);
+        }
+        // If no MPP middleware for this route, fall through to x402
+      }
+    }
+
+    // 3. Default: x402 payment flow
+    return x402Middleware(c, next);
   };
 }

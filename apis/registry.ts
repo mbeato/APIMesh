@@ -1,5 +1,4 @@
 import { app as webChecker } from "./web-checker/index";
-import type { Hono } from "hono";
 import { app as httpStatusChecker } from "./http-status-checker/index";
 import { app as faviconChecker } from "./favicon-checker/index";
 import { app as microserviceHealthCheck } from "./microservice-health-check/index";
@@ -19,11 +18,13 @@ import { app as indexability } from "./indexability/index";
 import { app as brandAssets } from "./brand-assets/index";
 import { app as emailVerify } from "./email-verify/index";
 import { app as techStack } from "./tech-stack/index";
-
-
+import { app as webResourceValidator } from "./web-resource-validator/index";
+import { app as websiteSecurityHeaderInfo } from "./website-security-header-info/index";
+import { app as websiteVulnerabilityScan } from "./website-vulnerability-scan/index";
+import type { Hono } from "hono";
 
 export const registry: Record<string, Hono> = {
-  check: webChecker,
+  "check": webChecker,
   "http-status-checker": httpStatusChecker,
   "favicon-checker": faviconChecker,
   "microservice-health-check": microserviceHealthCheck,
@@ -43,4 +44,7 @@ export const registry: Record<string, Hono> = {
   "brand-assets": brandAssets,
   "email-verify": emailVerify,
   "tech-stack": techStack,
+  "web-resource-validator": webResourceValidator,
+  "website-security-header-info": websiteSecurityHeaderInfo,
+  "website-vulnerability-scan": websiteVulnerabilityScan,
 };
