@@ -2,6 +2,7 @@ import { monitor } from "./monitor";
 import { scout } from "./scout";
 import { build } from "./build";
 import { list } from "./list";
+import { market } from "./market";
 import { prune } from "./prune";
 import { promote } from "./promote";
 
@@ -53,17 +54,25 @@ async function main() {
     console.log("[brain] Step 4: List SKIPPED — no build");
   }
 
-  // Step 5: Prune — on Sundays
-  const dayOfWeek = new Date().getDay();
-  if (dayOfWeek === 0) {
-    console.log("\n[brain] Step 5: Prune (Sunday)");
-    await prune();
+  // Step 5: Market — generate social drafts, tool pages, README updates
+  if (hasLlmKey) {
+    console.log("\n[brain] Step 5: Market");
+    await market();
   } else {
-    console.log("\n[brain] Step 5: Prune SKIPPED — not Sunday");
+    console.log("\n[brain] Step 5: Market SKIPPED — no LLM API key");
   }
 
-  // Step 6: Promote — always runs
-  console.log("\n[brain] Step 6: Promote");
+  // Step 6: Prune — on Sundays
+  const dayOfWeek = new Date().getDay();
+  if (dayOfWeek === 0) {
+    console.log("\n[brain] Step 6: Prune (Sunday)");
+    await prune();
+  } else {
+    console.log("\n[brain] Step 6: Prune SKIPPED — not Sunday");
+  }
+
+  // Step 7: Promote — always runs
+  console.log("\n[brain] Step 7: Promote");
   await promote();
 
   console.log(`\n${"=".repeat(60)}`);

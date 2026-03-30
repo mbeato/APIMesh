@@ -199,6 +199,37 @@ app.get("/dashboard.js", publicLimit, async (c) => {
   return c.text("Not found", 404);
 });
 
+// Tools index page — SEO landing pages for all APIs
+app.get("/tools", publicLimit, async (c) => {
+  const file = Bun.file(join(import.meta.dir, "../landing/tools/index.html"));
+  if (await file.exists()) {
+    return new Response(await file.text(), {
+      headers: {
+        "Content-Type": "text/html; charset=utf-8",
+        "X-Content-Type-Options": "nosniff",
+        "Cache-Control": "public, max-age=3600",
+      },
+    });
+  }
+  return c.text("Page not found", 404);
+});
+
+// Individual tool page — SEO landing page per API
+app.get("/tools/:name", publicLimit, async (c) => {
+  const name = c.req.param("name").replace(/[^a-z0-9-]/g, "");
+  const file = Bun.file(join(import.meta.dir, `../landing/tools/${name}.html`));
+  if (await file.exists()) {
+    return new Response(await file.text(), {
+      headers: {
+        "Content-Type": "text/html; charset=utf-8",
+        "X-Content-Type-Options": "nosniff",
+        "Cache-Control": "public, max-age=3600",
+      },
+    });
+  }
+  return c.text("Tool not found", 404);
+});
+
 // Signup page — public, no auth
 app.get("/signup", publicLimit, async (c) => {
   const file = Bun.file(join(import.meta.dir, "../landing/signup.html"));

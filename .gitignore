@@ -50,6 +50,10 @@ wallet.json
 # Brain test builds
 .test-builds
 
+# Brain-generated marketing content
+data/drafts/
+apis/landing/tools/
+
 # MCP registry tokens
 .mcpregistry_*
 
