@@ -28,15 +28,25 @@ async function main() {
     console.log("\n[brain] Step 2: Scout SKIPPED — no LLM API key");
   }
 
-  // Step 3: Build — needs LLM key
+  // Step 3: Build — needs LLM key, up to 3 APIs per run
+  const MAX_BUILDS_PER_RUN = 3;
   if (hasLlmKey) {
-    console.log("\n[brain] Step 3: Build");
-    const built = await build();
-    if (built) {
-      console.log("\n[brain] Step 4: List");
+    let totalBuilt = 0;
+    for (let i = 1; i <= MAX_BUILDS_PER_RUN; i++) {
+      console.log(`\n[brain] Step 3: Build (${i}/${MAX_BUILDS_PER_RUN})`);
+      const built = await build();
+      if (built) {
+        totalBuilt++;
+      } else {
+        console.log(`[brain] No more backlog items to build — stopping after ${totalBuilt} builds`);
+        break;
+      }
+    }
+    if (totalBuilt > 0) {
+      console.log(`\n[brain] Step 4: List (${totalBuilt} new APIs built)`);
       await list();
     } else {
-      console.log("\n[brain] Step 4: List SKIPPED — no new API built");
+      console.log("\n[brain] Step 4: List SKIPPED — no new APIs built");
     }
   } else {
     console.log("\n[brain] Step 3: Build SKIPPED — no LLM API key");
