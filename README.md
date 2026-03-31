@@ -1,4 +1,9 @@
-# APIMesh
+<p align="center">
+  <a href="https://apimesh.xyz">
+    <img src="public/logo-nav.svg" alt="APIMesh" width="80" height="80" />
+  </a>
+</p>
+<h1 align="center">APIMesh</h1>
 
 [![npm version](https://img.shields.io/npm/v/@mbeato/apimesh-mcp-server)](https://www.npmjs.com/package/@mbeato/apimesh-mcp-server)
 [![npm downloads](https://img.shields.io/npm/dm/@mbeato/apimesh-mcp-server)](https://www.npmjs.com/package/@mbeato/apimesh-mcp-server)
