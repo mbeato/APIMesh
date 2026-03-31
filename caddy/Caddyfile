@@ -16,7 +16,7 @@
         X-Content-Type-Options "nosniff"
         X-Frame-Options "DENY"
         Referrer-Policy "strict-origin-when-cross-origin"
-        Content-Security-Policy "default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src data:; connect-src 'self'"
+        Content-Security-Policy "default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'"
         Permissions-Policy "geolocation=(), camera=(), microphone=()"
         -Server
     }
@@ -33,6 +33,11 @@ apimesh.xyz {
     }
 
     handle /llms.txt {
+        root * /opt/conway-agent/public
+        file_server
+    }
+
+    handle /logo*.svg {
         root * /opt/conway-agent/public
         file_server
     }
@@ -140,7 +145,7 @@ mcp.apimesh.xyz {
         X-Content-Type-Options "nosniff"
         X-Frame-Options "DENY"
         Referrer-Policy "strict-origin-when-cross-origin"
-        Content-Security-Policy "default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src data:; connect-src 'self'"
+        Content-Security-Policy "default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'"
         Permissions-Policy "geolocation=(), camera=(), microphone=()"
         -Server
     }
@@ -156,6 +161,11 @@ staging.apimesh.xyz {
     }
 
     handle /.well-known/* {
+        root * /opt/conway-staging/public
+        file_server
+    }
+
+    handle /logo*.svg {
         root * /opt/conway-staging/public
         file_server
     }

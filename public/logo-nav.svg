@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="gn" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3ddc84"/>
+      <stop offset="100%" stop-color="#2bb86e"/>
+    </linearGradient>
+    <radialGradient id="fn" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="white"/>
+      <stop offset="55%" stop-color="white"/>
+      <stop offset="100%" stop-color="white" stop-opacity="0"/>
+    </radialGradient>
+    <mask id="mn">
+      <rect width="200" height="200" fill="url(#fn)"/>
+    </mask>
+  </defs>
+  <rect width="200" height="200" rx="28" fill="#090909"/>
+  <g mask="url(#mn)">
+    <!-- Same grid as logo.svg but 7px strokes (vs 3px) — reads at 36-40px -->
+    <path d="M28,40 Q52,24 100,40 Q148,56 172,40" stroke="url(#gn)" stroke-width="7" fill="none" stroke-linecap="round"/>
+    <path d="M28,80 Q52,64 100,80 Q148,96 172,80" stroke="url(#gn)" stroke-width="7" fill="none" stroke-linecap="round"/>
+    <path d="M28,120 Q52,104 100,120 Q148,136 172,120" stroke="url(#gn)" stroke-width="7" fill="none" stroke-linecap="round"/>
+    <path d="M28,160 Q52,144 100,160 Q148,176 172,160" stroke="url(#gn)" stroke-width="7" fill="none" stroke-linecap="round"/>
+    <path d="M40,28 Q24,52 40,100 Q56,148 40,172" stroke="url(#gn)" stroke-width="7" fill="none" stroke-linecap="round"/>
+    <path d="M80,28 Q64,52 80,100 Q96,148 80,172" stroke="url(#gn)" stroke-width="7" fill="none" stroke-linecap="round"/>
+    <path d="M120,28 Q104,52 120,100 Q136,148 120,172" stroke="url(#gn)" stroke-width="7" fill="none" stroke-linecap="round"/>
+    <path d="M160,28 Q144,52 160,100 Q176,148 160,172" stroke="url(#gn)" stroke-width="7" fill="none" stroke-linecap="round"/>
+  </g>
+</svg>

@@ -159,6 +159,7 @@ function generateToolPageHtml(api: ApiInfo, draft: MarketingDraft | null): strin
   <title>${title}</title>
   <meta name="description" content="${desc}">
   <meta name="robots" content="index, follow">
+  <link rel="icon" type="image/svg+xml" href="/logo-nav.svg">
   <link rel="canonical" href="https://apimesh.xyz/tools/${api.name}">
   <meta property="og:title" content="${title}">
   <meta property="og:description" content="${desc}">
@@ -198,7 +199,7 @@ function generateToolPageHtml(api: ApiInfo, draft: MarketingDraft | null): strin
 </head>
 <body>
   <div class="container">
-    <div class="breadcrumb"><a href="/">APIMesh</a> / <a href="/tools">Tools</a> / ${api.name}</div>
+    <div class="breadcrumb"><a href="/"><img src="/logo.svg" alt="" width="16" height="16" style="border-radius:3px;vertical-align:middle;margin-right:4px">APIMesh</a> / <a href="/tools">Tools</a> / ${api.name}</div>
 
     <h1>${api.name.split("-").map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ")}</h1>
     <p class="subtitle">${desc}</p>
@@ -244,7 +245,7 @@ function generateToolPageHtml(api: ApiInfo, draft: MarketingDraft | null): strin
     </div>
 
     <div class="footer">
-      <a href="/">APIMesh</a> · <a href="/dashboard">Dashboard</a> · <a href="https://github.com/mbeato/conway">GitHub</a>
+      <a href="/"><img src="/logo.svg" alt="" width="14" height="14" style="border-radius:3px;vertical-align:middle;margin-right:4px">APIMesh</a> · <a href="/dashboard">Dashboard</a> · <a href="https://github.com/mbeato/conway">GitHub</a>
     </div>
   </div>
 </body>
@@ -274,6 +275,7 @@ function generateToolsIndexHtml(apis: ApiInfo[]): string {
   <title>All APIs — APIMesh</title>
   <meta name="description" content="${apis.length} pay-per-call APIs for developers and AI agents. Security, performance, SEO, DevOps, and more.">
   <meta name="robots" content="index, follow">
+  <link rel="icon" type="image/svg+xml" href="/logo-nav.svg">
   <link rel="canonical" href="https://apimesh.xyz/tools">
   <meta property="og:title" content="All APIs — APIMesh">
   <meta property="og:description" content="${apis.length} pay-per-call APIs for developers and AI agents.">
@@ -298,14 +300,14 @@ function generateToolsIndexHtml(apis: ApiInfo[]): string {
 </head>
 <body>
   <div class="container">
-    <div class="breadcrumb"><a href="/">APIMesh</a> / Tools</div>
+    <div class="breadcrumb"><a href="/"><img src="/logo.svg" alt="" width="16" height="16" style="border-radius:3px;vertical-align:middle;margin-right:4px">APIMesh</a> / Tools</div>
     <h1>All APIs</h1>
     <p class="subtitle">${apis.length} pay-per-call APIs for developers and AI agents</p>
     <div class="grid">
 ${cards}
     </div>
     <div class="footer">
-      <a href="/">APIMesh</a> · <a href="/dashboard">Dashboard</a> · <a href="https://github.com/mbeato/conway">GitHub</a>
+      <a href="/"><img src="/logo.svg" alt="" width="14" height="14" style="border-radius:3px;vertical-align:middle;margin-right:4px">APIMesh</a> · <a href="/dashboard">Dashboard</a> · <a href="https://github.com/mbeato/conway">GitHub</a>
     </div>
   </div>
 </body>
@@ -446,7 +448,7 @@ export async function market(): Promise<void> {
   console.log(`[market] Found ${unmarketedApis.length} APIs needing marketing content`);
 
   // 2. Generate marketing drafts for new APIs (max 3 per run to control LLM costs)
-  const MAX_DRAFTS = 3;
+  const MAX_DRAFTS = 10;
   let draftsGenerated = 0;
   for (const api of unmarketedApis.slice(0, MAX_DRAFTS)) {
     console.log(`[market] Generating content for: ${api.name}`);

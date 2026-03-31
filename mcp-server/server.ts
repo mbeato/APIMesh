@@ -109,7 +109,7 @@ function qs(params: Record<string, string | number | undefined>): string {
 export function createServer(): McpServer {
   const server = new McpServer({
     name: "apimesh",
-    version: "1.6.0",
+    version: "1.7.0",
   });
 
   server.tool(
@@ -268,6 +268,98 @@ export function createServer(): McpServer {
     },
     async ({ url, level }) =>
       callApi(`https://website-vulnerability-scan.apimesh.xyz/scan${qs({ url, level })}`),
+  );
+
+  server.tool(
+    "mock_jwt_generator",
+    "Generate test JWTs with custom claims and expiry for local development. Returns a signed HS256 token. Useful for testing auth flows without a real identity provider.",
+    {
+      payload: z.record(z.unknown()).describe("JWT payload claims (e.g. { sub: '123', role: 'admin' })"),
+      secret: z.string().min(3).describe("HMAC secret for HS256 signing"),
+      expiresInSeconds: z.number().min(10).max(604800).optional().describe("Token expiry in seconds (default: 3600, max: 7 days)"),
+    },
+    async ({ payload, secret, expiresInSeconds }) =>
+      callApi("https://mock-jwt-generator.apimesh.xyz/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ payload, secret, expiresInSeconds }),
+      }),
+  );
+
+  server.tool(
+    "regex_builder",
+    "Build and test regex patterns. POST /build creates a regex from a pattern string or components. POST /test validates a pattern against test strings. Useful for generating and debugging regular expressions.",
+    {
+      mode: z.enum(["build", "test"]).describe("'build' to create a regex, 'test' to validate against strings"),
+      pattern: z.string().max(500).describe("Regex pattern string"),
+      flags: z.string().optional().describe("Regex flags (g, i, m, s, u, y)"),
+      testStrings: z.array(z.string().max(1000)).max(20).optional().describe("Test strings (required for 'test' mode)"),
+    },
+    async ({ mode, pattern, flags, testStrings }) => {
+      if (mode === "test") {
+        return callApi("https://regex-builder.apimesh.xyz/test", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ pattern, flags, testStrings }),
+        });
+      }
+      return callApi("https://regex-builder.apimesh.xyz/build", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pattern, flags }),
+      });
+    },
+  );
+
+  server.tool(
+    "status_code_checker",
+    "Check the live HTTP status code of any URL. Returns the actual status code, reason phrase, and response headers. Simpler than http_status_checker — no expected-code validation.",
+    {
+      url: z.string().describe("The URL to check (must include http:// or https://)"),
+    },
+    async ({ url }) =>
+      callApi(`https://status-code-checker.apimesh.xyz/check${qs({ url })}`),
+  );
+
+  server.tool(
+    "swagger_docs_creator",
+    "Generate OpenAPI 3.0 documentation for an API endpoint. Provide the path, method, summary, and optionally parameters/requestBody/responses to get a complete OpenAPI spec fragment.",
+    {
+      path: z.string().describe("API endpoint path (e.g. /api/users)"),
+      method: z.string().describe("HTTP method (GET, POST, PUT, DELETE)"),
+      summary: z.string().describe("Short summary of what the endpoint does"),
+      description: z.string().optional().describe("Full description of the endpoint"),
+    },
+    async ({ path, method, summary, description }) =>
+      callApi("https://swagger-docs-creator.apimesh.xyz/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ path, method, summary, description }),
+      }),
+  );
+
+  server.tool(
+    "user_agent_analyzer",
+    "Parse a User-Agent string into structured data: browser name/version, OS name/version, device type, and bot detection. Useful for analytics and request filtering.",
+    {
+      ua: z.string().describe("The User-Agent string to parse"),
+    },
+    async ({ ua }) =>
+      callApi(`https://user-agent-analyzer.apimesh.xyz/analyze${qs({ ua })}`),
+  );
+
+  server.tool(
+    "yaml_validator",
+    "Validate YAML syntax and structure. Returns parsed result on success or detailed error with line/column on failure. Useful for CI pipelines and config file validation.",
+    {
+      yaml: z.string().describe("The YAML string to validate"),
+    },
+    async ({ yaml }) =>
+      callApi("https://yaml-validator.apimesh.xyz/validate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ yaml }),
+      }),
   );
 
   server.tool(

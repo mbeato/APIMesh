@@ -212,7 +212,61 @@ async function gatherSignals(): Promise<string[]> {
     signals.push("npm registry: unavailable");
   }
 
-  // 3. Check our own 404 logs for demand signals.
+  // 3. MPP ecosystem (mpppay.fun) — scrape provider list from JS bundle to find gaps
+  try {
+    const bundleRes = await fetch("https://www.mpppay.fun/ecosystem", {
+      signal: AbortSignal.timeout(10_000),
+    });
+    if (bundleRes.ok) {
+      const html = await bundleRes.text();
+      // Extract JS bundle URL from the SPA shell
+      const jsMatch = html.match(/src="(\/assets\/index-[^"]+\.js)"/);
+      if (jsMatch) {
+        const jsRes = await fetch(`https://www.mpppay.fun${jsMatch[1]}`, {
+          signal: AbortSignal.timeout(15_000),
+        });
+        if (jsRes.ok) {
+          const js = await jsRes.text();
+          // Extract provider entries: id, name, category, description
+          const providerPattern = /id:`([^`]+)`,name:`([^`]+)`,category:`([^`]+)`,live:(?:!0|!1),description:`([^`]*)`/g;
+          const providers: { name: string; category: string; desc: string }[] = [];
+          const seen = new Set<string>();
+          let match;
+          while ((match = providerPattern.exec(js)) !== null) {
+            const pid = match[1];
+            if (!seen.has(pid)) {
+              seen.add(pid);
+              providers.push({ name: match[2], category: match[3], desc: match[4].slice(0, 120) });
+            }
+          }
+          if (providers.length > 0) {
+            // Group by category for the prompt
+            const byCat = new Map<string, string[]>();
+            for (const p of providers) {
+              if (!byCat.has(p.category)) byCat.set(p.category, []);
+              byCat.get(p.category)!.push(`${p.name}: ${p.desc}`);
+            }
+            const lines: string[] = [`MPP ecosystem (mpppay.fun) — ${providers.length} providers. Categories with existing coverage:`];
+            for (const [cat, items] of byCat) {
+              // Sanitize each item
+              const cleanItems = items
+                .map(item => sanitizeSignalText(item, 150))
+                .filter((x): x is string => x !== null);
+              lines.push(`  ${cat} (${cleanItems.length}): ${cleanItems.join("; ").slice(0, 300)}`);
+            }
+            lines.push("GAPS: No Security, No SEO, No DevOps/Monitoring, No DNS, No Accessibility, No API tooling, No CI/CD categories exist.");
+            const combined = lines.join("\n").slice(0, 2000);
+            signals.push(combined);
+            console.log(`[scout] MPP ecosystem: ${providers.length} providers across ${byCat.size} categories`);
+          }
+        }
+      }
+    }
+  } catch {
+    signals.push("MPP ecosystem (mpppay.fun): unavailable");
+  }
+
+  // 4. Check our own 404 logs for demand signals.
   // Endpoint paths are attacker-controlled (any HTTP client can craft them),
   // so sanitize each one individually.
   try {
@@ -285,12 +339,16 @@ DEDUPLICATION RULES:
 - Read each existing API description carefully. If your idea is a superset or mashup of 2-3 existing ones, skip it.
 - If you're unsure whether it overlaps, skip it.
 
+STRATEGIC CONTEXT: We are listed on the MPP ecosystem (mpppay.fun). The ecosystem data is in the market signals above. We are the ONLY provider in Security, SEO, DevOps/Monitoring, and API tooling categories — this is our competitive moat. Prioritize APIs that expand our lead in underserved MPP ecosystem categories.
+
 CATEGORIES TO EXPLORE (not limited to these — be creative):
-- Infrastructure/DevOps: cron monitoring, uptime patterns, certificate expiry forecasting, DNS propagation tracking, cloud cost estimation
+- Security (OUR MOAT — no MPP competition): SSL/TLS analysis, certificate monitoring, CSP policy generation, CORS misconfiguration detection, subdomain enumeration
+- SEO/Web performance (OUR MOAT — no MPP competition): structured data validation, accessibility auditing (WCAG), broken link detection, sitemap analysis, page speed benchmarking
+- Infrastructure/DevOps (no MPP competition): cron monitoring, uptime patterns, certificate expiry forecasting, DNS propagation tracking, DNS/WHOIS lookup
+- API tooling (no MPP competition): API response mocking, schema diffing, endpoint latency benchmarking, GraphQL introspection analysis
 - Data transformation: CSV/JSON/XML conversion pipelines, data masking/anonymization, schema migration diffing
-- Developer productivity: dependency license auditing, changelog generation from git diffs, code complexity scoring, API response mocking
-- Compliance/legal: privacy policy analysis, GDPR data mapping, cookie consent validation, accessibility scoring
-- Crypto/web3: wallet activity profiling, token contract analysis, gas price forecasting
+- Developer productivity: dependency license auditing, changelog generation from git diffs, code complexity scoring
+- Compliance/legal: privacy policy analysis, GDPR data mapping, cookie consent validation
 - Content/text: readability scoring, plagiarism similarity, language detection with confidence, sentiment analysis
 - Network/infrastructure: port scanning, BGP route analysis, IP geolocation enrichment with ISP/ASN data
 - CI/CD: build time estimation, test flakiness scoring, deploy risk assessment
