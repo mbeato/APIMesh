@@ -5,7 +5,7 @@
  * Controlled by MPP_ENABLED env flag for zero-downtime rollback.
  */
 
-import { Mppx, stripe } from "mppx/hono";
+import { Mppx, stripe, tempo } from "mppx/hono";
 import * as Store from "mppx/server";
 
 // Feature flag — when false, MPP is completely disabled
@@ -53,12 +53,15 @@ if (MPP_ENABLED) {
         networkId: "internal",
         paymentMethodTypes: ["card"],
       }),
+      tempo.charge({
+        recipient: process.env.WALLET_ADDRESS,
+      }),
     ],
     secretKey,
     realm: process.env.MPP_REALM ?? "apimesh.xyz",
   });
 
-  console.log("mpp: enabled (Stripe charge)");
+  console.log("mpp: enabled (Stripe charge + Tempo stablecoin)");
 } else {
   console.log("mpp: disabled (MPP_ENABLED != true)");
 }
@@ -78,8 +81,10 @@ export function mppChargeMiddleware(priceUsd: string) {
   const numeric = priceUsd.replace(/^\$/, "");
   const cents = Math.round(parseFloat(numeric) * 100);
 
-  // mppx stripe charge expects amount in smallest unit as string
-  return mppInstance.charge({
+  // Use stripe.charge to create the middleware — mppx advertises ALL configured
+  // payment methods (Stripe + Tempo) in the 402 challenge automatically.
+  // Amount is in smallest currency unit (cents for Stripe).
+  return mppInstance.stripe.charge({
     amount: String(cents),
     description: `APIMesh API call ($${numeric})`,
   });
