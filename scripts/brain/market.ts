@@ -199,7 +199,7 @@ function generateToolPageHtml(api: ApiInfo, draft: MarketingDraft | null): strin
 </head>
 <body>
   <div class="container">
-    <div class="breadcrumb"><a href="/"><img src="/logo.svg" alt="" width="16" height="16" style="border-radius:3px;vertical-align:middle;margin-right:4px">APIMesh</a> / <a href="/tools">Tools</a> / ${api.name}</div>
+    <div class="breadcrumb"><a href="/"><img src="/logo-nav.svg" alt="" width="16" height="16" style="border-radius:3px;vertical-align:middle;margin-right:4px">APIMesh</a> / <a href="/tools">Tools</a> / ${api.name}</div>
 
     <h1>${api.name.split("-").map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ")}</h1>
     <p class="subtitle">${desc}</p>
@@ -245,7 +245,7 @@ function generateToolPageHtml(api: ApiInfo, draft: MarketingDraft | null): strin
     </div>
 
     <div class="footer">
-      <a href="/"><img src="/logo.svg" alt="" width="14" height="14" style="border-radius:3px;vertical-align:middle;margin-right:4px">APIMesh</a> · <a href="/dashboard">Dashboard</a> · <a href="https://github.com/mbeato/conway">GitHub</a>
+      <a href="/"><img src="/logo-nav.svg" alt="" width="14" height="14" style="border-radius:3px;vertical-align:middle;margin-right:4px">APIMesh</a> · <a href="/dashboard">Dashboard</a> · <a href="https://github.com/mbeato/conway">GitHub</a>
     </div>
   </div>
 </body>
@@ -300,14 +300,14 @@ function generateToolsIndexHtml(apis: ApiInfo[]): string {
 </head>
 <body>
   <div class="container">
-    <div class="breadcrumb"><a href="/"><img src="/logo.svg" alt="" width="16" height="16" style="border-radius:3px;vertical-align:middle;margin-right:4px">APIMesh</a> / Tools</div>
+    <div class="breadcrumb"><a href="/"><img src="/logo-nav.svg" alt="" width="16" height="16" style="border-radius:3px;vertical-align:middle;margin-right:4px">APIMesh</a> / Tools</div>
     <h1>All APIs</h1>
     <p class="subtitle">${apis.length} pay-per-call APIs for developers and AI agents</p>
     <div class="grid">
 ${cards}
     </div>
     <div class="footer">
-      <a href="/"><img src="/logo.svg" alt="" width="14" height="14" style="border-radius:3px;vertical-align:middle;margin-right:4px">APIMesh</a> · <a href="/dashboard">Dashboard</a> · <a href="https://github.com/mbeato/conway">GitHub</a>
+      <a href="/"><img src="/logo-nav.svg" alt="" width="14" height="14" style="border-radius:3px;vertical-align:middle;margin-right:4px">APIMesh</a> · <a href="/dashboard">Dashboard</a> · <a href="https://github.com/mbeato/conway">GitHub</a>
     </div>
   </div>
 </body>
