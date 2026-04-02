@@ -7,14 +7,14 @@
 
 [![npm version](https://img.shields.io/npm/v/@mbeato/apimesh-mcp-server)](https://www.npmjs.com/package/@mbeato/apimesh-mcp-server)
 [![npm downloads](https://img.shields.io/npm/dm/@mbeato/apimesh-mcp-server)](https://www.npmjs.com/package/@mbeato/apimesh-mcp-server)
-[![APIs](https://img.shields.io/badge/APIs-23-brightgreen)](https://apimesh.xyz)
+[![APIs](https://img.shields.io/badge/APIs-27-brightgreen)](https://apimesh.xyz)
 [![MCP Tools](https://img.shields.io/badge/MCP%20tools-25-blue)](https://www.npmjs.com/package/@mbeato/apimesh-mcp-server)
 [![License: MIT](https://img.shields.io/badge/license-MIT-yellow)](LICENSE)
 [![Payments](https://img.shields.io/badge/payments-x402%20%7C%20MPP%20%7C%20API%20key-orange)](#payment-methods)
 
 **Pay-per-call web analysis APIs for AI agents and developers.** Security audits, performance monitoring, SEO analysis, email verification, tech stack detection, and more -- no signup required, just pay with USDC on Base and get your response.
 
-APIMesh is a collection of 23 focused web analysis APIs, each on its own subdomain, with a 25-tool MCP server for direct use in Claude, Cursor, Windsurf, Cline, and any MCP-compatible client. Every endpoint supports three payment methods: crypto micropayments via [x402](https://www.x402.org/), card payments via [Stripe MPP](https://mpp.dev), and traditional API keys via [Stripe checkout](https://apimesh.xyz/signup).
+APIMesh is a collection of 27 focused web analysis APIs, each on its own subdomain, with a 25-tool MCP server for direct use in Claude, Cursor, Windsurf, Cline, and any MCP-compatible client. Every endpoint supports three payment methods: crypto micropayments via [x402](https://www.x402.org/), card payments via [Stripe MPP](https://mpp.dev), and traditional API keys via [Stripe checkout](https://apimesh.xyz/signup).
 
 [**Live Site**](https://apimesh.xyz) -- [**Dashboard**](https://apimesh.xyz/dashboard) -- [**npm**](https://www.npmjs.com/package/@mbeato/apimesh-mcp-server) -- [**MCP Registry**](https://registry.modelcontextprotocol.io) -- [**Smithery**](https://smithery.ai/servers/apimesh/apimesh-mcp-server)
 
@@ -33,7 +33,7 @@ curl https://check.apimesh.xyz/preview?name=myapp
 
 ### Install the MCP server
 
-One command to add all 19 tools to your AI coding assistant:
+One command to add all 25 tools to your AI coding assistant:
 
 ```bash
 npx @mbeato/apimesh-mcp-server
@@ -108,6 +108,12 @@ These APIs were built, tested, and deployed by APIMesh's autonomous brain loop �
 | **Web Resource Validator** | `GET /validate?resource=` | $0.005 | Validate presence of robots.txt, sitemap.xml, openapi.json, agent.json |
 | **Website Security Header Info** | `GET /check?url=` | $0.01 | Analyze security-related HTTP headers (CSP, HSTS, X-Frame-Options, etc.) |
 | **Website Vulnerability Scan** | `GET /scan?url=` | $0.01 | Comprehensive security audit combining SSL, headers, cookies, and CSP analysis |
+| **SEO Health Analyzer** | `GET /check?url=` | $0.005 | 5-layer indexability analysis with robots.txt, meta robots, and canonical checks |
+| **Comprehensive Site Audit** | `GET /check?url=` | $0.01 | Multi-signal website audit combining health, security, performance, and tech stack |
+| **Performance Structure Report** | `GET /check?url=` | $0.01 | Deep performance audit with network tracing, asset analysis, and server headers |
+| **Domain Authenticity Verify** | `GET /check?domain=` | $0.005 | Multi-signal domain legitimacy verification via WHOIS, DNS, SSL, and web presence |
+| **Performance and Availability Report** | `GET /check?url=` | $0.005 | Website performance metrics, uptime history from DNS and server response analysis |
+| **Domain Intelligence Aggregator** | `GET /check?domain=` | $0.005 | WHOIS, DNS records, SSL certificates, and historical analysis in a single report |
 
 New APIs are added automatically as the brain discovers demand and builds solutions. See [How the Brain Works](#the-autonomous-brain) below.
 
@@ -167,10 +173,10 @@ Most APIs offer free `/preview` endpoints so agents can verify functionality bef
 
 ## The Autonomous Brain
 
-APIMesh has an autonomous build loop that runs daily on the server. It discovers demand, generates APIs, tests them, and deploys to production — no human in the loop.
+APIMesh has an autonomous build loop that runs daily on the server. It discovers demand, generates APIs, tests them, and deploys to production — no human in the loop. It also maintains the [awesome-mpp](https://github.com/mbeato/awesome-mpp) ecosystem directory.
 
 ```
-Monitor → Scout → Build → Security Audit → Staging → Prod
+Monitor → Scanner → Scout → Build → Security Audit → Staging → Prod
   │         │        │          │              │        │
   │         │        │          │              │        └─ verify health
   ��         │        │          │              └─ deploy + test endpoints
@@ -205,12 +211,12 @@ The brain currently uses OpenAI (`gpt-4.1-mini`) for code generation and scores 
 
 ## Contributing
 
-Contributions are welcome. If you find a bug or want to suggest a new API tool, [open an issue](https://github.com/mbeato/conway/issues) or [start a discussion](https://github.com/mbeato/conway/discussions).
+Contributions are welcome. If you find a bug or want to suggest a new API tool, [open an issue](https://github.com/mbeato/APIMesh/issues) or [start a discussion](https://github.com/mbeato/APIMesh/discussions).
 
 To run locally:
 
 ```bash
-git clone https://github.com/mbeato/conway.git
+git clone https://github.com/mbeato/APIMesh.git
 cd conway
 bun install
 bun --hot apis/router.ts
