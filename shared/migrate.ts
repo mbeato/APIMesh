@@ -49,6 +49,14 @@ export function migrate(db: Database, migrationsDir: string): void {
     addColumnIfAbsent(db, "revenue", "payer_wallet", "TEXT");
   }
 
+  // Pre-migration: Add saturation_score to backlog if missing (006 was a no-op)
+  const preExistingBacklog = db
+    .query("SELECT COUNT(*) AS cnt FROM sqlite_master WHERE type='table' AND name='backlog'")
+    .get() as { cnt: number };
+  if (preExistingBacklog.cnt > 0) {
+    addColumnIfAbsent(db, "backlog", "saturation_score", "REAL DEFAULT 0");
+  }
+
   // Read migration files, sorted by name for ordering
   let files: string[];
   try {

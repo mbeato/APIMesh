@@ -31,8 +31,11 @@ function resolveSecretKey(): string {
 function resolveStripeKey(): string {
   const key = process.env.STRIPE_SECRET_KEY;
   if (!key) {
-    console.error("FATAL: STRIPE_SECRET_KEY required for MPP Stripe integration");
-    process.exit(1);
+    if (process.env.NODE_ENV === "production") {
+      console.error("FATAL: STRIPE_SECRET_KEY required for MPP Stripe integration");
+      process.exit(1);
+    }
+    return "";
   }
   return key;
 }

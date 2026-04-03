@@ -559,7 +559,8 @@ async function testLocally(
     if (process.env.NETWORK) safeEnv.NETWORK = process.env.NETWORK;
     if (process.env.CDP_API_KEY_ID) safeEnv.CDP_API_KEY_ID = process.env.CDP_API_KEY_ID;
     if (process.env.CDP_API_KEY_SECRET) safeEnv.CDP_API_KEY_SECRET = process.env.CDP_API_KEY_SECRET;
-    if (process.env.MPP_ENABLED) safeEnv.MPP_ENABLED = process.env.MPP_ENABLED;
+    // MPP_ENABLED intentionally NOT passed — test builds don't need payment
+    // integration, and passing it without STRIPE_SECRET_KEY causes a fatal exit.
 
     const testProc = Bun.spawn(
       [BUN, "run", join(tempApiDir, "index.ts")],
