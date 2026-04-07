@@ -110,6 +110,12 @@ export interface BacklogItem {
   overall_score: number;
   status: string;
   created_at: string;
+  saturation_score: number;
+  search_volume: number | null;
+  marketplace_listings: number | null;
+  measured_demand_score: number | null;
+  demand_source: string | null;
+  category: string | null;
 }
 
 export function getTopBacklogItem(): BacklogItem | null {
@@ -132,12 +138,22 @@ export function insertBacklogItem(
   effortScore: number,
   competitionScore: number,
   overallScore: number,
-  saturationScore: number = 0
+  saturationScore: number = 0,
+  demandData?: {
+    search_volume?: number | null;
+    marketplace_listings?: number | null;
+    measured_demand_score?: number | null;
+    demand_source?: string | null;
+    category?: string | null;
+  }
 ) {
   db.run(
-    `INSERT OR IGNORE INTO backlog (name, description, demand_score, effort_score, competition_score, overall_score, saturation_score)
-     VALUES (?, ?, ?, ?, ?, ?, ?)`,
-    [name, description, demandScore, effortScore, competitionScore, overallScore, saturationScore]
+    `INSERT OR IGNORE INTO backlog (name, description, demand_score, effort_score, competition_score, overall_score, saturation_score, search_volume, marketplace_listings, measured_demand_score, demand_source, category)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [name, description, demandScore, effortScore, competitionScore, overallScore, saturationScore,
+     demandData?.search_volume ?? null, demandData?.marketplace_listings ?? null,
+     demandData?.measured_demand_score ?? null, demandData?.demand_source ?? null,
+     demandData?.category ?? null]
   );
 }
 
