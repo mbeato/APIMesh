@@ -61,7 +61,7 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 14-01-PLAN.md — Demand data sources, tests, and DB schema extension (DEMAND-01, DEMAND-02, DEMAND-03, DEMAND-06)
+- [x] 14-01-PLAN.md — Demand data sources, tests, and DB schema extension (DEMAND-01, DEMAND-02, DEMAND-03, DEMAND-06)
 - [ ] 14-02-PLAN.md — Scoring integration, theme weeks, and model escalation (DEMAND-04, DEMAND-05, DEMAND-07)
 
 ### Phase 15: Higher Quality Builder
@@ -100,5 +100,5 @@ Phases execute in numeric order: 13 -> 14 -> 15
 | 11. Platform Analytics & Security | v1.0 | 3/3 | Complete | 2026-03-26 |
 | 12. Documentation Backfill | v1.0 | 1/1 | Complete | 2026-03-26 |
 | 13. Legal Compliance | v1.1 | 1/2 | Complete    | 2026-04-07 |
-| 14. Demand-Driven Scout | v1.1 | 0/2 | Not started | - |
+| 14. Demand-Driven Scout | v1.1 | 1/2 | In progress | - |
 | 15. Higher Quality Builder | v1.1 | 0/? | Not started | - |
