@@ -553,9 +553,13 @@ app.post("/auth/signup", authLimit, async (c) => {
     return c.json({ error: "Invalid JSON" }, 400);
   }
 
-  const { email, password } = body;
+  const { email, password, tos_agree } = body;
   if (!email || !password) {
     return c.json({ error: "Email and password are required" }, 400);
+  }
+
+  if (!tos_agree) {
+    return c.json({ error: "You must agree to the Terms of Service and Privacy Policy" }, 400);
   }
 
   // Rate limit by IP
@@ -604,7 +608,7 @@ app.post("/auth/signup", authLimit, async (c) => {
   const userId = crypto.randomUUID();
   const passwordHash = await hashPassword(password);
   db.run(
-    "INSERT INTO users (id, email, password_hash) VALUES (?, ?, ?)",
+    "INSERT INTO users (id, email, password_hash, tos_accepted_at) VALUES (?, ?, ?, datetime('now'))",
     [userId, normalized, passwordHash]
   );
 

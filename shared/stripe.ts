@@ -64,6 +64,8 @@ export async function createCheckoutSession(
   params.set("metadata[user_id]", userId);
   params.set("metadata[tier]", tier);
   params.set("metadata[credits_amount]", String(tierConfig.credits));
+  params.set("custom_text[submit][message]",
+    "By completing this purchase, you acknowledge that APIMesh credits are non-refundable prepaid credits. See our Refund Policy at https://apimesh.xyz/legal/refund for details.");
 
   try {
     const res = await fetch(`${STRIPE_API_BASE}/checkout/sessions`, {
