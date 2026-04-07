@@ -373,12 +373,18 @@
         return;
       }
 
+      var tosCheckbox = document.getElementById("tos-agree");
+      if (tosCheckbox && !tosCheckbox.checked) {
+        showError("You must agree to the Terms of Service and Privacy Policy.");
+        return;
+      }
+
       setLoading(btn, true);
 
       fetch("/auth/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json", "X-Requested-With": "XMLHttpRequest" },
-        body: JSON.stringify({ email: email, password: password }),
+        body: JSON.stringify({ email: email, password: password, tos_agree: true }),
       })
         .then(function (res) {
           return res.json().then(function (data) {
