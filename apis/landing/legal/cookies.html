@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cookie Disclosure - APIMesh</title>
+    <link rel="icon" type="image/svg+xml" href="/logo-nav.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <style>
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+      :root {
+        --bg: #0a0a0a;
+        --surface: #111111;
+        --border: #1c1c1c;
+        --border-hover: #2a2a2a;
+        --text: #e0e0e0;
+        --text-secondary: #777;
+        --text-dim: #555;
+        --accent: #3ddc84;
+        --accent-dim: rgba(61, 220, 132, 0.08);
+        --sans: "DM Sans", -apple-system, sans-serif;
+        --mono: "JetBrains Mono", "SF Mono", monospace;
+      }
+
+      body { font-family: var(--sans); background: var(--bg); color: var(--text); min-height: 100vh; -webkit-font-smoothing: antialiased; font-size: 15px; line-height: 1.6; }
+      .legal-container { max-width: 720px; margin: 0 auto; padding: 40px 20px; }
+      .legal-header { margin-bottom: 32px; }
+      .legal-header .back-link { display: inline-block; color: var(--text-dim); text-decoration: none; font-size: 13px; margin-bottom: 16px; transition: color 0.15s; }
+      .legal-header .back-link:hover { color: var(--text); }
+      .legal-header h1 { font-size: 28px; font-weight: 600; letter-spacing: -0.5px; margin-bottom: 8px; }
+      .legal-header .effective-date { font-size: 13px; color: var(--text-dim); font-family: var(--mono); }
+
+      .tldr-box { background: var(--accent-dim); border: 1px solid rgba(61, 220, 132, 0.15); padding: 20px 24px; margin-bottom: 32px; }
+      .tldr-box h3 { font-family: var(--mono); font-size: 13px; font-weight: 500; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+      .tldr-box ul { list-style: none; padding: 0; }
+      .tldr-box li { position: relative; padding-left: 16px; margin-bottom: 8px; font-size: 14px; color: var(--text); line-height: 1.5; }
+      .tldr-box li::before { content: ">"; position: absolute; left: 0; color: var(--accent); font-family: var(--mono); }
+
+      .legal-content h2 { font-size: 18px; font-weight: 600; margin-top: 32px; margin-bottom: 12px; letter-spacing: -0.3px; }
+      .legal-content p { margin-bottom: 12px; color: var(--text-secondary); font-size: 14px; line-height: 1.7; }
+      .legal-content ul { margin-bottom: 12px; padding-left: 20px; }
+      .legal-content li { color: var(--text-secondary); font-size: 14px; line-height: 1.7; margin-bottom: 4px; }
+      .legal-content a { color: var(--accent); text-decoration: none; }
+      .legal-content a:hover { text-decoration: underline; }
+
+      .cookie-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+      .cookie-table th, .cookie-table td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--border); font-size: 13px; color: var(--text-secondary); }
+      .cookie-table th { color: var(--text-dim); font-weight: 500; font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+      footer { border-top: 1px solid var(--border); padding: 28px 0; margin-top: 48px; }
+      .footer-inner { max-width: 720px; margin: 0 auto; padding: 0 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; font-size: 13px; color: var(--text-dim); }
+      .footer-left { display: flex; align-items: center; gap: 8px; }
+      .footer-left a { color: var(--text-dim); text-decoration: none; }
+      .footer-left a:hover { color: var(--text); }
+      .footer-legal { display: flex; gap: 16px; flex-wrap: wrap; }
+      .footer-legal a { color: var(--text-dim); text-decoration: none; font-size: 12px; }
+      .footer-legal a:hover { color: var(--text-secondary); }
+    </style>
+  </head>
+  <body>
+    <div class="legal-container">
+      <div class="legal-header">
+        <a href="/" class="back-link">&larr; APIMesh</a>
+        <h1>Cookie Disclosure</h1>
+        <div class="effective-date">Effective: April 2026</div>
+      </div>
+
+      <div class="tldr-box">
+        <h3>TL;DR</h3>
+        <ul>
+          <li>We use one essential session cookie for login</li>
+          <li>No tracking cookies, no analytics cookies, no third-party cookies</li>
+          <li>No cookie consent banner needed because we don't track you</li>
+        </ul>
+      </div>
+
+      <div class="legal-content">
+        <h2>1. What Cookies We Use</h2>
+        <p>APIMesh uses a single cookie, strictly necessary for authentication:</p>
+        <table class="cookie-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Purpose</th>
+              <th>Type</th>
+              <th>Duration</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>session</code></td>
+              <td>Authentication session identifier</td>
+              <td>httpOnly, Secure, SameSite=Lax</td>
+              <td>Session (expires on browser close or after idle timeout)</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h2>2. What We Don't Use</h2>
+        <ul>
+          <li>No Google Analytics or any analytics platform</li>
+          <li>No Facebook Pixel or advertising trackers</li>
+          <li>No cross-site tracking cookies</li>
+          <li>No fingerprinting scripts</li>
+          <li>No social media widgets that set cookies</li>
+        </ul>
+
+        <h2>3. Why No Cookie Banner</h2>
+        <p>Under the GDPR and ePrivacy Directive, strictly necessary cookies do not require user consent. Since our only cookie is essential for login functionality, no consent banner is needed. If we ever add non-essential cookies in the future, we will add a consent mechanism before doing so.</p>
+
+        <h2>4. Third-Party Cookies</h2>
+        <p>APIMesh does not set any third-party cookies. When you purchase credits via Stripe Checkout, you are redirected to Stripe's domain where their own cookies may apply under <a href="https://stripe.com/cookies-policy/legal" target="_blank" rel="noopener noreferrer">Stripe's cookie policy</a>.</p>
+
+        <h2>5. Contact</h2>
+        <p>Questions about our cookie practices? Email <a href="mailto:support@apimesh.xyz">support@apimesh.xyz</a>.</p>
+      </div>
+    </div>
+
+    <footer>
+      <div class="footer-inner">
+        <div class="footer-left">
+          <a href="/"><img src="/logo-nav.svg" alt="" width="16" height="16" style="border-radius:3px;vertical-align:middle;margin-right:4px" />APIMesh</a>
+        </div>
+        <div class="footer-legal">
+          <a href="/legal/terms">Terms</a>
+          <a href="/legal/privacy">Privacy</a>
+          <a href="/legal/acceptable-use">Acceptable Use</a>
+          <a href="/legal/refund">Refund Policy</a>
+          <a href="/legal/cookies">Cookies</a>
+          <a href="/legal/abuse">DMCA/Abuse</a>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

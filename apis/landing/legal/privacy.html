@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Privacy Policy - APIMesh</title>
+    <link rel="icon" type="image/svg+xml" href="/logo-nav.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <style>
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+      :root {
+        --bg: #0a0a0a;
+        --surface: #111111;
+        --border: #1c1c1c;
+        --border-hover: #2a2a2a;
+        --text: #e0e0e0;
+        --text-secondary: #777;
+        --text-dim: #555;
+        --accent: #3ddc84;
+        --accent-dim: rgba(61, 220, 132, 0.08);
+        --sans: "DM Sans", -apple-system, sans-serif;
+        --mono: "JetBrains Mono", "SF Mono", monospace;
+      }
+
+      body {
+        font-family: var(--sans);
+        background: var(--bg);
+        color: var(--text);
+        min-height: 100vh;
+        -webkit-font-smoothing: antialiased;
+        font-size: 15px;
+        line-height: 1.6;
+      }
+
+      .legal-container { max-width: 720px; margin: 0 auto; padding: 40px 20px; }
+      .legal-header { margin-bottom: 32px; }
+      .legal-header .back-link { display: inline-block; color: var(--text-dim); text-decoration: none; font-size: 13px; margin-bottom: 16px; transition: color 0.15s; }
+      .legal-header .back-link:hover { color: var(--text); }
+      .legal-header h1 { font-size: 28px; font-weight: 600; letter-spacing: -0.5px; margin-bottom: 8px; }
+      .legal-header .effective-date { font-size: 13px; color: var(--text-dim); font-family: var(--mono); }
+
+      .tldr-box { background: var(--accent-dim); border: 1px solid rgba(61, 220, 132, 0.15); padding: 20px 24px; margin-bottom: 32px; }
+      .tldr-box h3 { font-family: var(--mono); font-size: 13px; font-weight: 500; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+      .tldr-box ul { list-style: none; padding: 0; }
+      .tldr-box li { position: relative; padding-left: 16px; margin-bottom: 8px; font-size: 14px; color: var(--text); line-height: 1.5; }
+      .tldr-box li::before { content: ">"; position: absolute; left: 0; color: var(--accent); font-family: var(--mono); }
+
+      .legal-content h2 { font-size: 18px; font-weight: 600; margin-top: 32px; margin-bottom: 12px; letter-spacing: -0.3px; }
+      .legal-content h3 { font-size: 15px; font-weight: 600; margin-top: 20px; margin-bottom: 8px; }
+      .legal-content p { margin-bottom: 12px; color: var(--text-secondary); font-size: 14px; line-height: 1.7; }
+      .legal-content ul { margin-bottom: 12px; padding-left: 20px; }
+      .legal-content li { color: var(--text-secondary); font-size: 14px; line-height: 1.7; margin-bottom: 4px; }
+      .legal-content a { color: var(--accent); text-decoration: none; }
+      .legal-content a:hover { text-decoration: underline; }
+
+      footer { border-top: 1px solid var(--border); padding: 28px 0; margin-top: 48px; }
+      .footer-inner { max-width: 720px; margin: 0 auto; padding: 0 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; font-size: 13px; color: var(--text-dim); }
+      .footer-left { display: flex; align-items: center; gap: 8px; }
+      .footer-left a { color: var(--text-dim); text-decoration: none; }
+      .footer-left a:hover { color: var(--text); }
+      .footer-legal { display: flex; gap: 16px; flex-wrap: wrap; }
+      .footer-legal a { color: var(--text-dim); text-decoration: none; font-size: 12px; }
+      .footer-legal a:hover { color: var(--text-secondary); }
+    </style>
+  </head>
+  <body>
+    <div class="legal-container">
+      <div class="legal-header">
+        <a href="/" class="back-link">&larr; APIMesh</a>
+        <h1>Privacy Policy</h1>
+        <div class="effective-date">Effective: April 2026</div>
+      </div>
+
+      <div class="tldr-box">
+        <h3>TL;DR</h3>
+        <ul>
+          <li>We collect your email, hashed password, and API usage logs</li>
+          <li>Stripe handles payments -- we never see your card number</li>
+          <li>Resend delivers transactional emails on our behalf</li>
+          <li>We don't sell your data or use tracking cookies</li>
+          <li>GDPR and CCPA rights: access, delete, export your data anytime</li>
+        </ul>
+      </div>
+
+      <div class="legal-content">
+        <h2>1. What We Collect</h2>
+        <ul>
+          <li>Email address (for account login and communication)</li>
+          <li>Password (stored as an Argon2id hash -- we never store plaintext)</li>
+          <li>API request logs: timestamps, endpoints called, response times</li>
+          <li>IP addresses (for rate limiting and abuse prevention, not tracking)</li>
+          <li>Stripe customer ID (links your account to your payment history)</li>
+        </ul>
+
+        <h2>2. How We Use It</h2>
+        <p>Your data is used for: account authentication, API access authorization, usage analytics (aggregate, not individual tracking), abuse prevention, and billing reconciliation.</p>
+
+        <h2>3. Third-Party Services</h2>
+        <p><strong>Stripe</strong> processes payments. When you purchase credits, Stripe receives your email and payment information under <a href="https://stripe.com/privacy" target="_blank" rel="noopener noreferrer">their privacy policy</a>. We never see or store your card number.</p>
+        <p><strong>Resend</strong> delivers transactional emails (verification codes, password resets). They receive your email address under <a href="https://resend.com/legal/privacy-policy" target="_blank" rel="noopener noreferrer">their privacy policy</a>.</p>
+        <p>We do not use Google Analytics, Facebook Pixel, or any third-party tracking or advertising services.</p>
+
+        <h2>4. Data Retention</h2>
+        <ul>
+          <li>Account data: retained while your account is active</li>
+          <li>API request logs: retained for 90 days</li>
+          <li>After account deletion request: all data deleted within 30 days</li>
+        </ul>
+
+        <h2>5. Cookies</h2>
+        <p>We use one essential httpOnly session cookie for authentication. No tracking cookies, no analytics cookies, no third-party cookies. See our <a href="/legal/cookies">Cookie Disclosure</a> for details.</p>
+
+        <h2>6. Your Rights -- GDPR</h2>
+        <p>If you are in the European Economic Area, you have the right to:</p>
+        <ul>
+          <li><strong>Access</strong> your personal data</li>
+          <li><strong>Rectify</strong> inaccurate data</li>
+          <li><strong>Erase</strong> your data ("right to be forgotten")</li>
+          <li><strong>Port</strong> your data to another service</li>
+          <li><strong>Restrict</strong> processing of your data</li>
+          <li><strong>Object</strong> to processing of your data</li>
+        </ul>
+        <p>To exercise any of these rights, email <a href="mailto:support@apimesh.xyz">support@apimesh.xyz</a>.</p>
+
+        <h2>7. Your Rights -- CCPA</h2>
+        <p>If you are a California resident, you have the right to:</p>
+        <ul>
+          <li><strong>Know</strong> what personal information we collect and how it's used</li>
+          <li><strong>Delete</strong> your personal information</li>
+          <li><strong>Opt out</strong> of the sale of personal information (we do not sell your data)</li>
+        </ul>
+        <p>We do not operate financial incentive programs tied to personal data.</p>
+
+        <h2>8. Data Security</h2>
+        <p>We protect your data with: Argon2id password hashing, HTTPS-only connections, per-IP rate limiting, CSRF protection, httpOnly secure session cookies, and regular security reviews.</p>
+
+        <h2>9. International Transfers</h2>
+        <p>Data is stored on Hetzner servers. If you are outside the server's jurisdiction, your data may be transferred internationally. We rely on standard contractual clauses where applicable.</p>
+
+        <h2>10. Children</h2>
+        <p>APIMesh is not intended for use by anyone under the age of 13. We do not knowingly collect data from children.</p>
+
+        <h2>11. Changes</h2>
+        <p>We will notify you of material changes via email at least 30 days before they take effect.</p>
+
+        <h2>12. Contact</h2>
+        <p>For privacy inquiries: <a href="mailto:support@apimesh.xyz">support@apimesh.xyz</a></p>
+        <p>Data Protection Officer: <a href="mailto:privacy@apimesh.xyz">privacy@apimesh.xyz</a></p>
+      </div>
+    </div>
+
+    <footer>
+      <div class="footer-inner">
+        <div class="footer-left">
+          <a href="/"><img src="/logo-nav.svg" alt="" width="16" height="16" style="border-radius:3px;vertical-align:middle;margin-right:4px" />APIMesh</a>
+        </div>
+        <div class="footer-legal">
+          <a href="/legal/terms">Terms</a>
+          <a href="/legal/privacy">Privacy</a>
+          <a href="/legal/acceptable-use">Acceptable Use</a>
+          <a href="/legal/refund">Refund Policy</a>
+          <a href="/legal/cookies">Cookies</a>
+          <a href="/legal/abuse">DMCA/Abuse</a>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>
