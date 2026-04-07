@@ -155,6 +155,25 @@ app.get("/.well-known/*", publicLimit, async (c) => {
   return c.json({ error: "Not found" }, 404);
 });
 
+// Legal pages — static, publicly cached
+const LEGAL_PAGES = ["terms", "privacy", "acceptable-use", "refund", "cookies", "abuse"];
+for (const page of LEGAL_PAGES) {
+  app.get(`/legal/${page}`, publicLimit, async (c) => {
+    const file = Bun.file(join(import.meta.dir, `../landing/legal/${page}.html`));
+    if (await file.exists()) {
+      return new Response(await file.text(), {
+        headers: {
+          "Content-Type": "text/html; charset=utf-8",
+          "Content-Security-Policy": "default-src 'none'; script-src 'self'; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'",
+          "X-Content-Type-Options": "nosniff",
+          "Cache-Control": "public, max-age=86400",
+        },
+      });
+    }
+    return c.text("Page not found", 404);
+  });
+}
+
 // Landing page — public, no auth (served at apimesh.xyz root)
 app.get("/", publicLimit, async (c) => {
   const file = Bun.file(join(import.meta.dir, "../landing/landing.html"));

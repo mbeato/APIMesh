@@ -307,6 +307,11 @@
         .overview-actions { grid-template-columns: 1fr; }
         .overview-card-value { font-size: 24px; }
       }
+
+      .legal-footer { border-top: 1px solid var(--border); padding: 16px 0; margin-top: 48px; }
+      .legal-footer-inner { max-width: 600px; margin: 0 auto; display: flex; justify-content: center; gap: 16px; flex-wrap: wrap; padding: 0 20px; }
+      .legal-footer-inner a { color: var(--text-dim); text-decoration: none; font-size: 12px; }
+      .legal-footer-inner a:hover { color: var(--text-secondary); }
     </style>
   </head>
   <body>
@@ -379,6 +384,16 @@
       </div>
 
     </div>
+    <footer class="legal-footer">
+      <div class="legal-footer-inner">
+        <a href="/legal/terms">Terms</a>
+        <a href="/legal/privacy">Privacy</a>
+        <a href="/legal/acceptable-use">Acceptable Use</a>
+        <a href="/legal/refund">Refund Policy</a>
+        <a href="/legal/cookies">Cookies</a>
+        <a href="/legal/abuse">DMCA/Abuse</a>
+      </div>
+    </footer>
     <script src="/auth.js" defer></script>
   </body>
 </html>

@@ -29,6 +29,10 @@
     .entry-content p { font-size: 15px; color: #aaa; margin-bottom: 8px; }
     .entry-url { font-size: 13px; color: #555; font-family: 'JetBrains Mono', monospace; }
     .footer { margin-top: 64px; padding-top: 24px; border-top: 1px solid #1a1a1a; font-size: 14px; color: #666; text-align: center; }
+    .legal-footer { border-top: 1px solid #1a1a1a; padding: 16px 0; margin-top: 24px; }
+    .legal-footer-inner { display: flex; justify-content: center; gap: 16px; flex-wrap: wrap; }
+    .legal-footer-inner a { color: #555; text-decoration: none; font-size: 12px; }
+    .legal-footer-inner a:hover { color: #888; }
   </style>
 </head>
 <body>
@@ -225,6 +229,16 @@
     <div class="footer">
       <a href="/"><img src="/logo-nav.svg" alt="" width="14" height="14" style="border-radius:3px;vertical-align:middle;margin-right:4px">APIMesh</a> · <a href="/tools">All APIs</a> · <a href="https://github.com/mbeato/conway">GitHub</a>
     </div>
+    <footer class="legal-footer">
+      <div class="legal-footer-inner">
+        <a href="/legal/terms">Terms</a>
+        <a href="/legal/privacy">Privacy</a>
+        <a href="/legal/acceptable-use">Acceptable Use</a>
+        <a href="/legal/refund">Refund Policy</a>
+        <a href="/legal/cookies">Cookies</a>
+        <a href="/legal/abuse">DMCA/Abuse</a>
+      </div>
+    </footer>
   </div>
 </body>
 </html>

@@ -631,6 +631,17 @@
         transition: color 0.15s;
       }
       .footer-links a:hover { color: var(--text); }
+      .footer-legal {
+        display: flex;
+        gap: 16px;
+        flex-wrap: wrap;
+      }
+      .footer-legal a {
+        color: var(--text-dim);
+        text-decoration: none;
+        font-size: 12px;
+      }
+      .footer-legal a:hover { color: var(--text-secondary); }
 
       /* --- Responsive --- */
       @media (max-width: 1024px) {
@@ -834,6 +845,14 @@
           <a href="https://www.npmjs.com/package/@mbeato/apimesh-mcp-server" target="_blank" rel="noopener noreferrer">npm</a>
           <a href="/dashboard">Dashboard</a>
           <a href="/signup">Sign Up</a>
+        </div>
+        <div class="footer-legal">
+          <a href="/legal/terms">Terms</a>
+          <a href="/legal/privacy">Privacy</a>
+          <a href="/legal/acceptable-use">Acceptable Use</a>
+          <a href="/legal/refund">Refund Policy</a>
+          <a href="/legal/cookies">Cookies</a>
+          <a href="/legal/abuse">DMCA/Abuse</a>
         </div>
       </div>
     </footer>
