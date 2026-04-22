@@ -4,6 +4,7 @@ import db, {
   registerApi,
 } from "../../shared/db";
 import { join, resolve } from "path";
+import { tmpdir } from "os";
 import { chat } from "../../shared/llm";
 import { getReferencesForCategory } from "./reference-selector";
 import { competitiveResearch } from "./competitive-research";
@@ -21,6 +22,8 @@ const RESERVED_NAMES = new Set([
 const PROJECT_DIR = join(import.meta.dir, "..", "..");
 const APIS_DIR = join(PROJECT_DIR, "apis");
 const REGISTRY_PATH = join(APIS_DIR, "registry.ts");
+// Test build workspace — in /tmp because systemd sandbox keeps project dir read-only.
+const TEST_BUILDS_DIR = join(tmpdir(), "conway-test-builds");
 const TEST_PORT = 3099;
 const BUN = Bun.argv[0];
 
@@ -157,6 +160,8 @@ Technical requirements:
 7. CORS open to all origins
 8. Supports both x402 and MPP payment protocols
 9. Split code into multiple files: index.ts (routing + middleware) and one or more helper files (business logic, types, utilities)
+10. EVERY fetch/safeFetch call MUST include AbortSignal.timeout(10000) as the signal option
+11. When an endpoint makes 2+ independent external requests, use Promise.all() to run them in parallel
 
 CRITICAL error handling rules (follow these EXACTLY):
 - All safeFetch/fetch calls MUST use timeoutMs of at least 10000 (10 seconds). HEAD requests can use 8000.
@@ -472,7 +477,7 @@ async function testLocally(
   name: string,
   files: GeneratedFile[]
 ): Promise<{ success: boolean; error?: string }> {
-  const testDir = join(PROJECT_DIR, ".test-builds", name);
+  const testDir = join(TEST_BUILDS_DIR, name);
 
   // .env protection: temporarily rename .env so the test process cannot read
   // secrets directly from disk even if env vars are stripped from process.env.
@@ -1025,7 +1030,7 @@ export async function build(): Promise<boolean> {
   }
 
   // Deploy pipeline: copy -> registry -> staging -> staging test -> prod
-  const testDir = join(PROJECT_DIR, ".test-builds", name);
+  const testDir = join(TEST_BUILDS_DIR, name);
   const finalDir = join(APIS_DIR, name);
   await Bun.spawn(["rm", "-rf", finalDir]).exited;
   await Bun.spawn(["cp", "-r", testDir, finalDir]).exited;

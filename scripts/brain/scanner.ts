@@ -14,7 +14,8 @@
 
 import { join } from "path";
 
-const STATE_FILE = join(import.meta.dir, "scanner-state.json");
+// In data/ (covered by systemd ReadWritePaths) rather than alongside source.
+const STATE_FILE = join(import.meta.dir, "..", "..", "data", "scanner-state.json");
 
 interface ScannerState {
   /** Project IDs we've already processed (found + diffed) */
