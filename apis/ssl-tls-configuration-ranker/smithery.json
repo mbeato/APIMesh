@@ -1,0 +1,17 @@
+{
+  "name": "ssl-tls-configuration-ranker",
+  "description": "Aggregate publicly available SSL/TLS scan data, DNS records, and certificate transparency logs to evaluate and score SSL configurations across multiple sites, highlighting weak protocols, cipher suite",
+  "url": "https://ssl-tls-configuration-ranker.apimesh.xyz",
+  "protocol": "x402",
+  "price": "$0.005",
+  "tools": [
+    {
+      "name": "ssl-tls-configuration-ranker",
+      "description": "Aggregate publicly available SSL/TLS scan data, DNS records, and certificate transparency logs to evaluate and score SSL configurations across multiple sites, highlighting weak protocols, cipher suite",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    }
+  ]
+}

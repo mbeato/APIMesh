@@ -1,0 +1,17 @@
+{
+  "name": "ssl-tls-risk-analyzer",
+  "description": "Aggregates SSL/TLS configuration details from free public scans, DNS records, and certificate transparency logs, then performs a risk assessment based on outdated protocols, weak cipher suites, and ce",
+  "url": "https://ssl-tls-risk-analyzer.apimesh.xyz",
+  "protocol": "x402",
+  "price": "$0.005",
+  "tools": [
+    {
+      "name": "ssl-tls-risk-analyzer",
+      "description": "Aggregates SSL/TLS configuration details from free public scans, DNS records, and certificate transparency logs, then performs a risk assessment based on outdated protocols, weak cipher suites, and ce",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    }
+  ]
+}

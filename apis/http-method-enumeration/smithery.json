@@ -1,0 +1,17 @@
+{
+  "name": "http-method-enumeration",
+  "description": "Enumerates supported HTTP methods (GET, POST, PUT, DELETE, etc.) on a given URL to assess allowed operations and security posture.",
+  "url": "https://http-method-enumeration.apimesh.xyz",
+  "protocol": "x402",
+  "price": "$0.005",
+  "tools": [
+    {
+      "name": "http-method-enumeration",
+      "description": "Enumerates supported HTTP methods (GET, POST, PUT, DELETE, etc.) on a given URL to assess allowed operations and security posture.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    }
+  ]
+}

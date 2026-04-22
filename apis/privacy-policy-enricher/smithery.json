@@ -1,0 +1,17 @@
+{
+  "name": "privacy-policy-enricher",
+  "description": "Fetches privacy policies from domains via public URLs, analyzes content for GDPR/CCPA signals, data sharing practices, and privacy features by cross-referencing publicly available information, aiding ",
+  "url": "https://privacy-policy-enricher.apimesh.xyz",
+  "protocol": "x402",
+  "price": "$0.005",
+  "tools": [
+    {
+      "name": "privacy-policy-enricher",
+      "description": "Fetches privacy policies from domains via public URLs, analyzes content for GDPR/CCPA signals, data sharing practices, and privacy features by cross-referencing publicly available information, aiding ",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "name": "csp-policy-heuristics",
+  "description": "Analyzes website responses and resource loading to generate tailored Content Security Policies (CSP). Uses multi-source data to identify insecure resource usage and recommend strong, context-aware CSP",
+  "url": "https://csp-policy-heuristics.apimesh.xyz",
+  "protocol": "x402",
+  "price": "$0.005",
+  "tools": [
+    {
+      "name": "csp-policy-heuristics",
+      "description": "Analyzes website responses and resource loading to generate tailored Content Security Policies (CSP). Uses multi-source data to identify insecure resource usage and recommend strong, context-aware CSP",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    }
+  ]
+}

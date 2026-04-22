@@ -1,0 +1,17 @@
+{
+  "name": "web-configuration-audit",
+  "description": "Performs an in-depth audit combining robots.txt, sitemap, headers, meta tags, and .env file presence to assess misconfigurations, security leaks, and compliance issues.",
+  "url": "https://web-configuration-audit.apimesh.xyz",
+  "protocol": "x402",
+  "price": "$0.005",
+  "tools": [
+    {
+      "name": "web-configuration-audit",
+      "description": "Performs an in-depth audit combining robots.txt, sitemap, headers, meta tags, and .env file presence to assess misconfigurations, security leaks, and compliance issues.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    }
+  ]
+}

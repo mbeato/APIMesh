@@ -1,0 +1,17 @@
+{
+  "name": "subdomain-exposure-ranking",
+  "description": "Performs exhaustive subdomain enumeration via free DNS and certificate transparency logs, then assesses each subdomain for misconfigurations, exposure of sensitive endpoints, or outdated services, sco",
+  "url": "https://subdomain-exposure-ranking.apimesh.xyz",
+  "protocol": "x402",
+  "price": "$0.005",
+  "tools": [
+    {
+      "name": "subdomain-exposure-ranking",
+      "description": "Performs exhaustive subdomain enumeration via free DNS and certificate transparency logs, then assesses each subdomain for misconfigurations, exposure of sensitive endpoints, or outdated services, sco",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    }
+  ]
+}

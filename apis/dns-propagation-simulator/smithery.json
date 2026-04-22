@@ -1,0 +1,17 @@
+{
+  "name": "dns-propagation-simulator",
+  "description": "Simulate DNS record changes across various global DNS resolvers by querying free DNS APIs, estimating propagation delays, and detecting recent updates or potential misconfigurations. Useful for develo",
+  "url": "https://dns-propagation-simulator.apimesh.xyz",
+  "protocol": "x402",
+  "price": "$0.005",
+  "tools": [
+    {
+      "name": "dns-propagation-simulator",
+      "description": "Simulate DNS record changes across various global DNS resolvers by querying free DNS APIs, estimating propagation delays, and detecting recent updates or potential misconfigurations. Useful for develo",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    }
+  ]
+}

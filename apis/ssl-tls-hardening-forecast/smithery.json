@@ -1,0 +1,17 @@
+{
+  "name": "ssl-tls-hardening-forecast",
+  "description": "Aggregates SSL/TLS configuration details from free public scans and DNS records, then forecasts expiry dates, protocol support, and cipher support to provide proactive alerts for upcoming renewals and",
+  "url": "https://ssl-tls-hardening-forecast.apimesh.xyz",
+  "protocol": "x402",
+  "price": "$0.005",
+  "tools": [
+    {
+      "name": "ssl-tls-hardening-forecast",
+      "description": "Aggregates SSL/TLS configuration details from free public scans and DNS records, then forecasts expiry dates, protocol support, and cipher support to provide proactive alerts for upcoming renewals and",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    }
+  ]
+}

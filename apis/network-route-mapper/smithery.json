@@ -1,0 +1,17 @@
+{
+  "name": "network-route-mapper",
+  "description": "Infers physical network routing paths, ASN hops, and geolocation data by querying multiple free IP geolocation and ASN APIs; visualizes or analyzes network topology for security and performance.",
+  "url": "https://network-route-mapper.apimesh.xyz",
+  "protocol": "x402",
+  "price": "$0.005",
+  "tools": [
+    {
+      "name": "network-route-mapper",
+      "description": "Infers physical network routing paths, ASN hops, and geolocation data by querying multiple free IP geolocation and ASN APIs; visualizes or analyzes network topology for security and performance.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    }
+  ]
+}

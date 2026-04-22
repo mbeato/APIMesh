@@ -1,0 +1,17 @@
+{
+  "name": "ssl-tls-threat-assessment",
+  "description": "Aggregates SSL/TLS scan data from free APIs, analyzing protocol support, cipher strength, and known vulnerabilities, then produces a security risk score for HTTPS configurations to aid in hardening ef",
+  "url": "https://ssl-tls-threat-assessment.apimesh.xyz",
+  "protocol": "x402",
+  "price": "$0.005",
+  "tools": [
+    {
+      "name": "ssl-tls-threat-assessment",
+      "description": "Aggregates SSL/TLS scan data from free APIs, analyzing protocol support, cipher strength, and known vulnerabilities, then produces a security risk score for HTTPS configurations to aid in hardening ef",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    }
+  ]
+}

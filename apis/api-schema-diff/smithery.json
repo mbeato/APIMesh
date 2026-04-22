@@ -1,0 +1,17 @@
+{
+  "name": "api-schema-diff",
+  "description": "Automatically fetches and compares multiple versions of REST or GraphQL API schemas from publicly accessible endpoints, highlighting differences in data structures, available fields, and endpoints to ",
+  "url": "https://api-schema-diff.apimesh.xyz",
+  "protocol": "x402",
+  "price": "$0.005",
+  "tools": [
+    {
+      "name": "api-schema-diff",
+      "description": "Automatically fetches and compares multiple versions of REST or GraphQL API schemas from publicly accessible endpoints, highlighting differences in data structures, available fields, and endpoints to ",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    }
+  ]
+}

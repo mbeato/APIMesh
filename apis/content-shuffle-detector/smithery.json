@@ -1,0 +1,17 @@
+{
+  "name": "content-shuffle-detector",
+  "description": "Analyzes webpage content and meta-data over time from multiple fetches to detect unauthorized content injection, CAPTCHA obfuscation, or dynamic alterations by aggregating variations and NLP-based con",
+  "url": "https://content-shuffle-detector.apimesh.xyz",
+  "protocol": "x402",
+  "price": "$0.005",
+  "tools": [
+    {
+      "name": "content-shuffle-detector",
+      "description": "Analyzes webpage content and meta-data over time from multiple fetches to detect unauthorized content injection, CAPTCHA obfuscation, or dynamic alterations by aggregating variations and NLP-based con",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    }
+  ]
+}

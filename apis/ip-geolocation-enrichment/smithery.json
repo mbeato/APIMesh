@@ -1,0 +1,17 @@
+{
+  "name": "ip-geolocation-enrichment",
+  "description": "Enrich IP addresses with detailed ASN, ISP, geolocation, and routing data by querying multiple free, public APIs. Useful for network diagnostics, security assessments, and routing analyses, combining ",
+  "url": "https://ip-geolocation-enrichment.apimesh.xyz",
+  "protocol": "x402",
+  "price": "$0.005",
+  "tools": [
+    {
+      "name": "ip-geolocation-enrichment",
+      "description": "Enrich IP addresses with detailed ASN, ISP, geolocation, and routing data by querying multiple free, public APIs. Useful for network diagnostics, security assessments, and routing analyses, combining ",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    }
+  ]
+}

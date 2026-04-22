@@ -1,0 +1,17 @@
+{
+  "name": "security-headers-checker",
+  "description": "Analyze HTTP response headers for security best practices, including HSTS, Content-Security-Policy, and X-Frame-Options, to improve web security posture.",
+  "url": "https://security-headers-checker.apimesh.xyz",
+  "protocol": "x402",
+  "price": "$0.005",
+  "tools": [
+    {
+      "name": "security-headers-checker",
+      "description": "Analyze HTTP response headers for security best practices, including HSTS, Content-Security-Policy, and X-Frame-Options, to improve web security posture.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    }
+  ]
+}

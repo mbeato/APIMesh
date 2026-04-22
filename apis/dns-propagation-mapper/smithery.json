@@ -1,0 +1,17 @@
+{
+  "name": "dns-propagation-mapper",
+  "description": "Tracks DNS record changes across multiple global resolvers using free APIs, correlates propagation delays and misconfigurations, and visualizes the DNS health and update status for domain operators.",
+  "url": "https://dns-propagation-mapper.apimesh.xyz",
+  "protocol": "x402",
+  "price": "$0.005",
+  "tools": [
+    {
+      "name": "dns-propagation-mapper",
+      "description": "Tracks DNS record changes across multiple global resolvers using free APIs, correlates propagation delays and misconfigurations, and visualizes the DNS health and update status for domain operators.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    }
+  ]
+}

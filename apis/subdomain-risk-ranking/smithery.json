@@ -1,0 +1,17 @@
+{
+  "name": "subdomain-risk-ranking",
+  "description": "Performs exhaustive subdomain enumeration via free DNS and certificate transparency logs, then scores each subdomain based on security risks like misconfigurations, outdated endpoints, or exposure of ",
+  "url": "https://subdomain-risk-ranking.apimesh.xyz",
+  "protocol": "x402",
+  "price": "$0.005",
+  "tools": [
+    {
+      "name": "subdomain-risk-ranking",
+      "description": "Performs exhaustive subdomain enumeration via free DNS and certificate transparency logs, then scores each subdomain based on security risks like misconfigurations, outdated endpoints, or exposure of ",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    }
+  ]
+}

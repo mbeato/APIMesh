@@ -1,0 +1,17 @@
+{
+  "name": "port-scanner-aggregate",
+  "description": "Performs deep port scans on target IP addresses by querying free DNS, IP info, and open port data sources. Collates open ports, services, and potential vulnerabilities across IP ranges for security as",
+  "url": "https://port-scanner-aggregate.apimesh.xyz",
+  "protocol": "x402",
+  "price": "$0.005",
+  "tools": [
+    {
+      "name": "port-scanner-aggregate",
+      "description": "Performs deep port scans on target IP addresses by querying free DNS, IP info, and open port data sources. Collates open ports, services, and potential vulnerabilities across IP ranges for security as",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    }
+  ]
+}

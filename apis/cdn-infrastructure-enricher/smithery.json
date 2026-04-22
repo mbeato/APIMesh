@@ -1,0 +1,17 @@
+{
+  "name": "cdn-infrastructure-enricher",
+  "description": "Analyzes website response headers, DNS records, and IP ranges to deduce CDN providers, hosting infrastructure, and regional distribution. Combines public DNS, response analysis, and IP info APIs for d",
+  "url": "https://cdn-infrastructure-enricher.apimesh.xyz",
+  "protocol": "x402",
+  "price": "$0.005",
+  "tools": [
+    {
+      "name": "cdn-infrastructure-enricher",
+      "description": "Analyzes website response headers, DNS records, and IP ranges to deduce CDN providers, hosting infrastructure, and regional distribution. Combines public DNS, response analysis, and IP info APIs for d",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    }
+  ]
+}

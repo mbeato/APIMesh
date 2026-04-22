@@ -1,0 +1,17 @@
+{
+  "name": "privacy-risk-score",
+  "description": "Fetch privacy policies and related disclosures from domains via public URLs, analyze for GDPR/CCPA compliance signals, data sharing practices, and privacy disclosures by NLP, generating a composite pr",
+  "url": "https://privacy-risk-score.apimesh.xyz",
+  "protocol": "x402",
+  "price": "$0.005",
+  "tools": [
+    {
+      "name": "privacy-risk-score",
+      "description": "Fetch privacy policies and related disclosures from domains via public URLs, analyze for GDPR/CCPA compliance signals, data sharing practices, and privacy disclosures by NLP, generating a composite pr",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    }
+  ]
+}

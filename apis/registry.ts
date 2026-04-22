@@ -22,6 +22,80 @@ import { app as webResourceValidator } from "./web-resource-validator/index";
 import { app as websiteSecurityHeaderInfo } from "./website-security-header-info/index";
 import { app as websiteVulnerabilityScan } from "./website-vulnerability-scan/index";
 import type { Hono } from "hono";
+import { app as subdomainVulnerabilityRankings } from "./subdomain-vulnerability-rankings/index";
+import { app as cspPolicyHeuristics } from "./csp-policy-heuristics/index";
+import { app as sslTlsRiskAnalyzer } from "./ssl-tls-risk-analyzer/index";
+import { app as subdomainVulnerabilityRanking } from "./subdomain-vulnerability-ranking/index";
+import { app as subdomainExposureScore } from "./subdomain-exposure-score/index";
+import { app as ipInfrastructureAnalyst } from "./ip-infrastructure-analyst/index";
+import { app as subdomainExposureScorer } from "./subdomain-exposure-scorer/index";
+import { app as sslTlsThreatAssessment } from "./ssl-tls-threat-assessment/index";
+import { app as privacyPolicyQualify } from "./privacy-policy-qualify/index";
+import { app as dnsPropagationMapper } from "./dns-propagation-mapper/index";
+import { app as ipInfrastructureAnalyzer } from "./ip-infrastructure-analyzer/index";
+import { app as ipGeolocationEnrichment } from "./ip-geolocation-enrichment/index";
+import { app as websiteAuthenticityAssessment } from "./website-authenticity-assessment/index";
+import { app as sslAndTlsHardeningScore } from "./ssl-and-tls-hardening-score/index";
+import { app as securityHeadersChecker } from "./security-headers-checker/index";
+import { app as subdomainExposureRanking } from "./subdomain-exposure-ranking/index";
+import { app as sslTlsHardeningForecast } from "./ssl-tls-hardening-forecast/index";
+import { app as subdomainExposureRankings } from "./subdomain-exposure-rankings/index";
+import { app as sslTlsExpiryForecast } from "./ssl-tls-expiry-forecast/index";
+import { app as networkRouteMapper } from "./network-route-mapper/index";
+import { app as subdomainExposureHeatmap } from "./subdomain-exposure-heatmap/index";
+import { app as dnsPropagationSimulator } from "./dns-propagation-simulator/index";
+import { app as sslTlsConfigurationRanker } from "./ssl-tls-configuration-ranker/index";
+import { app as privacyPolicyEnricher } from "./privacy-policy-enricher/index";
+import { app as privacyRiskScore } from "./privacy-risk-score/index";
+import { app as httpMethodEnumeration } from "./http-method-enumeration/index";
+import { app as webMisconfigurationScan } from "./web-misconfiguration-scan/index";
+import { app as dependencyLicenseAudit } from "./dependency-license-audit/index";
+import { app as sslTlsConfigurationForecast } from "./ssl-tls-configuration-forecast/index";
+import { app as subdomainRiskRanking } from "./subdomain-risk-ranking/index";
+import { app as contentShuffleDetector } from "./content-shuffle-detector/index";
+import { app as apiSchemaDiff } from "./api-schema-diff/index";
+import { app as apiLinting } from "./api-linting/index";
+import { app as portScannerAggregate } from "./port-scanner-aggregate/index";
+import { app as cdnInfrastructureEnricher } from "./cdn-infrastructure-enricher/index";
+import { app as webConfigurationAudit } from "./web-configuration-audit/index";
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 export const registry: Record<string, Hono> = {
   "check": webChecker,
@@ -47,4 +121,40 @@ export const registry: Record<string, Hono> = {
   "web-resource-validator": webResourceValidator,
   "website-security-header-info": websiteSecurityHeaderInfo,
   "website-vulnerability-scan": websiteVulnerabilityScan,
+  "subdomain-vulnerability-rankings": subdomainVulnerabilityRankings,
+  "csp-policy-heuristics": cspPolicyHeuristics,
+  "ssl-tls-risk-analyzer": sslTlsRiskAnalyzer,
+  "subdomain-vulnerability-ranking": subdomainVulnerabilityRanking,
+  "subdomain-exposure-score": subdomainExposureScore,
+  "ip-infrastructure-analyst": ipInfrastructureAnalyst,
+  "subdomain-exposure-scorer": subdomainExposureScorer,
+  "ssl-tls-threat-assessment": sslTlsThreatAssessment,
+  "privacy-policy-qualify": privacyPolicyQualify,
+  "dns-propagation-mapper": dnsPropagationMapper,
+  "ip-infrastructure-analyzer": ipInfrastructureAnalyzer,
+  "ip-geolocation-enrichment": ipGeolocationEnrichment,
+  "website-authenticity-assessment": websiteAuthenticityAssessment,
+  "ssl-and-tls-hardening-score": sslAndTlsHardeningScore,
+  "security-headers-checker": securityHeadersChecker,
+  "subdomain-exposure-ranking": subdomainExposureRanking,
+  "ssl-tls-hardening-forecast": sslTlsHardeningForecast,
+  "subdomain-exposure-rankings": subdomainExposureRankings,
+  "ssl-tls-expiry-forecast": sslTlsExpiryForecast,
+  "network-route-mapper": networkRouteMapper,
+  "subdomain-exposure-heatmap": subdomainExposureHeatmap,
+  "dns-propagation-simulator": dnsPropagationSimulator,
+  "ssl-tls-configuration-ranker": sslTlsConfigurationRanker,
+  "privacy-policy-enricher": privacyPolicyEnricher,
+  "privacy-risk-score": privacyRiskScore,
+  "http-method-enumeration": httpMethodEnumeration,
+  "web-misconfiguration-scan": webMisconfigurationScan,
+  "dependency-license-audit": dependencyLicenseAudit,
+  "ssl-tls-configuration-forecast": sslTlsConfigurationForecast,
+  "subdomain-risk-ranking": subdomainRiskRanking,
+  "content-shuffle-detector": contentShuffleDetector,
+  "api-schema-diff": apiSchemaDiff,
+  "api-linting": apiLinting,
+  "port-scanner-aggregate": portScannerAggregate,
+  "cdn-infrastructure-enricher": cdnInfrastructureEnricher,
+  "web-configuration-audit": webConfigurationAudit,
 };

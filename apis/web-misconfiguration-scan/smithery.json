@@ -1,0 +1,17 @@
+{
+  "name": "web-misconfiguration-scan",
+  "description": "Detects security misconfigurations by cross-referencing server headers, environment disclosure, file presence, and common vulnerabilities, providing a risk score and mitigation suggestions.",
+  "url": "https://web-misconfiguration-scan.apimesh.xyz",
+  "protocol": "x402",
+  "price": "$0.005",
+  "tools": [
+    {
+      "name": "web-misconfiguration-scan",
+      "description": "Detects security misconfigurations by cross-referencing server headers, environment disclosure, file presence, and common vulnerabilities, providing a risk score and mitigation suggestions.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    }
+  ]
+}

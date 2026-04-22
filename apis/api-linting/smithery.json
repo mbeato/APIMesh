@@ -1,0 +1,17 @@
+{
+  "name": "api-linting",
+  "description": "Provides linting and validation for API design and implementation, highlighting common issues and deviations from best practices.",
+  "url": "https://api-linting.apimesh.xyz",
+  "protocol": "x402",
+  "price": "$0.005",
+  "tools": [
+    {
+      "name": "api-linting",
+      "description": "Provides linting and validation for API design and implementation, highlighting common issues and deviations from best practices.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    }
+  ]
+}

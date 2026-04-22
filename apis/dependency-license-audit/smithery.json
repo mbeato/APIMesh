@@ -1,0 +1,17 @@
+{
+  "name": "dependency-license-audit",
+  "description": "Analyzes project dependencies by fetching package manifest files (package.json, requirements.txt, etc.) and cross-referencing with public license databases via public APIs to identify license types, r",
+  "url": "https://dependency-license-audit.apimesh.xyz",
+  "protocol": "x402",
+  "price": "$0.005",
+  "tools": [
+    {
+      "name": "dependency-license-audit",
+      "description": "Analyzes project dependencies by fetching package manifest files (package.json, requirements.txt, etc.) and cross-referencing with public license databases via public APIs to identify license types, r",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "name": "website-authenticity-assessment",
+  "description": "An API that combines SSL certificate validation, DNS records, redirect chain analysis, and server headers to assess the authenticity and security posture of a website, providing an overall trustworthi",
+  "url": "https://website-authenticity-assessment.apimesh.xyz",
+  "protocol": "x402",
+  "price": "$0.005",
+  "tools": [
+    {
+      "name": "website-authenticity-assessment",
+      "description": "An API that combines SSL certificate validation, DNS records, redirect chain analysis, and server headers to assess the authenticity and security posture of a website, providing an overall trustworthi",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    }
+  ]
+}

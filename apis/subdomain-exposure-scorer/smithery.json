@@ -1,0 +1,17 @@
+{
+  "name": "subdomain-exposure-scorer",
+  "description": "Performs exhaustive subdomain enumeration via free DNS and certificate transparency logs, then scores subdomains based on exposure of sensitive or deprecated endpoints to help prioritize security audi",
+  "url": "https://subdomain-exposure-scorer.apimesh.xyz",
+  "protocol": "x402",
+  "price": "$0.005",
+  "tools": [
+    {
+      "name": "subdomain-exposure-scorer",
+      "description": "Performs exhaustive subdomain enumeration via free DNS and certificate transparency logs, then scores subdomains based on exposure of sensitive or deprecated endpoints to help prioritize security audi",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "name": "subdomain-exposure-score",
+  "description": "Aggregate subdomain enumeration results from free DNS, certificate transparency logs, and public APIs; analyze exposure of sensitive or unused subdomains to prioritize security auditing efforts.",
+  "url": "https://subdomain-exposure-score.apimesh.xyz",
+  "protocol": "x402",
+  "price": "$0.005",
+  "tools": [
+    {
+      "name": "subdomain-exposure-score",
+      "description": "Aggregate subdomain enumeration results from free DNS, certificate transparency logs, and public APIs; analyze exposure of sensitive or unused subdomains to prioritize security auditing efforts.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    }
+  ]
+}

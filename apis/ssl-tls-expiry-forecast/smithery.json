@@ -1,0 +1,17 @@
+{
+  "name": "ssl-tls-expiry-forecast",
+  "description": "Aggregates SSL certificate data from free public sources and DNS to forecast expiry dates and protocol support, enabling proactive certificate renewal alerts across multiple domains.",
+  "url": "https://ssl-tls-expiry-forecast.apimesh.xyz",
+  "protocol": "x402",
+  "price": "$0.005",
+  "tools": [
+    {
+      "name": "ssl-tls-expiry-forecast",
+      "description": "Aggregates SSL certificate data from free public sources and DNS to forecast expiry dates and protocol support, enabling proactive certificate renewal alerts across multiple domains.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    }
+  ]
+}

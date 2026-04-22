@@ -1,0 +1,17 @@
+{
+  "name": "ip-infrastructure-analyst",
+  "description": "Enrich IP addresses with ASN, ISP, geolocation, and routing info by querying multiple free public APIs, enabling developers to analyze network topology, routing behaviors, and identify potential secur",
+  "url": "https://ip-infrastructure-analyst.apimesh.xyz",
+  "protocol": "x402",
+  "price": "$0.005",
+  "tools": [
+    {
+      "name": "ip-infrastructure-analyst",
+      "description": "Enrich IP addresses with ASN, ISP, geolocation, and routing info by querying multiple free public APIs, enabling developers to analyze network topology, routing behaviors, and identify potential secur",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    }
+  ]
+}

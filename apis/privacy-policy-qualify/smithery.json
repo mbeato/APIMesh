@@ -1,0 +1,17 @@
+{
+  "name": "privacy-policy-qualify",
+  "description": "Automatically fetch and analyze privacy policies across domains to identify GDPR/CCPA compliance signals, data sharing practices, and privacy disclosures using publicly accessible URLs and NLP tools.",
+  "url": "https://privacy-policy-qualify.apimesh.xyz",
+  "protocol": "x402",
+  "price": "$0.005",
+  "tools": [
+    {
+      "name": "privacy-policy-qualify",
+      "description": "Automatically fetch and analyze privacy policies across domains to identify GDPR/CCPA compliance signals, data sharing practices, and privacy disclosures using publicly accessible URLs and NLP tools.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    }
+  ]
+}

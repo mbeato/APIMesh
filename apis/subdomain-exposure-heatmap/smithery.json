@@ -1,0 +1,17 @@
+{
+  "name": "subdomain-exposure-heatmap",
+  "description": "Perform exhaustive subdomain enumeration via free DNS and certificate transparency logs, then analyze and visualize the exposure risk levels of subdomains to identify insecure or obsolete endpoints. I",
+  "url": "https://subdomain-exposure-heatmap.apimesh.xyz",
+  "protocol": "x402",
+  "price": "$0.005",
+  "tools": [
+    {
+      "name": "subdomain-exposure-heatmap",
+      "description": "Perform exhaustive subdomain enumeration via free DNS and certificate transparency logs, then analyze and visualize the exposure risk levels of subdomains to identify insecure or obsolete endpoints. I",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "name": "ssl-and-tls-hardening-score",
+  "description": "A deep analysis combining SSL certificate details, TLS cipher strengths, protocol support, and security headers to produce a comprehensive security hardening score for HTTPS sites, with recommendation",
+  "url": "https://ssl-and-tls-hardening-score.apimesh.xyz",
+  "protocol": "x402",
+  "price": "$0.005",
+  "tools": [
+    {
+      "name": "ssl-and-tls-hardening-score",
+      "description": "A deep analysis combining SSL certificate details, TLS cipher strengths, protocol support, and security headers to produce a comprehensive security hardening score for HTTPS sites, with recommendation",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    }
+  ]
+}
