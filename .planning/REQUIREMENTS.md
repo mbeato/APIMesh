@@ -31,15 +31,15 @@ Requirements for Compliance & Smarter Brain milestone. Each maps to roadmap phas
 
 ### API Quality
 
-- [ ] **QUAL-01**: Brain-built APIs return rich structured JSON with 5+ distinct data fields, explanations, and severity scores
-- [ ] **QUAL-02**: Brain-built APIs handle edge cases gracefully (invalid URL, unreachable host, malformed input, timeout)
-- [ ] **QUAL-03**: Brain-built APIs include actionable recommendations with severity levels and fix suggestions
-- [ ] **QUAL-04**: All APIs follow consistent response envelope schema (`{ status, data, meta: { timestamp, duration_ms, api_version } }`)
-- [ ] **QUAL-05**: Brain generates comprehensive API documentation (description, parameters, examples, error codes, rate limits)
-- [ ] **QUAL-06**: Brain-built APIs include comparative scoring (0-100 score with letter grade) where applicable
-- [ ] **QUAL-07**: Builder uses rotating reference APIs by category (not just web-checker and email-verify)
-- [ ] **QUAL-08**: Post-build automated quality scoring gates deployment (minimum 60/100 across response richness, error handling, docs, performance)
-- [ ] **QUAL-09**: Builder runs pre-generation competitive research to differentiate from existing tools
+- [x] **QUAL-01**: Brain-built APIs return rich structured JSON with 5+ distinct data fields, explanations, and severity scores
+- [x] **QUAL-02**: Brain-built APIs handle edge cases gracefully (invalid URL, unreachable host, malformed input, timeout)
+- [x] **QUAL-03**: Brain-built APIs include actionable recommendations with severity levels and fix suggestions
+- [x] **QUAL-04**: All APIs follow consistent response envelope schema (`{ status, data, meta: { timestamp, duration_ms, api_version } }`)
+- [x] **QUAL-05**: Brain generates comprehensive API documentation (description, parameters, examples, error codes, rate limits)
+- [x] **QUAL-06**: Brain-built APIs include comparative scoring (0-100 score with letter grade) where applicable
+- [x] **QUAL-07**: Builder uses rotating reference APIs by category (not just web-checker and email-verify)
+- [x] **QUAL-08**: Post-build automated quality scoring gates deployment (minimum 60/100 across response richness, error handling, docs, performance)
+- [x] **QUAL-09**: Builder runs pre-generation competitive research to differentiate from existing tools
 
 ## Future Requirements
 
@@ -96,15 +96,15 @@ Which phases cover which requirements. Updated during roadmap creation.
 | DEMAND-05 | Phase 14 | Complete |
 | DEMAND-06 | Phase 14 | Complete |
 | DEMAND-07 | Phase 14 | Complete |
-| QUAL-01 | Phase 15 | Pending |
-| QUAL-02 | Phase 15 | Pending |
-| QUAL-03 | Phase 15 | Pending |
-| QUAL-04 | Phase 15 | Pending |
-| QUAL-05 | Phase 15 | Pending |
-| QUAL-06 | Phase 15 | Pending |
-| QUAL-07 | Phase 15 | Pending |
-| QUAL-08 | Phase 15 | Pending |
-| QUAL-09 | Phase 15 | Pending |
+| QUAL-01 | Phase 15 | Complete |
+| QUAL-02 | Phase 15 | Complete |
+| QUAL-03 | Phase 15 | Complete |
+| QUAL-04 | Phase 15 | Complete |
+| QUAL-05 | Phase 15 | Complete |
+| QUAL-06 | Phase 15 | Complete |
+| QUAL-07 | Phase 15 | Complete |
+| QUAL-08 | Phase 15 | Complete |
+| QUAL-09 | Phase 15 | Complete |
 
 **Coverage:**
 - v1.1 requirements: 25 total

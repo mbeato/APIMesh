@@ -27,7 +27,7 @@
 
 - [x] **Phase 13: Legal Compliance** - Ship compliance pages, signup consent, and abuse process so APIMesh operates with full legal cover (completed 2026-04-07)
 - [x] **Phase 14: Demand-Driven Scout** - Upgrade scout to select API targets based on real search volume and market signals instead of LLM guessing (completed 2026-04-07)
-- [ ] **Phase 15: Higher Quality Builder** - Upgrade brain-built APIs to produce rich, well-documented output that justifies paid usage over DIY
+- [x] **Phase 15: Higher Quality Builder** - Upgrade brain-built APIs to produce rich, well-documented output that justifies paid usage over DIY (completed 2026-04-08)
 
 ## Phase Details
 
@@ -74,11 +74,11 @@ Plans:
   3. All brain-built APIs follow the consistent response envelope schema ({ status, data, meta: { timestamp, duration_ms, api_version } })
   4. Post-build automated quality scoring runs before deployment and blocks any API scoring below 60/100 across richness, error handling, docs, and performance
   5. Builder uses category-appropriate reference APIs (rotating, not hardcoded) and runs pre-generation competitive research to differentiate output
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 15-01: TBD
-- [ ] 15-02: TBD
+- [x] 15-01-PLAN.md — Quality scorer, reference selector, and competitive research modules (QUAL-01 through QUAL-09)
+- [ ] 15-02-PLAN.md — Build pipeline integration, prompt upgrades, and calibration (QUAL-01 through QUAL-09)
 
 ## Progress
 
@@ -101,4 +101,4 @@ Phases execute in numeric order: 13 -> 14 -> 15
 | 12. Documentation Backfill | v1.0 | 1/1 | Complete | 2026-03-26 |
 | 13. Legal Compliance | v1.1 | 1/2 | Complete    | 2026-04-07 |
 | 14. Demand-Driven Scout | v1.1 | 1/2 | Complete    | 2026-04-07 |
-| 15. Higher Quality Builder | v1.1 | 0/? | Not started | - |
+| 15. Higher Quality Builder | v1.1 | 1/2 | Complete    | 2026-04-08 |
