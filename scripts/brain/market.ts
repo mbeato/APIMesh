@@ -463,7 +463,7 @@ ${urls.map(u => `  <url>
 // Update README tool table
 // ---------------------------------------------------------------------------
 
-async function updateReadme(allApis: ApiInfo[]): Promise<void> {
+async function updateReadme(registeredCount: number): Promise<void> {
   // README lives in project root which is read-only under the systemd sandbox.
   // Update via the GitHub Contents API instead — token already exists for
   // the scanner's issue-creation flow (public_repo scope).
@@ -475,7 +475,7 @@ async function updateReadme(allApis: ApiInfo[]): Promise<void> {
 
   const repo = "mbeato/conway";
   const path = "README.md";
-  const totalCount = String(allApis.length);
+  const totalCount = String(registeredCount);
   const apiUrl = `https://api.github.com/repos/${repo}/contents/${path}`;
 
   try {
@@ -564,25 +564,16 @@ export async function market(): Promise<void> {
   // 3.5. Generate sitemap.xml
   await generateSitemap();
 
-  // 4. Update README counts
-  const allApis: ApiInfo[] = [];
-  const active = getActiveApis();
-  for (const api of active) {
-    const info = getApiInfo(api.name, api.subdomain);
-    if (info) allApis.push(info);
-  }
-  // Also count apis/ directory
-  try {
-    const SKIP = new Set(["dashboard", "landing"]);
-    const entries = require("fs").readdirSync(APIS_DIR, { withFileTypes: true });
-    const dbNames = new Set(active.map(a => a.name));
-    for (const entry of entries) {
-      if (!entry.isDirectory() || SKIP.has(entry.name) || dbNames.has(entry.name)) continue;
-      const info = getApiInfo(entry.name, entry.name);
-      if (info) allApis.push(info);
-    }
-  } catch {}
-  await updateReadme(allApis);
+  // 4. Update README counts — source of truth is apis/registry.ts (what
+  //    api-router actually serves). Previous logic summed active DB rows
+  //    plus every orphan dir under apis/, inflating the count with pruned
+  //    APIs and WIP directories that never shipped. Parse registry.ts as
+  //    text instead of importing it — static import would fail on any env
+  //    missing one of the registered API sub-app directories.
+  const registrySrc = await Bun.file(join(APIS_DIR, "registry.ts")).text();
+  const registeredMap = registrySrc.match(/^export const registry[\s\S]*?^};/m)?.[0] ?? "";
+  const registeredCount = (registeredMap.match(/^\s*"[a-z0-9-]+":/gm) || []).length;
+  await updateReadme(registeredCount);
 
   console.log("[market] Done");
 }
