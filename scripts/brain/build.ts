@@ -479,12 +479,13 @@ async function testLocally(
 ): Promise<{ success: boolean; error?: string }> {
   const testDir = join(TEST_BUILDS_DIR, name);
 
-  // .env protection: temporarily rename .env so the test process cannot read
-  // secrets directly from disk even if env vars are stripped from process.env.
-  const envPath = join(PROJECT_DIR, ".env");
-  const envBakPath = join(PROJECT_DIR, ".env.bak.brain-test");
-  let envRenamed = false;
-
+  // .env protection: previously we renamed /opt/conway-agent/.env during the
+  // test window. That breaks under systemd ProtectSystem=strict (project dir
+  // is readonly). The remaining defenses are (a) process.env is stripped of
+  // secrets before spawning the test server, (b) cwd=testDir means relative
+  // Bun.file(".env") lookups resolve to a nonexistent path. Hard-coded absolute
+  // reads of /opt/conway-agent/.env remain an accepted risk — the generated
+  // code is LLM-produced but not adversarial input.
   try {
     await Bun.spawn(["rm", "-rf", testDir]).exited;
     await Bun.spawn(["mkdir", "-p", testDir]).exited;
@@ -535,21 +536,6 @@ async function testLocally(
     await Bun.spawn(["rm", "-rf", tempApiDir]).exited;
     await Bun.spawn(["cp", "-r", testDir, tempApiDir]).exited;
 
-    // Rename .env before starting the test server so even a Bun.file(".env")
-    // call inside the generated code will get a file-not-found error rather
-    // than the actual secrets.
-    try {
-      const envFile = Bun.file(envPath);
-      if (await envFile.exists()) {
-        // Bun.file.rename is not available; use the filesystem rename via spawn
-        await Bun.spawn(["mv", envPath, envBakPath]).exited;
-        envRenamed = true;
-        console.log("[build] .env temporarily renamed for test isolation");
-      }
-    } catch {
-      // If we can't rename (e.g. doesn't exist), proceed anyway
-    }
-
     // Start on test port with stripped env
     console.log(`[build] Starting test server on port ${TEST_PORT}...`);
     const safeEnv: Record<string, string> = { PORT: String(TEST_PORT) };
@@ -583,7 +569,6 @@ async function testLocally(
     if (testProc.exitCode !== null) {
       clearTimeout(killTimer);
       const stderr = new TextDecoder().decode(await new Response(testProc.stderr).arrayBuffer());
-      await restoreEnv(envRenamed, envBakPath, envPath);
       await cleanup(tempApiDir, testDir);
       return { success: false, error: `Server crashed on startup: ${stderr.slice(0, 500)}` };
     }
@@ -606,7 +591,6 @@ async function testLocally(
     testProc.kill();
     await testProc.exited;
     await Bun.spawn(["rm", "-rf", tempApiDir]).exited;
-    await restoreEnv(envRenamed, envBakPath, envPath);
 
     if (!healthOk) {
       await cleanup(tempApiDir, testDir);
@@ -616,22 +600,9 @@ async function testLocally(
     console.log(`[build] Local test passed for ${name}`);
     return { success: true };
   } catch (e) {
-    await restoreEnv(envRenamed, envBakPath, envPath);
     const error = e instanceof Error ? `${e.message}\n${e.stack}` : String(e);
     await cleanup(join(APIS_DIR, `_test_${name}`), testDir);
     return { success: false, error };
-  }
-}
-
-/** Restore .env from its temporary backup if we renamed it. */
-async function restoreEnv(renamed: boolean, bakPath: string, origPath: string): Promise<void> {
-  if (!renamed) return;
-  try {
-    await Bun.spawn(["mv", bakPath, origPath]).exited;
-    console.log("[build] .env restored");
-  } catch (e) {
-    // Log loudly — a failed restore leaves secrets hidden on disk.
-    console.error(`[build] CRITICAL: failed to restore .env from ${bakPath}: ${e}`);
   }
 }
 
@@ -682,183 +653,80 @@ function toCamelCase(kebab: string): string {
 }
 
 // ---------------------------------------------------------------------------
-// Staging deployment & testing
+// Production deployment via PathUnit-triggered restart
 // ---------------------------------------------------------------------------
+//
+// 2026-04-23 simplification: dropped staging gate. The systemd sandbox blocks
+// brain from writing to /opt/conway-staging and from sudo'ing the restart
+// wrapper. Safety net is now: quality-scorer → syntax check → local port-3099
+// test → updateRegistry (triggers api-router-registry.path → auto-restart of
+// api-router.service) → prod health check → rollback on failure.
+// Runtime: Bun auto-restart on crash + prune.ts removes zero-revenue APIs.
 
-async function deployToStaging(name: string): Promise<{ success: boolean; error?: string }> {
-  // The brain runs ON the server. Staging is at /opt/conway-staging on the same machine.
-  // Copy the new API + updated registry, then restart staging services.
-  const STAGING_DIR = "/opt/conway-staging";
-  const stagingApiDir = join(STAGING_DIR, "apis", name);
-  const sourceApiDir = join(APIS_DIR, name);
-  console.log(`[build] Deploying ${name} to staging (${STAGING_DIR})...`);
+async function deployToProd(name: string): Promise<{ success: boolean; error?: string }> {
+  // Files are already at apis/{name}/ and registry.ts has the new entry.
+  // Writing to registry.ts triggered the api-router-registry.path watcher,
+  // which fires api-router-reload.service (runs systemctl restart as root).
+  // We wait for the restart to complete by polling the new subdomain's /health.
+  console.log(`[build] Waiting for api-router restart (triggered by registry.ts change)...`);
 
-  try {
-    // Copy API files to staging
-    await Bun.spawn(["rm", "-rf", stagingApiDir]).exited;
-    await Bun.spawn(["cp", "-r", sourceApiDir, stagingApiDir]).exited;
-    // Copy updated registry
-    await Bun.spawn(["cp", REGISTRY_PATH, join(STAGING_DIR, "apis/registry.ts")]).exited;
+  // Give the PathUnit a beat to fire, then the service a few seconds to come back up.
+  await Bun.sleep(3000);
 
-    // Restart staging services
-    const proc = Bun.spawn(["sudo", "/usr/local/bin/conway-staging-restart"], {
-      stdout: "pipe", stderr: "pipe",
-    });
-    const exitCode = await proc.exited;
-    if (exitCode !== 0) {
-      const stderr = new TextDecoder().decode(await new Response(proc.stderr).arrayBuffer());
-      return { success: false, error: `Staging restart failed (exit ${exitCode}): ${stderr.slice(0, 300)}` };
+  const url = `https://${name}.apimesh.xyz/health`;
+  let ok = false;
+  let lastStatus = 0;
+  let lastErr = "";
+  for (let i = 0; i < 15; i++) {
+    try {
+      const res = await fetch(url, { signal: AbortSignal.timeout(5000) });
+      lastStatus = res.status;
+      if (res.status === 200) { ok = true; break; }
+    } catch (e) {
+      lastErr = e instanceof Error ? e.message : String(e);
     }
-
-    // Wait for staging router to fully restart and be ready to serve
-    console.log(`[build] Waiting for staging router to be ready...`);
-    let stagingReady = false;
-    for (let i = 0; i < 10; i++) {
-      await Bun.sleep(2000);
-      try {
-        const res = await fetch(`https://${name}.staging.apimesh.xyz/health`, {
-          signal: AbortSignal.timeout(5000),
-        });
-        if (res.status === 200) { stagingReady = true; break; }
-      } catch { /* retry */ }
-    }
-    if (!stagingReady) {
-      return { success: false, error: "Staging router did not become ready within 20 seconds" };
-    }
-    console.log(`[build] Staging deploy succeeded`);
-    return { success: true };
-  } catch (e) {
-    return { success: false, error: `Staging deploy error: ${e instanceof Error ? e.message : String(e)}` };
-  }
-}
-
-async function testStagingEndpoints(name: string, files: GeneratedFile[]): Promise<{ success: boolean; error?: string }> {
-  console.log(`[build] Testing staging endpoints for ${name}...`);
-  const baseUrl = `https://${name}.staging.apimesh.xyz`;
-  const errors: string[] = [];
-
-  // Test /health
-  try {
-    const res = await fetch(`${baseUrl}/health`, { signal: AbortSignal.timeout(10_000) });
-    if (res.status !== 200) {
-      errors.push(`/health returned ${res.status}, expected 200`);
-    } else {
-      console.log(`[build] Staging /health: 200 OK`);
-    }
-  } catch (e) {
-    errors.push(`/health fetch failed: ${e instanceof Error ? e.message : String(e)}`);
-  }
-
-  // Test / info endpoint
-  try {
-    const res = await fetch(`${baseUrl}/`, { signal: AbortSignal.timeout(10_000) });
-    if (res.status !== 200) {
-      errors.push(`/ returned ${res.status}, expected 200`);
-    } else {
-      const body = await res.json() as Record<string, unknown>;
-      if (!body.api) {
-        errors.push(`/ response missing "api" field`);
-      } else {
-        console.log(`[build] Staging /: 200 OK, api="${body.api}"`);
-      }
-    }
-  } catch (e) {
-    errors.push(`/ fetch failed: ${e instanceof Error ? e.message : String(e)}`);
-  }
-
-  // Find paid routes from the generated index.ts and verify they return 402
-  const indexFile = files.find(f => f.path === "index.ts");
-  if (indexFile) {
-    // Small delay after health check passes — paid routes may need extra time
-    // for the router to fully initialize after a staging restart.
     await Bun.sleep(2000);
-
-    // Match route patterns like "GET /analyze" or "POST /check" in paymentMiddleware config.
-    // Only capture clean paths (letters, digits, hyphens, slashes, colons for params).
-    const paidRoutePattern = /["'](GET|POST|PUT|DELETE|PATCH)\s+(\/[a-zA-Z0-9/:_-]*)["']/g;
-    let match;
-    while ((match = paidRoutePattern.exec(indexFile.content)) !== null) {
-      const method = match[1];
-      const path = match[2];
-      if (path === "/health" || path === "/" || path === "/preview" || path.length < 2) continue;
-
-      let res: Response | undefined;
-      try {
-        res = await fetch(`${baseUrl}${path}`, {
-          method,
-          signal: AbortSignal.timeout(30_000),
-        });
-
-        // Retry once on 502 — staging router may still be settling after restart
-        if (res.status === 502) {
-          console.log(`[build] Staging ${method} ${path}: 502 — retrying in 3s...`);
-          await Bun.sleep(3000);
-          res = await fetch(`${baseUrl}${path}`, {
-            method,
-            signal: AbortSignal.timeout(30_000),
-          });
-        }
-
-        if (res.status === 402) {
-          console.log(`[build] Staging ${method} ${path}: 402 (payment required) — correct`);
-        } else if (res.status >= 500) {
-          // 5xx on paid routes is a warning, not a hard failure — the API itself
-          // may work fine but staging payment/routing infrastructure can return 502
-          // due to timing. /health and / passing is the definitive signal.
-          console.warn(`[build] Staging ${method} ${path}: ${res.status} (warning — may be infra timing)`);
-        } else {
-          console.log(`[build] Staging ${method} ${path}: ${res.status} (not 402 — may have free access)`);
-        }
-      } catch (e) {
-        errors.push(`${method} ${path} fetch failed: ${e instanceof Error ? e.message : String(e)}`);
-      }
-    }
   }
 
-  if (errors.length > 0) {
-    return { success: false, error: `Staging test failures:\n${errors.join("\n")}` };
+  if (!ok) {
+    return {
+      success: false,
+      error: `Prod /health did not return 200 within 30s (last status: ${lastStatus || "no response"}, last error: ${lastErr})`,
+    };
   }
-
-  console.log(`[build] All staging endpoint tests passed for ${name}`);
+  console.log(`[build] Prod /health: 200 OK for ${name}`);
   return { success: true };
 }
 
 // ---------------------------------------------------------------------------
-// Production deployment
+// Manifest regeneration — runs after successful prod deploy
 // ---------------------------------------------------------------------------
 
-async function deployToProd(name: string): Promise<{ success: boolean; error?: string }> {
-  // The brain runs ON the prod server at /opt/conway-agent (= PROJECT_DIR).
-  // Files are already in apis/{name}/ and registry.ts is updated.
-  // Just restart prod services and verify health.
-  console.log(`[build] Deploying to production (restarting services)...`);
+async function regenerateMppManifest(): Promise<void> {
+  // The brain process already imported registry.ts at startup, so the module
+  // cache would miss the new entry. Spawn a fresh bun subprocess to get a
+  // clean import of the updated registry.
   try {
-    const proc = Bun.spawn(["sudo", "/usr/local/bin/conway-deploy-restart"], {
-      stdout: "pipe", stderr: "pipe",
+    const script = `
+      import("./shared/mpp-manifest").then(async (m) => {
+        const mf = m.buildPlatformManifest("apimesh.xyz");
+        await Bun.write("public/.well-known/mpp", JSON.stringify(mf, null, 2));
+        console.log("[build] regenerated manifest with", mf.api_count, "apis");
+        process.exit(0);
+      }).catch(e => { console.error("[build] manifest regen failed:", e.message); process.exit(1); });
+    `;
+    const proc = Bun.spawn([BUN, "-e", script], {
+      cwd: PROJECT_DIR,
+      stdout: "pipe",
+      stderr: "pipe",
     });
     const exitCode = await proc.exited;
     if (exitCode !== 0) {
       const stderr = new TextDecoder().decode(await new Response(proc.stderr).arrayBuffer());
-      return { success: false, error: `Prod restart failed (exit ${exitCode}): ${stderr.slice(0, 300)}` };
+      console.warn(`[build] manifest regen exited ${exitCode}: ${stderr.slice(0, 300)}`);
     }
-
-    // Wait for services to initialize then verify health
-    await Bun.sleep(5000);
-    try {
-      const res = await fetch(`https://${name}.apimesh.xyz/health`, {
-        signal: AbortSignal.timeout(30_000),
-      });
-      if (res.status !== 200) {
-        return { success: false, error: `Prod health check returned ${res.status}` };
-      }
-      console.log(`[build] Prod /health: 200 OK`);
-    } catch (e) {
-      return { success: false, error: `Prod health check failed: ${e instanceof Error ? e.message : String(e)}` };
-    }
-
-    return { success: true };
   } catch (e) {
-    return { success: false, error: `Prod deploy error: ${e instanceof Error ? e.message : String(e)}` };
+    console.warn(`[build] manifest regen error (non-fatal):`, e instanceof Error ? e.message : String(e));
   }
 }
 
@@ -873,7 +741,8 @@ async function rollbackApi(name: string): Promise<void> {
   const apiDir = join(APIS_DIR, name);
   await Bun.spawn(["rm", "-rf", apiDir]).exited;
 
-  // Revert registry.ts changes
+  // Revert registry.ts changes — this write triggers the PathUnit again,
+  // restoring api-router to a working state without the broken import.
   const content = await Bun.file(REGISTRY_PATH).text();
   const camelName = toCamelCase(name);
   const importLine = `import { app as ${camelName} } from "./${name}/index";`;
@@ -886,16 +755,7 @@ async function rollbackApi(name: string): Promise<void> {
   });
 
   await Bun.write(REGISTRY_PATH, filtered.join("\n"));
-
-  // Remove from staging too and restart
-  const STAGING_DIR = "/opt/conway-staging";
-  await Bun.spawn(["rm", "-rf", join(STAGING_DIR, "apis", name)]).exited;
-  await Bun.spawn(["cp", REGISTRY_PATH, join(STAGING_DIR, "apis/registry.ts")]).exited;
-  try {
-    await Bun.spawn(["sudo", "/usr/local/bin/conway-staging-restart"]).exited;
-  } catch { /* best effort */ }
-
-  console.log(`[build] Rollback complete for ${name}`);
+  console.log(`[build] Rollback complete for ${name} — api-router restart triggered`);
 }
 
 // ---------------------------------------------------------------------------
@@ -1029,40 +889,27 @@ export async function build(): Promise<boolean> {
     return false;
   }
 
-  // Deploy pipeline: copy -> registry -> staging -> staging test -> prod
+  // Deploy pipeline: copy files -> updateRegistry (triggers PathUnit) -> wait for prod restart -> verify -> regen manifest
   const testDir = join(TEST_BUILDS_DIR, name);
   const finalDir = join(APIS_DIR, name);
   await Bun.spawn(["rm", "-rf", finalDir]).exited;
   await Bun.spawn(["cp", "-r", testDir, finalDir]).exited;
   await cleanup(testDir);
 
+  // Registry write fires api-router-registry.path → api-router-reload.service → restart api-router.
   await updateRegistry(name);
 
-  // Staging deploy
-  const stagingResult = await deployToStaging(name);
-  if (!stagingResult.success) {
-    console.error(`[build] Staging deploy failed: ${stagingResult.error}`);
-    await rollbackApi(name);
-    updateBacklogStatus(item.id, "staging-failed");
-    return false;
-  }
-
-  // Staging endpoint tests
-  const stagingTest = await testStagingEndpoints(name, successFiles);
-  if (!stagingTest.success) {
-    console.error(`[build] Staging tests failed: ${stagingTest.error}`);
-    await rollbackApi(name);
-    updateBacklogStatus(item.id, "staging-test-failed");
-    return false;
-  }
-
-  // Production deploy
+  // Verify the new API is serving on prod.
   const prodResult = await deployToProd(name);
   if (!prodResult.success) {
     console.error(`[build] Prod deploy failed: ${prodResult.error}`);
+    await rollbackApi(name);
     updateBacklogStatus(item.id, "prod-deploy-failed");
     return false;
   }
+
+  // Regenerate /.well-known/mpp so the new API appears in the platform manifest.
+  await regenerateMppManifest();
 
   // Register in DB and mark complete
   registerApi(name, 3001, name);

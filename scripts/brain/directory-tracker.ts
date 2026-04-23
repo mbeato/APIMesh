@@ -11,13 +11,14 @@
 
 import { join } from "path";
 
-const STATE_FILE = join(import.meta.dir, "directory-state.json");
+// State lives under data/ (writable under systemd ProtectSystem=strict).
+const STATE_FILE = join(import.meta.dir, "..", "..", "data", "directory-state.json");
 
 interface DirectoryEntry {
   name: string;
   url: string;
-  category: "api-marketplace" | "mcp-registry" | "ai-directory" | "dev-directory" | "awesome-list" | "product-launch";
-  status: "listed" | "submitted" | "pending" | "not-submitted" | "rejected";
+  category: "api-marketplace" | "mcp-registry" | "ai-directory" | "dev-directory" | "awesome-list" | "product-launch" | "a2a-registry" | "llms-directory";
+  status: "listed" | "submitted" | "pending" | "not-submitted" | "rejected" | "blocked";
   submissionUrl?: string;
   listingUrl?: string;
   notes?: string;
@@ -32,11 +33,13 @@ interface DirectoryState {
 /** All target directories for APIMesh with known status. */
 const TARGET_DIRECTORIES: Omit<DirectoryEntry, "lastChecked">[] = [
   // MCP Registries (already on most)
-  { name: "Smithery", url: "https://smithery.ai", category: "mcp-registry", status: "listed", submissionUrl: "https://smithery.ai/submit" },
+  { name: "Official MCP Registry", url: "https://registry.modelcontextprotocol.io", category: "mcp-registry", status: "not-submitted", submissionUrl: "https://github.com/modelcontextprotocol/registry", notes: "THE canonical registry (MCP + Linux Foundation, preview since late 2025). Submit via GitHub PR. TOP PRIORITY — we are missing from the official one." },
+  { name: "Smithery", url: "https://smithery.ai", category: "mcp-registry", status: "listed", submissionUrl: "https://smithery.ai/submit", notes: "7,000+ servers" },
   { name: "mcp.so", url: "https://mcp.so", category: "mcp-registry", status: "listed" },
-  { name: "Glama.ai", url: "https://glama.ai", category: "mcp-registry", status: "listed", notes: "Syncing Dockerfile" },
+  { name: "Glama.ai", url: "https://glama.ai/mcp/servers", category: "mcp-registry", status: "listed", notes: "21,845+ servers (2026-04). Largest directory in ecosystem." },
+  { name: "PulseMCP", url: "https://pulsemcp.com", category: "mcp-registry", status: "not-submitted", notes: "11,840+ servers, hand-reviewed daily by founder since MCP launch week. Missing from our list." },
   { name: "mcpserver.dev", url: "https://mcpserver.dev", category: "mcp-registry", status: "submitted", notes: "Pending review" },
-  { name: "MCP Registry (Anthropic)", url: "https://github.com/modelcontextprotocol/servers", category: "mcp-registry", status: "not-submitted", submissionUrl: "https://github.com/modelcontextprotocol/servers/issues" },
+  { name: "modelcontextprotocol/servers (examples)", url: "https://github.com/modelcontextprotocol/servers", category: "mcp-registry", status: "not-submitted", submissionUrl: "https://github.com/modelcontextprotocol/servers/issues", notes: "Examples repo, NOT the official registry. Lower priority than registry.modelcontextprotocol.io above." },
   { name: "Cline MCP Marketplace", url: "https://github.com/cline/cline", category: "mcp-registry", status: "submitted", notes: "Issue #1104 filed" },
 
   // API Marketplaces
@@ -47,11 +50,25 @@ const TARGET_DIRECTORIES: Omit<DirectoryEntry, "lastChecked">[] = [
   { name: "Postman API Network", url: "https://www.postman.com/explore", category: "api-marketplace", status: "not-submitted", submissionUrl: "https://www.postman.com/api-network", notes: "Generate Postman collections from OpenAPI" },
 
   // x402 / MPP ecosystem
+  { name: "x402.org/ecosystem", url: "https://www.x402.org/ecosystem", category: "api-marketplace", status: "not-submitted", notes: "Official Linux Foundation ecosystem page (2026-04). Founding members: Google, Visa, Stripe, AWS, Mastercard, Circle, Microsoft, Shopify, Amex. TOP PRIORITY." },
+  { name: "x402scan.com", url: "https://x402scan.com", category: "api-marketplace", status: "not-submitted", notes: "Canonical x402 leaderboard. Real txn data. Submit after verifying our /.well-known/x402 lists all paid endpoints." },
+  { name: "x402-list.com", url: "https://x402-list.com", category: "api-marketplace", status: "not-submitted", notes: "2026 directory of x402 API services. Agent-first JSON feed, live uptime." },
+  { name: "x402.direct", url: "https://x402.direct", category: "api-marketplace", status: "not-submitted", notes: "Search engine for agent economy. 4,000+ x402 APIs, trust-scored by category/network/quality." },
+  { name: "x402index.com", url: "https://www.x402index.com/docs", category: "api-marketplace", status: "not-submitted", notes: "Has programmatic submission API — preferred submission path for automation." },
   { name: "402index.io", url: "https://402index.io", category: "api-marketplace", status: "listed", notes: "Domain verified" },
   { name: "awesome-x402", url: "https://github.com/xpaysh/awesome-x402", category: "awesome-list", status: "listed", notes: "Merged" },
   { name: "awesome-mpp", url: "https://github.com/mbeato/awesome-mpp", category: "awesome-list", status: "listed", notes: "We own this" },
   { name: "coinbase/x402 ecosystem", url: "https://github.com/coinbase/x402", category: "awesome-list", status: "submitted", notes: "PR #1864 pending" },
-  { name: "mpppay.fun", url: "https://mpppay.fun", category: "api-marketplace", status: "listed", notes: "Registered, needs logo" },
+  { name: "mpp.dev (provider directory)", url: "https://mpp.dev", category: "api-marketplace", status: "not-submitted", notes: "Canonical MPP (Tempo + Stripe). 100+ integrations at launch (Alchemy, Dune, Merit, Parallel). No public submission form yet — watch." },
+  { name: "Cloudflare AI Marketplace", url: "https://developers.cloudflare.com/agents/x402/", category: "api-marketplace", status: "not-submitted", notes: "Bills on inference, supports x402 natively. Strong fit." },
+  { name: "mpppay.fun", url: "https://mpppay.fun", category: "api-marketplace", status: "rejected", notes: "DEAD for payment discovery: site pivoted to 'Headless Compute for Agents' in 2026-04. Our listing is decaying asset — do not invest more effort here." },
+
+  // A2A ecosystem (blocked until /.well-known/agent-card.json is served)
+  { name: "A2A Registry", url: "https://a2aregistry.org", category: "a2a-registry", status: "blocked", submissionUrl: "https://a2aregistry.org/api/agents/register", notes: "Global A2A registry. Health-checks every 30 min. Submission = POST with our well-known URI. BLOCKED on us publishing /.well-known/agent-card.json first." },
+
+  // llms.txt directories
+  { name: "llmstxt.site", url: "https://llmstxt.site", category: "llms-directory", status: "not-submitted", submissionUrl: "https://llmstxt.site/submit", notes: "Central /llms.txt directory. We already serve /llms.txt — just need to fill the form." },
+  { name: "directory.llmstxt.cloud", url: "https://directory.llmstxt.cloud", category: "llms-directory", status: "not-submitted", notes: "Alternate llms.txt directory" },
 
   // AI Tool Directories
   { name: "There's an AI for That", url: "https://theresanaiforthat.com", category: "ai-directory", status: "not-submitted", submissionUrl: "https://theresanaiforthat.com/submit" },

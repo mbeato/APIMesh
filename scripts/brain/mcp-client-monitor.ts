@@ -7,7 +7,8 @@
 
 import { join } from "path";
 
-const STATE_FILE = join(import.meta.dir, "mcp-monitor-state.json");
+// State lives under data/ (writable under systemd ProtectSystem=strict).
+const STATE_FILE = join(import.meta.dir, "..", "..", "data", "mcp-monitor-state.json");
 
 interface MonitorState {
   /** Known MCP client repos we've already checked */

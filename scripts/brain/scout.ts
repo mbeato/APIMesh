@@ -219,59 +219,12 @@ async function gatherSignals(): Promise<string[]> {
     signals.push("npm registry: unavailable");
   }
 
-  // 3. MPP ecosystem (mpppay.fun) — scrape provider list from JS bundle to find gaps
-  try {
-    const bundleRes = await fetch("https://www.mpppay.fun/ecosystem", {
-      signal: AbortSignal.timeout(10_000),
-    });
-    if (bundleRes.ok) {
-      const html = await bundleRes.text();
-      // Extract JS bundle URL from the SPA shell
-      const jsMatch = html.match(/src="(\/assets\/index-[^"]+\.js)"/);
-      if (jsMatch) {
-        const jsRes = await fetch(`https://www.mpppay.fun${jsMatch[1]}`, {
-          signal: AbortSignal.timeout(15_000),
-        });
-        if (jsRes.ok) {
-          const js = await jsRes.text();
-          // Extract provider entries: id, name, category, description
-          const providerPattern = /id:`([^`]+)`,name:`([^`]+)`,category:`([^`]+)`,live:(?:!0|!1),description:`([^`]*)`/g;
-          const providers: { name: string; category: string; desc: string }[] = [];
-          const seen = new Set<string>();
-          let match;
-          while ((match = providerPattern.exec(js)) !== null) {
-            const pid = match[1];
-            if (!seen.has(pid)) {
-              seen.add(pid);
-              providers.push({ name: match[2], category: match[3], desc: match[4].slice(0, 120) });
-            }
-          }
-          if (providers.length > 0) {
-            // Group by category for the prompt
-            const byCat = new Map<string, string[]>();
-            for (const p of providers) {
-              if (!byCat.has(p.category)) byCat.set(p.category, []);
-              byCat.get(p.category)!.push(`${p.name}: ${p.desc}`);
-            }
-            const lines: string[] = [`MPP ecosystem (mpppay.fun) — ${providers.length} providers. Categories with existing coverage:`];
-            for (const [cat, items] of byCat) {
-              // Sanitize each item
-              const cleanItems = items
-                .map(item => sanitizeSignalText(item, 150))
-                .filter((x): x is string => x !== null);
-              lines.push(`  ${cat} (${cleanItems.length}): ${cleanItems.join("; ").slice(0, 300)}`);
-            }
-            lines.push("GAPS: No Security, No SEO, No DevOps/Monitoring, No DNS, No Accessibility, No API tooling, No CI/CD categories exist.");
-            const combined = lines.join("\n").slice(0, 2000);
-            signals.push(combined);
-            console.log(`[scout] MPP ecosystem: ${providers.length} providers across ${byCat.size} categories`);
-          }
-        }
-      }
-    }
-  } catch {
-    signals.push("MPP ecosystem (mpppay.fun): unavailable");
-  }
+  // 3. mpppay.fun signal DISABLED (2026-04-22): site pivoted to "Headless Compute
+  // for Agents" and is no longer a payment-provider directory. Previous strategic
+  // framing ("we are the ONLY provider in Security/SEO/DevOps categories") was
+  // based on stale positioning. Canonical MPP is now mpp.dev (Tempo + Stripe).
+  // Re-enable only if we find a live MPP-provider directory with reliable data.
+  signals.push("MPP provider directories: no reliable signal source (mpppay.fun pivoted; mpp.dev has no public provider feed yet)");
 
   // 4. Check our own 404 logs for demand signals.
   // Endpoint paths are attacker-controlled (any HTTP client can craft them),
@@ -434,7 +387,12 @@ DEDUPLICATION RULES:
 - Read each existing API description carefully. If your idea is a superset or mashup of 2-3 existing ones, skip it.
 - If you're unsure whether it overlaps, skip it.
 
-STRATEGIC CONTEXT: We are listed on the MPP ecosystem (mpppay.fun). The ecosystem data is in the market signals above. We are the ONLY provider in Security, SEO, DevOps/Monitoring, and API tooling categories — this is our competitive moat. Prioritize APIs that expand our lead in underserved MPP ecosystem categories.
+STRATEGIC CONTEXT (revised 2026-04-22 after ecosystem audit):
+- Agent-payment ecosystem (x402, MPP) is real but demand-constrained. x402 ecosystem does ~$28K/day across ~131K txns — top providers pull $3K/day. MPP is 5 weeks old with 326 servers and $3,730 total volume. Both are legitimate but small.
+- Near-term revenue will come from human developers paying via API key + Stripe credits, not from agent-payment traffic.
+- Do NOT prioritize APIs based on "MPP ecosystem category coverage" — that frame was based on mpppay.fun, which has pivoted.
+- DO prioritize APIs that real human developers would search for, pay for, and tell other developers about. Dev-tool utility > protocol posturing.
+- Agent/MCP positioning is still valuable (it's free upside), but not the primary buyer persona for new APIs.
 
 CATEGORIES TO EXPLORE (not limited to these — be creative):
 - Security (OUR MOAT — no MPP competition): SSL/TLS analysis, certificate monitoring, CSP policy generation, CORS misconfiguration detection, subdomain enumeration

@@ -230,9 +230,9 @@ function generateToolPageHtml(api: ApiInfo, draft: MarketingDraft | null): strin
     <h2>Payment methods</h2>
     <p>Every endpoint supports three payment methods:</p>
     <ul class="use-cases">
+      <li><strong>API key</strong> — <a href="/signup">sign up</a>, buy credits with a card, get started in a minute.</li>
       <li><strong>x402</strong> — pay per call with USDC on Base. No signup needed.</li>
-      <li><strong>MPP</strong> — Stripe Machine Payments Protocol. Cards + stablecoins.</li>
-      <li><strong>API key</strong> — traditional auth. <a href="/signup">Sign up</a> and buy credits.</li>
+      <li><strong>MPP</strong> — Stripe Machine Payments Protocol for agents. Cards + stablecoins.</li>
     </ul>
 
     <h2>MCP integration</h2>

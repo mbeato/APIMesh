@@ -8,7 +8,9 @@
 
 import { join } from "path";
 
-const STATE_FILE = join(import.meta.dir, "github-engage-state.json");
+// State lives under data/ (writable under systemd ProtectSystem=strict).
+// Previously scripts/brain/*.json caused EROFS crashes on prod (2026-04-22).
+const STATE_FILE = join(import.meta.dir, "..", "..", "data", "github-engage-state.json");
 const MAX_STARS_PER_RUN = 5;
 
 interface EngageState {
