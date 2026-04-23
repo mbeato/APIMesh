@@ -1,0 +1,854 @@
+{
+  "$schema": "https://apimesh.xyz/.well-known/mpp.schema.json",
+  "name": "APIMesh",
+  "description": "Pay-per-call API marketplace. 58 web-analysis, SEO, security, and devops APIs for agents and developers.",
+  "provider": {
+    "name": "APIMesh",
+    "url": "https://apimesh.xyz",
+    "contact": "c@vtxathlete.com"
+  },
+  "payment_methods": [
+    {
+      "protocol": "x402",
+      "version": "1",
+      "networks": [
+        "base-mainnet"
+      ],
+      "asset": "USDC",
+      "discovery": "Per-endpoint via WWW-Authenticate: Payment on 402 responses"
+    },
+    {
+      "protocol": "mpp",
+      "version": "draft-ryan-httpauth-payment",
+      "discovery": "OpenAPI x-mpp annotations + WWW-Authenticate: Payment on 402"
+    },
+    {
+      "protocol": "api-key",
+      "purchase_url": "https://apimesh.xyz/signup",
+      "accepts": [
+        "stripe"
+      ]
+    }
+  ],
+  "discovery": {
+    "openapi": "https://apimesh.xyz/openapi.json",
+    "agent_card": "https://apimesh.xyz/.well-known/agent-card.json",
+    "llms_txt": "https://apimesh.xyz/llms.txt",
+    "api_catalog": "https://apimesh.xyz/.well-known/api-catalog"
+  },
+  "apis": [
+    {
+      "name": "api-linting",
+      "endpoint": "https://api-linting.apimesh.xyz/check",
+      "method": "GET",
+      "price_usd": 0.01,
+      "description": "Api Linting — pay-per-call API on apimesh.xyz",
+      "category": "web-analysis",
+      "tags": [
+        "web-analysis",
+        "api",
+        "linting"
+      ]
+    },
+    {
+      "name": "api-schema-diff",
+      "endpoint": "https://api-schema-diff.apimesh.xyz/check",
+      "method": "GET",
+      "price_usd": 0.01,
+      "description": "Api Schema Diff — pay-per-call API on apimesh.xyz",
+      "category": "web-analysis",
+      "tags": [
+        "web-analysis",
+        "api",
+        "schema",
+        "diff"
+      ]
+    },
+    {
+      "name": "brand-assets",
+      "endpoint": "https://brand-assets.apimesh.xyz/check",
+      "method": "GET",
+      "price_usd": 0.002,
+      "description": "Brand Assets — pay-per-call API on apimesh.xyz",
+      "category": "web-analysis",
+      "tags": [
+        "web-analysis",
+        "brand",
+        "assets"
+      ]
+    },
+    {
+      "name": "cdn-infrastructure-enricher",
+      "endpoint": "https://cdn-infrastructure-enricher.apimesh.xyz/check",
+      "method": "GET",
+      "price_usd": 0.01,
+      "description": "Cdn Infrastructure Enricher — pay-per-call API on apimesh.xyz",
+      "category": "devops",
+      "tags": [
+        "devops",
+        "cdn",
+        "infrastructure",
+        "enricher"
+      ]
+    },
+    {
+      "name": "content-shuffle-detector",
+      "endpoint": "https://content-shuffle-detector.apimesh.xyz/check",
+      "method": "GET",
+      "price_usd": 0.01,
+      "description": "Content Shuffle Detector — pay-per-call API on apimesh.xyz",
+      "category": "web-analysis",
+      "tags": [
+        "web-analysis",
+        "content",
+        "shuffle",
+        "detector"
+      ]
+    },
+    {
+      "name": "core-web-vitals",
+      "endpoint": "https://core-web-vitals.apimesh.xyz/check",
+      "method": "GET",
+      "price_usd": 0.005,
+      "description": "Core Web Vitals — pay-per-call API on apimesh.xyz",
+      "category": "seo",
+      "tags": [
+        "seo",
+        "core",
+        "web",
+        "vitals"
+      ]
+    },
+    {
+      "name": "csp-policy-heuristics",
+      "endpoint": "https://csp-policy-heuristics.apimesh.xyz/check",
+      "method": "GET",
+      "price_usd": 0.01,
+      "description": "Csp Policy Heuristics — pay-per-call API on apimesh.xyz",
+      "category": "security",
+      "tags": [
+        "security",
+        "csp",
+        "policy",
+        "heuristics"
+      ]
+    },
+    {
+      "name": "dependency-license-audit",
+      "endpoint": "https://dependency-license-audit.apimesh.xyz/check",
+      "method": "GET",
+      "price_usd": 0.01,
+      "description": "Dependency License Audit — pay-per-call API on apimesh.xyz",
+      "category": "web-analysis",
+      "tags": [
+        "web-analysis",
+        "dependency",
+        "license",
+        "audit"
+      ]
+    },
+    {
+      "name": "dns-propagation-mapper",
+      "endpoint": "https://dns-propagation-mapper.apimesh.xyz/check",
+      "method": "GET",
+      "price_usd": 0.01,
+      "description": "Dns Propagation Mapper — pay-per-call API on apimesh.xyz",
+      "category": "devops",
+      "tags": [
+        "devops",
+        "dns",
+        "propagation",
+        "mapper"
+      ]
+    },
+    {
+      "name": "dns-propagation-simulator",
+      "endpoint": "https://dns-propagation-simulator.apimesh.xyz/check",
+      "method": "GET",
+      "price_usd": 0.01,
+      "description": "Dns Propagation Simulator — pay-per-call API on apimesh.xyz",
+      "category": "devops",
+      "tags": [
+        "devops",
+        "dns",
+        "propagation",
+        "simulator"
+      ]
+    },
+    {
+      "name": "email-security",
+      "endpoint": "https://email-security.apimesh.xyz/check",
+      "method": "GET",
+      "price_usd": 0.01,
+      "description": "Email Security — pay-per-call API on apimesh.xyz",
+      "category": "security",
+      "tags": [
+        "security",
+        "email",
+        "security"
+      ]
+    },
+    {
+      "name": "email-verify",
+      "endpoint": "https://email-verify.apimesh.xyz/check",
+      "method": "GET",
+      "price_usd": 0.001,
+      "description": "Email Verify — pay-per-call API on apimesh.xyz",
+      "category": "web-analysis",
+      "tags": [
+        "web-analysis",
+        "email",
+        "verify"
+      ]
+    },
+    {
+      "name": "favicon-checker",
+      "endpoint": "https://favicon-checker.apimesh.xyz/check",
+      "method": "GET",
+      "price_usd": 0.002,
+      "description": "Favicon Checker — pay-per-call API on apimesh.xyz",
+      "category": "web-analysis",
+      "tags": [
+        "web-analysis",
+        "favicon",
+        "checker"
+      ]
+    },
+    {
+      "name": "http-method-enumeration",
+      "endpoint": "https://http-method-enumeration.apimesh.xyz/check",
+      "method": "GET",
+      "price_usd": 0.01,
+      "description": "Http Method Enumeration — pay-per-call API on apimesh.xyz",
+      "category": "web-analysis",
+      "tags": [
+        "web-analysis",
+        "http",
+        "method",
+        "enumeration"
+      ]
+    },
+    {
+      "name": "http-status-checker",
+      "endpoint": "https://http-status-checker.apimesh.xyz/check",
+      "method": "GET",
+      "price_usd": 0.002,
+      "description": "Http Status Checker — pay-per-call API on apimesh.xyz",
+      "category": "web-analysis",
+      "tags": [
+        "web-analysis",
+        "http",
+        "status",
+        "checker"
+      ]
+    },
+    {
+      "name": "indexability",
+      "endpoint": "https://indexability.apimesh.xyz/check",
+      "method": "GET",
+      "price_usd": 0.001,
+      "description": "Indexability — pay-per-call API on apimesh.xyz",
+      "category": "seo",
+      "tags": [
+        "seo",
+        "indexability"
+      ]
+    },
+    {
+      "name": "ip-geolocation-enrichment",
+      "endpoint": "https://ip-geolocation-enrichment.apimesh.xyz/check",
+      "method": "GET",
+      "price_usd": 0.01,
+      "description": "Ip Geolocation Enrichment — pay-per-call API on apimesh.xyz",
+      "category": "devops",
+      "tags": [
+        "devops",
+        "geolocation",
+        "enrichment"
+      ]
+    },
+    {
+      "name": "ip-infrastructure-analyst",
+      "endpoint": "https://ip-infrastructure-analyst.apimesh.xyz/check",
+      "method": "GET",
+      "price_usd": 0.01,
+      "description": "Ip Infrastructure Analyst — pay-per-call API on apimesh.xyz",
+      "category": "devops",
+      "tags": [
+        "devops",
+        "infrastructure",
+        "analyst"
+      ]
+    },
+    {
+      "name": "ip-infrastructure-analyzer",
+      "endpoint": "https://ip-infrastructure-analyzer.apimesh.xyz/check",
+      "method": "GET",
+      "price_usd": 0.01,
+      "description": "Ip Infrastructure Analyzer — pay-per-call API on apimesh.xyz",
+      "category": "devops",
+      "tags": [
+        "devops",
+        "infrastructure",
+        "analyzer"
+      ]
+    },
+    {
+      "name": "microservice-health-check",
+      "endpoint": "https://microservice-health-check.apimesh.xyz/check",
+      "method": "POST",
+      "price_usd": 0.003,
+      "description": "Microservice Health Check — pay-per-call API on apimesh.xyz",
+      "category": "web-analysis",
+      "tags": [
+        "web-analysis",
+        "microservice",
+        "health",
+        "check"
+      ]
+    },
+    {
+      "name": "mock-jwt-generator",
+      "endpoint": "https://mock-jwt-generator.apimesh.xyz/generate",
+      "method": "POST",
+      "price_usd": 0.001,
+      "description": "Mock Jwt Generator — pay-per-call API on apimesh.xyz",
+      "category": "web-analysis",
+      "tags": [
+        "web-analysis",
+        "mock",
+        "jwt",
+        "generator"
+      ]
+    },
+    {
+      "name": "network-route-mapper",
+      "endpoint": "https://network-route-mapper.apimesh.xyz/check",
+      "method": "GET",
+      "price_usd": 0.01,
+      "description": "Network Route Mapper — pay-per-call API on apimesh.xyz",
+      "category": "devops",
+      "tags": [
+        "devops",
+        "network",
+        "route",
+        "mapper"
+      ]
+    },
+    {
+      "name": "port-scanner-aggregate",
+      "endpoint": "https://port-scanner-aggregate.apimesh.xyz/check",
+      "method": "GET",
+      "price_usd": 0.01,
+      "description": "Port Scanner Aggregate — pay-per-call API on apimesh.xyz",
+      "category": "devops",
+      "tags": [
+        "devops",
+        "port",
+        "scanner",
+        "aggregate"
+      ]
+    },
+    {
+      "name": "privacy-policy-enricher",
+      "endpoint": "https://privacy-policy-enricher.apimesh.xyz/check",
+      "method": "GET",
+      "price_usd": 0.01,
+      "description": "Privacy Policy Enricher — pay-per-call API on apimesh.xyz",
+      "category": "security",
+      "tags": [
+        "security",
+        "privacy",
+        "policy",
+        "enricher"
+      ]
+    },
+    {
+      "name": "privacy-policy-qualify",
+      "endpoint": "https://privacy-policy-qualify.apimesh.xyz/check",
+      "method": "GET",
+      "price_usd": 0.01,
+      "description": "Privacy Policy Qualify — pay-per-call API on apimesh.xyz",
+      "category": "security",
+      "tags": [
+        "security",
+        "privacy",
+        "policy",
+        "qualify"
+      ]
+    },
+    {
+      "name": "privacy-risk-score",
+      "endpoint": "https://privacy-risk-score.apimesh.xyz/check",
+      "method": "GET",
+      "price_usd": 0.01,
+      "description": "Privacy Risk Score — pay-per-call API on apimesh.xyz",
+      "category": "security",
+      "tags": [
+        "security",
+        "privacy",
+        "risk",
+        "score"
+      ]
+    },
+    {
+      "name": "redirect-chain",
+      "endpoint": "https://redirect-chain.apimesh.xyz/check",
+      "method": "GET",
+      "price_usd": 0.001,
+      "description": "Redirect Chain — pay-per-call API on apimesh.xyz",
+      "category": "web-analysis",
+      "tags": [
+        "web-analysis",
+        "redirect",
+        "chain"
+      ]
+    },
+    {
+      "name": "regex-builder",
+      "endpoint": "https://regex-builder.apimesh.xyz/build",
+      "method": "POST",
+      "price_usd": 0.002,
+      "description": "Regex Builder — pay-per-call API on apimesh.xyz",
+      "category": "web-analysis",
+      "tags": [
+        "web-analysis",
+        "regex",
+        "builder"
+      ]
+    },
+    {
+      "name": "robots-txt-parser",
+      "endpoint": "https://robots-txt-parser.apimesh.xyz/analyze",
+      "method": "GET",
+      "price_usd": 0.002,
+      "description": "Robots Txt Parser — pay-per-call API on apimesh.xyz",
+      "category": "seo",
+      "tags": [
+        "seo",
+        "robots",
+        "txt",
+        "parser"
+      ]
+    },
+    {
+      "name": "security-headers",
+      "endpoint": "https://security-headers.apimesh.xyz/check",
+      "method": "GET",
+      "price_usd": 0.005,
+      "description": "Security Headers — pay-per-call API on apimesh.xyz",
+      "category": "security",
+      "tags": [
+        "security",
+        "security",
+        "headers"
+      ]
+    },
+    {
+      "name": "security-headers-checker",
+      "endpoint": "https://security-headers-checker.apimesh.xyz/check",
+      "method": "GET",
+      "price_usd": 0.01,
+      "description": "Security Headers Checker — pay-per-call API on apimesh.xyz",
+      "category": "security",
+      "tags": [
+        "security",
+        "security",
+        "headers",
+        "checker"
+      ]
+    },
+    {
+      "name": "seo-audit",
+      "endpoint": "https://seo-audit.apimesh.xyz/check",
+      "method": "GET",
+      "price_usd": 0.003,
+      "description": "Seo Audit — pay-per-call API on apimesh.xyz",
+      "category": "seo",
+      "tags": [
+        "seo",
+        "seo",
+        "audit"
+      ]
+    },
+    {
+      "name": "ssl-and-tls-hardening-score",
+      "endpoint": "https://ssl-and-tls-hardening-score.apimesh.xyz/check",
+      "method": "GET",
+      "price_usd": 0.01,
+      "description": "Ssl And Tls Hardening Score — pay-per-call API on apimesh.xyz",
+      "category": "security",
+      "tags": [
+        "security",
+        "ssl",
+        "and",
+        "tls",
+        "hardening",
+        "score"
+      ]
+    },
+    {
+      "name": "ssl-tls-configuration-forecast",
+      "endpoint": "https://ssl-tls-configuration-forecast.apimesh.xyz/check",
+      "method": "GET",
+      "price_usd": 0.01,
+      "description": "Ssl Tls Configuration Forecast — pay-per-call API on apimesh.xyz",
+      "category": "security",
+      "tags": [
+        "security",
+        "ssl",
+        "tls",
+        "configuration",
+        "forecast"
+      ]
+    },
+    {
+      "name": "ssl-tls-configuration-ranker",
+      "endpoint": "https://ssl-tls-configuration-ranker.apimesh.xyz/check",
+      "method": "GET",
+      "price_usd": 0.01,
+      "description": "Ssl Tls Configuration Ranker — pay-per-call API on apimesh.xyz",
+      "category": "security",
+      "tags": [
+        "security",
+        "ssl",
+        "tls",
+        "configuration",
+        "ranker"
+      ]
+    },
+    {
+      "name": "ssl-tls-expiry-forecast",
+      "endpoint": "https://ssl-tls-expiry-forecast.apimesh.xyz/check",
+      "method": "GET",
+      "price_usd": 0.01,
+      "description": "Ssl Tls Expiry Forecast — pay-per-call API on apimesh.xyz",
+      "category": "security",
+      "tags": [
+        "security",
+        "ssl",
+        "tls",
+        "expiry",
+        "forecast"
+      ]
+    },
+    {
+      "name": "ssl-tls-hardening-forecast",
+      "endpoint": "https://ssl-tls-hardening-forecast.apimesh.xyz/check",
+      "method": "GET",
+      "price_usd": 0.01,
+      "description": "Ssl Tls Hardening Forecast — pay-per-call API on apimesh.xyz",
+      "category": "security",
+      "tags": [
+        "security",
+        "ssl",
+        "tls",
+        "hardening",
+        "forecast"
+      ]
+    },
+    {
+      "name": "ssl-tls-risk-analyzer",
+      "endpoint": "https://ssl-tls-risk-analyzer.apimesh.xyz/check",
+      "method": "GET",
+      "price_usd": 0.01,
+      "description": "Ssl Tls Risk Analyzer — pay-per-call API on apimesh.xyz",
+      "category": "security",
+      "tags": [
+        "security",
+        "ssl",
+        "tls",
+        "risk",
+        "analyzer"
+      ]
+    },
+    {
+      "name": "ssl-tls-threat-assessment",
+      "endpoint": "https://ssl-tls-threat-assessment.apimesh.xyz/check",
+      "method": "GET",
+      "price_usd": 0.01,
+      "description": "Ssl Tls Threat Assessment — pay-per-call API on apimesh.xyz",
+      "category": "security",
+      "tags": [
+        "security",
+        "ssl",
+        "tls",
+        "threat",
+        "assessment"
+      ]
+    },
+    {
+      "name": "status-code-checker",
+      "endpoint": "https://status-code-checker.apimesh.xyz/check",
+      "method": "GET",
+      "price_usd": 0.001,
+      "description": "Status Code Checker — pay-per-call API on apimesh.xyz",
+      "category": "web-analysis",
+      "tags": [
+        "web-analysis",
+        "status",
+        "code",
+        "checker"
+      ]
+    },
+    {
+      "name": "subdomain-exposure-heatmap",
+      "endpoint": "https://subdomain-exposure-heatmap.apimesh.xyz/check",
+      "method": "GET",
+      "price_usd": 0.01,
+      "description": "Subdomain Exposure Heatmap — pay-per-call API on apimesh.xyz",
+      "category": "web-analysis",
+      "tags": [
+        "web-analysis",
+        "subdomain",
+        "exposure",
+        "heatmap"
+      ]
+    },
+    {
+      "name": "subdomain-exposure-ranking",
+      "endpoint": "https://subdomain-exposure-ranking.apimesh.xyz/check",
+      "method": "GET",
+      "price_usd": 0.01,
+      "description": "Subdomain Exposure Ranking — pay-per-call API on apimesh.xyz",
+      "category": "web-analysis",
+      "tags": [
+        "web-analysis",
+        "subdomain",
+        "exposure",
+        "ranking"
+      ]
+    },
+    {
+      "name": "subdomain-exposure-rankings",
+      "endpoint": "https://subdomain-exposure-rankings.apimesh.xyz/check",
+      "method": "GET",
+      "price_usd": 0.01,
+      "description": "Subdomain Exposure Rankings — pay-per-call API on apimesh.xyz",
+      "category": "web-analysis",
+      "tags": [
+        "web-analysis",
+        "subdomain",
+        "exposure",
+        "rankings"
+      ]
+    },
+    {
+      "name": "subdomain-exposure-score",
+      "endpoint": "https://subdomain-exposure-score.apimesh.xyz/check",
+      "method": "GET",
+      "price_usd": 0.01,
+      "description": "Subdomain Exposure Score — pay-per-call API on apimesh.xyz",
+      "category": "web-analysis",
+      "tags": [
+        "web-analysis",
+        "subdomain",
+        "exposure",
+        "score"
+      ]
+    },
+    {
+      "name": "subdomain-exposure-scorer",
+      "endpoint": "https://subdomain-exposure-scorer.apimesh.xyz/check",
+      "method": "GET",
+      "price_usd": 0.01,
+      "description": "Subdomain Exposure Scorer — pay-per-call API on apimesh.xyz",
+      "category": "web-analysis",
+      "tags": [
+        "web-analysis",
+        "subdomain",
+        "exposure",
+        "scorer"
+      ]
+    },
+    {
+      "name": "subdomain-risk-ranking",
+      "endpoint": "https://subdomain-risk-ranking.apimesh.xyz/check",
+      "method": "GET",
+      "price_usd": 0.01,
+      "description": "Subdomain Risk Ranking — pay-per-call API on apimesh.xyz",
+      "category": "security",
+      "tags": [
+        "security",
+        "subdomain",
+        "risk",
+        "ranking"
+      ]
+    },
+    {
+      "name": "subdomain-vulnerability-ranking",
+      "endpoint": "https://subdomain-vulnerability-ranking.apimesh.xyz/check",
+      "method": "GET",
+      "price_usd": 0.01,
+      "description": "Subdomain Vulnerability Ranking — pay-per-call API on apimesh.xyz",
+      "category": "security",
+      "tags": [
+        "security",
+        "subdomain",
+        "vulnerability",
+        "ranking"
+      ]
+    },
+    {
+      "name": "subdomain-vulnerability-rankings",
+      "endpoint": "https://subdomain-vulnerability-rankings.apimesh.xyz/check",
+      "method": "GET",
+      "price_usd": 0.01,
+      "description": "Subdomain Vulnerability Rankings — pay-per-call API on apimesh.xyz",
+      "category": "security",
+      "tags": [
+        "security",
+        "subdomain",
+        "vulnerability",
+        "rankings"
+      ]
+    },
+    {
+      "name": "swagger-docs-creator",
+      "endpoint": "https://swagger-docs-creator.apimesh.xyz/generate",
+      "method": "POST",
+      "price_usd": 0.002,
+      "description": "Swagger Docs Creator — pay-per-call API on apimesh.xyz",
+      "category": "web-analysis",
+      "tags": [
+        "web-analysis",
+        "swagger",
+        "docs",
+        "creator"
+      ]
+    },
+    {
+      "name": "tech-stack",
+      "endpoint": "https://tech-stack.apimesh.xyz/check",
+      "method": "GET",
+      "price_usd": 0.003,
+      "description": "Tech Stack — pay-per-call API on apimesh.xyz",
+      "category": "web-analysis",
+      "tags": [
+        "web-analysis",
+        "tech",
+        "stack"
+      ]
+    },
+    {
+      "name": "user-agent-analyzer",
+      "endpoint": "https://user-agent-analyzer.apimesh.xyz/analyze",
+      "method": "GET",
+      "price_usd": 0.002,
+      "description": "User Agent Analyzer — pay-per-call API on apimesh.xyz",
+      "category": "web-analysis",
+      "tags": [
+        "web-analysis",
+        "user",
+        "agent",
+        "analyzer"
+      ]
+    },
+    {
+      "name": "web-configuration-audit",
+      "endpoint": "https://web-configuration-audit.apimesh.xyz/check",
+      "method": "GET",
+      "price_usd": 0.01,
+      "description": "Web Configuration Audit — pay-per-call API on apimesh.xyz",
+      "category": "web-analysis",
+      "tags": [
+        "web-analysis",
+        "web",
+        "configuration",
+        "audit"
+      ]
+    },
+    {
+      "name": "web-misconfiguration-scan",
+      "endpoint": "https://web-misconfiguration-scan.apimesh.xyz/check",
+      "method": "GET",
+      "price_usd": 0.01,
+      "description": "Web Misconfiguration Scan — pay-per-call API on apimesh.xyz",
+      "category": "web-analysis",
+      "tags": [
+        "web-analysis",
+        "web",
+        "misconfiguration",
+        "scan"
+      ]
+    },
+    {
+      "name": "web-resource-validator",
+      "endpoint": "https://web-resource-validator.apimesh.xyz/check",
+      "method": "GET",
+      "price_usd": 0.005,
+      "description": "Web Resource Validator — pay-per-call API on apimesh.xyz",
+      "category": "web-analysis",
+      "tags": [
+        "web-analysis",
+        "web",
+        "resource",
+        "validator"
+      ]
+    },
+    {
+      "name": "website-authenticity-assessment",
+      "endpoint": "https://website-authenticity-assessment.apimesh.xyz/check",
+      "method": "GET",
+      "price_usd": 0.01,
+      "description": "Website Authenticity Assessment — pay-per-call API on apimesh.xyz",
+      "category": "web-analysis",
+      "tags": [
+        "web-analysis",
+        "website",
+        "authenticity",
+        "assessment"
+      ]
+    },
+    {
+      "name": "website-security-header-info",
+      "endpoint": "https://website-security-header-info.apimesh.xyz/check",
+      "method": "GET",
+      "price_usd": 0.01,
+      "description": "Website Security Header Info — pay-per-call API on apimesh.xyz",
+      "category": "security",
+      "tags": [
+        "security",
+        "website",
+        "security",
+        "header",
+        "info"
+      ]
+    },
+    {
+      "name": "website-vulnerability-scan",
+      "endpoint": "https://website-vulnerability-scan.apimesh.xyz/check",
+      "method": "GET",
+      "price_usd": 0.01,
+      "description": "Website Vulnerability Scan — pay-per-call API on apimesh.xyz",
+      "category": "security",
+      "tags": [
+        "security",
+        "website",
+        "vulnerability",
+        "scan"
+      ]
+    },
+    {
+      "name": "yaml-validator",
+      "endpoint": "https://yaml-validator.apimesh.xyz/validate",
+      "method": "POST",
+      "price_usd": 0.002,
+      "description": "Yaml Validator — pay-per-call API on apimesh.xyz",
+      "category": "web-analysis",
+      "tags": [
+        "web-analysis",
+        "yaml",
+        "validator"
+      ]
+    }
+  ],
+  "categories": [
+    "devops",
+    "security",
+    "seo",
+    "web-analysis"
+  ],
+  "api_count": 58,
+  "generated_at": "2026-04-22T07:02:06.376Z"
+}

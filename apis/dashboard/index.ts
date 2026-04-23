@@ -136,6 +136,51 @@ app.get("/llms.txt", publicLimit, async (c) => {
   return c.text("# apimesh.xyz\nNo llms.txt generated yet.\n", 404);
 });
 
+// robots.txt — fully public, tells crawlers they're welcome
+app.get("/robots.txt", publicLimit, (c) => {
+  const body = [
+    "User-agent: *",
+    "Allow: /",
+    "Disallow: /auth/",
+    "Disallow: /account/",
+    "Disallow: /billing/",
+    "",
+    "Sitemap: https://apimesh.xyz/sitemap.xml",
+    "",
+  ].join("\n");
+  return c.text(body, 200, { "Content-Type": "text/plain; charset=utf-8" });
+});
+
+// Platform-level MPP manifest — JSON for MPP/agent-ecosystem crawlers.
+// Mirrors per-subdomain /.well-known/mpp but aggregates all APIs.
+app.get("/.well-known/mpp", publicLimit, async (c) => {
+  const { buildPlatformManifest } = await import("../../shared/mpp-manifest");
+  const host = c.req.header("host") ?? "apimesh.xyz";
+  return c.json(buildPlatformManifest(host));
+});
+
+// /openapi.json — minimal aggregate: links to per-API OpenAPI under each subdomain.
+// Full aggregate spec is a later improvement; crawlers probing this path should
+// get a valid 200 with actionable pointers rather than a 401.
+app.get("/openapi.json", publicLimit, async (c) => {
+  const { buildPlatformManifest } = await import("../../shared/mpp-manifest");
+  const host = c.req.header("host") ?? "apimesh.xyz";
+  const manifest = buildPlatformManifest(host);
+  return c.json({
+    openapi: "3.1.0",
+    info: {
+      title: "APIMesh",
+      version: "1.0.0",
+      description: manifest.description,
+      contact: { email: manifest.provider.contact, url: manifest.provider.url },
+    },
+    servers: manifest.apis.map(a => ({ url: a.endpoint.replace(/\/[^/]*$/, ""), description: a.name })),
+    paths: {},
+    "x-apimesh-apis": manifest.apis,
+    "x-discovery": manifest.discovery,
+  });
+});
+
 app.get("/.well-known/*", publicLimit, async (c) => {
   // Path traversal protection: resolve and validate containment
   const baseDir = resolve("public/.well-known");
@@ -1810,6 +1855,22 @@ app.onError((err, c) => {
 });
 
 app.notFound((c) => c.json({ error: "Not found" }, 404));
+
+// Regenerate the apex /.well-known/mpp manifest on startup so Caddy can serve
+// it statically. Crawlers observed in apr 2026 probe this path on every request.
+async function writeMppManifest() {
+  try {
+    const { buildPlatformManifest } = await import("../../shared/mpp-manifest");
+    const publicDir = resolve(import.meta.dir, "../../public/.well-known");
+    await Bun.$`mkdir -p ${publicDir}`.quiet();
+    const manifest = buildPlatformManifest("apimesh.xyz");
+    await Bun.write(join(publicDir, "mpp"), JSON.stringify(manifest, null, 2));
+    console.log(`[mpp] wrote manifest with ${manifest.api_count} apis → ${publicDir}/mpp`);
+  } catch (e: any) {
+    console.error(`[mpp] failed to write manifest:`, e?.message ?? e);
+  }
+}
+writeMppManifest();
 
 const server = Bun.serve({
   port: PORT,

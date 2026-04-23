@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import { registry } from "./registry";
 import { apiKeyAuth } from "../shared/api-key-auth";
+import { buildPerApiManifest } from "../shared/mpp-manifest";
 
 const router = new Hono();
 
@@ -63,6 +64,18 @@ router.get("/.well-known/x402", (c) => {
 
   // No subdomain or unknown — return empty discovery
   return c.json({ version: 1, resources: [] }, 404);
+});
+
+// Serve .well-known/mpp per subdomain — vendor-proprietary JSON manifest for
+// MPP/agent-ecosystem crawlers (apr 2026: observed 118 AWS IPs in coordinated
+// probe, all 4-path sequence /.well-known/mpp → /openapi.json → /llms.txt → /).
+router.get("/.well-known/mpp", (c) => {
+  const host = c.req.header("host") ?? "";
+  const subdomain = extractSubdomain(host);
+  if (subdomain && registry[subdomain]) {
+    return c.json(buildPerApiManifest(subdomain, host));
+  }
+  return c.json({ error: "unknown_api" }, 404);
 });
 
 // Catch-all: route by subdomain

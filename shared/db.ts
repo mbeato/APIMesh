@@ -44,12 +44,13 @@ export function logRequest(
   clientIp: string,
   payerWallet?: string,
   userId?: string,
-  apiKeyId?: string
+  apiKeyId?: string,
+  userAgent?: string
 ) {
   db.run(
-    `INSERT INTO requests (api_name, endpoint, method, status_code, response_time_ms, paid, amount_usd, client_ip, payer_wallet, user_id, api_key_id)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    [apiName, endpoint, method, statusCode, responseTimeMs, paid ? 1 : 0, amountUsd, clientIp, payerWallet ?? null, userId ?? null, apiKeyId ?? null]
+    `INSERT INTO requests (api_name, endpoint, method, status_code, response_time_ms, paid, amount_usd, client_ip, payer_wallet, user_id, api_key_id, user_agent)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [apiName, endpoint, method, statusCode, responseTimeMs, paid ? 1 : 0, amountUsd, clientIp, payerWallet ?? null, userId ?? null, apiKeyId ?? null, userAgent ?? null]
   );
 }
 

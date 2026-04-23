@@ -32,6 +32,8 @@ export function apiLogger(apiName: string, priceUsd: number = 0): MiddlewareHand
     // Trust x-real-ip set by Caddy — "direct" means request bypassed proxy
     const clientIp = sanitizeLogField(c.req.header("x-real-ip") || "direct");
     const path = sanitizeLogField(c.req.path);
+    const uaRaw = c.req.header("user-agent");
+    const userAgent = uaRaw ? sanitizeLogField(uaRaw, 256) : undefined;
 
     // Payer wallet set by extractPayerWallet() middleware
     const payerWallet: string | undefined = c.get("payerWallet");
@@ -40,7 +42,7 @@ export function apiLogger(apiName: string, priceUsd: number = 0): MiddlewareHand
     const userId = c.req.header("x-apimesh-user-id") || undefined;
     const apiKeyId = c.req.header("x-apimesh-key-id") || undefined;
 
-    logRequest(apiName, path, c.req.method, c.res.status, ms, paid, amount, clientIp, payerWallet, userId, apiKeyId);
+    logRequest(apiName, path, c.req.method, c.res.status, ms, paid, amount, clientIp, payerWallet, userId, apiKeyId, userAgent);
 
     if (paid && amount > 0) {
       if (x402Paid) {
