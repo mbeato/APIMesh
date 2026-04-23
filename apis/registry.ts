@@ -58,6 +58,20 @@ import { app as apiLinting } from "./api-linting/index";
 import { app as portScannerAggregate } from "./port-scanner-aggregate/index";
 import { app as cdnInfrastructureEnricher } from "./cdn-infrastructure-enricher/index";
 import { app as webConfigurationAudit } from "./web-configuration-audit/index";
+import { app as subdomainVulnerabilityRanker } from "./subdomain-vulnerability-ranker/index";
+import { app as sslTlsInceptionScore } from "./ssl-tls-inception-score/index";
+import { app as dnsPropagationHeatmap } from "./dns-propagation-heatmap/index";
+import { app as apiSchemaDelta } from "./api-schema-delta/index";
+import { app as portScanner } from "./port-scanner/index";
+import { app as sslTlsHardeningAssessor } from "./ssl-tls-hardening-assessor/index";
+
+
+
+
+
+
+
+
 
 
 
@@ -157,4 +171,10 @@ export const registry: Record<string, Hono> = {
   "port-scanner-aggregate": portScannerAggregate,
   "cdn-infrastructure-enricher": cdnInfrastructureEnricher,
   "web-configuration-audit": webConfigurationAudit,
+  "subdomain-vulnerability-ranker": subdomainVulnerabilityRanker,
+  "ssl-tls-inception-score": sslTlsInceptionScore,
+  "dns-propagation-heatmap": dnsPropagationHeatmap,
+  "api-schema-delta": apiSchemaDelta,
+  "port-scanner": portScanner,
+  "ssl-tls-hardening-assessor": sslTlsHardeningAssessor,
 };
