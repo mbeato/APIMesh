@@ -65,6 +65,8 @@ import { app as apiSchemaDelta } from "./api-schema-delta/index";
 import { app as portScanner } from "./port-scanner/index";
 import { app as sslTlsHardeningAssessor } from "./ssl-tls-hardening-assessor/index";
 import { app as performanceSecurityComplianceReport } from "./performance-security-compliance-report/index";
+import { app as sslExpiryForecast } from "./ssl-expiry-forecast/index";
+
 
 
 
@@ -180,4 +182,5 @@ export const registry: Record<string, Hono> = {
   "port-scanner": portScanner,
   "ssl-tls-hardening-assessor": sslTlsHardeningAssessor,
   "performance-security-compliance-report": performanceSecurityComplianceReport,
+  "ssl-expiry-forecast": sslExpiryForecast,
 };
