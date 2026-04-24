@@ -64,6 +64,8 @@ import { app as dnsPropagationHeatmap } from "./dns-propagation-heatmap/index";
 import { app as apiSchemaDelta } from "./api-schema-delta/index";
 import { app as portScanner } from "./port-scanner/index";
 import { app as sslTlsHardeningAssessor } from "./ssl-tls-hardening-assessor/index";
+import { app as performanceSecurityComplianceReport } from "./performance-security-compliance-report/index";
+
 
 
 
@@ -177,4 +179,5 @@ export const registry: Record<string, Hono> = {
   "api-schema-delta": apiSchemaDelta,
   "port-scanner": portScanner,
   "ssl-tls-hardening-assessor": sslTlsHardeningAssessor,
+  "performance-security-compliance-report": performanceSecurityComplianceReport,
 };
