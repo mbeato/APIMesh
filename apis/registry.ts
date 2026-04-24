@@ -66,6 +66,8 @@ import { app as portScanner } from "./port-scanner/index";
 import { app as sslTlsHardeningAssessor } from "./ssl-tls-hardening-assessor/index";
 import { app as performanceSecurityComplianceReport } from "./performance-security-compliance-report/index";
 import { app as sslExpiryForecast } from "./ssl-expiry-forecast/index";
+import { app as apiResponseHeuristics } from "./api-response-heuristics/index";
+
 
 
 
@@ -183,4 +185,5 @@ export const registry: Record<string, Hono> = {
   "ssl-tls-hardening-assessor": sslTlsHardeningAssessor,
   "performance-security-compliance-report": performanceSecurityComplianceReport,
   "ssl-expiry-forecast": sslExpiryForecast,
+  "api-response-heuristics": apiResponseHeuristics,
 };
