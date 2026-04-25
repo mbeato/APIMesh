@@ -7,14 +7,14 @@
 
 [![npm version](https://img.shields.io/npm/v/@mbeato/apimesh-mcp-server)](https://www.npmjs.com/package/@mbeato/apimesh-mcp-server)
 [![npm downloads](https://img.shields.io/npm/dm/@mbeato/apimesh-mcp-server)](https://www.npmjs.com/package/@mbeato/apimesh-mcp-server)
-[![APIs](https://img.shields.io/badge/APIs-71-brightgreen)](https://apimesh.xyz)
+[![APIs](https://img.shields.io/badge/APIs-74-brightgreen)](https://apimesh.xyz)
 [![MCP Tools](https://img.shields.io/badge/MCP%20tools-67-blue)](https://www.npmjs.com/package/@mbeato/apimesh-mcp-server)
 [![License: MIT](https://img.shields.io/badge/license-MIT-yellow)](LICENSE)
 [![Payments](https://img.shields.io/badge/payments-x402%20%7C%20MPP%20%7C%20API%20key-orange)](#payment-methods)
 
 **Pay-per-call web analysis APIs for AI agents and developers.** Security audits, performance monitoring, SEO analysis, email verification, tech stack detection, and more -- no signup required, just pay with USDC on Base and get your response.
 
-APIMesh is a collection of 71 focused web analysis APIs, each on its own subdomain, with a 67-tool MCP server for direct use in Claude, Cursor, Windsurf, Cline, and any MCP-compatible client. Every endpoint supports three payment methods: crypto micropayments via [x402](https://www.x402.org/), card payments via [Stripe MPP](https://mpp.dev), and traditional API keys via [Stripe checkout](https://apimesh.xyz/signup).
+APIMesh is a collection of 74 focused web analysis APIs, each on its own subdomain, with a 67-tool MCP server for direct use in Claude, Cursor, Windsurf, Cline, and any MCP-compatible client. Every endpoint supports three payment methods: crypto micropayments via [x402](https://www.x402.org/), card payments via [Stripe MPP](https://mpp.dev), and traditional API keys via [Stripe checkout](https://apimesh.xyz/signup).
 
 [**Live Site**](https://apimesh.xyz) -- [**Dashboard**](https://apimesh.xyz/dashboard) -- [**npm**](https://www.npmjs.com/package/@mbeato/apimesh-mcp-server) -- [**MCP Registry**](https://registry.modelcontextprotocol.io) -- [**Smithery**](https://smithery.ai/servers/apimesh/apimesh-mcp-server)
 
