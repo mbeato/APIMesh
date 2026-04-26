@@ -75,6 +75,8 @@ import { app as crossOriginResourcePolicymapper } from "./cross-origin-resource-
 import { app as apiStandardCompliance } from "./api-standard-compliance/index";
 import { app as subdomainResilienceScore } from "./subdomain-resilience-score/index";
 import { app as sslConfigurationRank } from "./ssl-configuration-rank/index";
+import { app as dnsChangeForecast } from "./dns-change-forecast/index";
+
 
 
 
@@ -210,4 +212,5 @@ export const registry: Record<string, Hono> = {
   "api-standard-compliance": apiStandardCompliance,
   "subdomain-resilience-score": subdomainResilienceScore,
   "ssl-configuration-rank": sslConfigurationRank,
+  "dns-change-forecast": dnsChangeForecast,
 };
