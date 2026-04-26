@@ -1,17 +1,17 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.mbeato/apimesh",
-  "description": "65 x402-payable web analysis APIs as MCP tools — web vitals, SEO, security headers, TLS hardening, subdomain vulnerability ranking, DNS propagation, email security, and more.",
+  "description": "74 x402-payable web analysis APIs as MCP tools (76 total incl. wallet) — web vitals, SEO, security headers, TLS hardening, subdomain vulnerability ranking, DNS propagation, email security, CSP audits, and more.",
   "repository": {
     "url": "https://github.com/mbeato/conway",
     "source": "github"
   },
-  "version": "1.8.1",
+  "version": "1.8.2",
   "packages": [
     {
       "registryType": "npm",
       "identifier": "@mbeato/apimesh-mcp-server",
-      "version": "1.8.1",
+      "version": "1.8.2",
       "transport": {
         "type": "stdio"
       }

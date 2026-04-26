@@ -1,7 +1,7 @@
 {
   "name": "@mbeato/apimesh-mcp-server",
-  "version": "1.8.1",
-  "description": "MCP server for APIMesh — 67 x402-payable tools for AI agents (65 APIs + wallet usage + spend caps). Covers web vitals, security headers, SEO audits, email security and verification, tech-stack detection, brand assets, redirect chains, indexability, brand availability, HTTP status and method enumeration, favicon checks, microservice health, robots.txt and YAML parsing, JWT generation, regex building, OpenAPI doc generation, user-agent parsing, CSP and TLS hardening audits, subdomain vulnerability/exposure ranking, DNS propagation and IP infrastructure analysis, privacy policy scoring, port scanning, dependency license audits, API schema diffing, and more. Pay per call with USDC on Base via x402.",
+  "version": "1.8.2",
+  "description": "MCP server for APIMesh — 76 x402-payable tools for AI agents (74 APIs + wallet usage + spend caps). Covers web vitals, security headers, SEO audits, email security and verification, tech-stack detection, brand assets, redirect chains, indexability, brand availability, HTTP status and method enumeration, favicon checks, microservice health, robots.txt and YAML parsing, JWT generation, regex building, OpenAPI doc generation, user-agent parsing, CSP and TLS hardening audits, subdomain vulnerability/exposure ranking, DNS propagation, IP infrastructure analysis, privacy policy scoring, port scanning, dependency license audits, API schema diffing, API endpoint discovery, CORS auditing, and SSL expiry forecasting. Pay per call with USDC on Base via x402.",
   "mcpName": "io.github.mbeato/apimesh",
   "main": "./dist/index.js",
   "bin": { "apimesh-mcp": "./dist/index.js" },

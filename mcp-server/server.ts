@@ -109,7 +109,7 @@ function qs(params: Record<string, string | number | undefined>): string {
 export function createServer(): McpServer {
   const server = new McpServer({
     name: "apimesh",
-    version: "1.8.1",
+    version: "1.8.2",
   });
 
   server.tool(
@@ -806,6 +806,98 @@ export function createServer(): McpServer {
     },
     async ({ host }) =>
       callApi(`https://ssl-tls-hardening-assessor.apimesh.xyz/check${qs({ host })}`),
+  );
+
+  server.tool(
+    "api_endpoint_discovery",
+    "Comprehensively crawl and analyze API endpoints on the specified domain",
+    {
+      domain: z.string().describe("Target domain to scan, e.g., example.com"),
+    },
+    async ({ domain }) =>
+      callApi(`https://api-endpoint-discovery.apimesh.xyz/discover${qs({ domain })}`),
+  );
+
+  server.tool(
+    "api_response_heuristics",
+    "Comprehensive API response heuristic analysis with scoring and recommendations",
+    {
+      url: z.string().describe("URL of the API endpoint to analyze"),
+    },
+    async ({ url }) =>
+      callApi(`https://api-response-heuristics.apimesh.xyz/analyze${qs({ url })}`),
+  );
+
+  server.tool(
+    "api_standard_compliance",
+    "Perform a comprehensive API standard compliance analysis on the target API response URL",
+    {
+      url: z.string().describe("HTTP or HTTPS URL of the API endpoint to analyze"),
+    },
+    async ({ url }) =>
+      callApi(`https://api-standard-compliance.apimesh.xyz/check${qs({ url })}`),
+  );
+
+  server.tool(
+    "content_security_policy_check",
+    "Perform a comprehensive security header and content security policy audit",
+    {
+      url: z.string().describe("The full HTTPS or HTTP URL of the site to analyze"),
+    },
+    async ({ url }) =>
+      callApi(`https://content-security-policy-check.apimesh.xyz/check${qs({ url })}`),
+  );
+
+  server.tool(
+    "cross_origin_resource_policymapper",
+    "Perform comprehensive CORS headers audit across multiple endpoints",
+    {
+      baseUrl: z.string().describe("Base URL or domain to analyze (e.g. https://example.com)"),
+      endpoints: z.string().optional().describe("Optional comma-separated list of endpoint paths to analyze (e.g. /api,/auth)"),
+    },
+    async ({ baseUrl, endpoints }) =>
+      callApi(`https://cross-origin-resource-policymapper.apimesh.xyz/check${qs({ baseUrl, endpoints })}`),
+  );
+
+  server.tool(
+    "dns_propagation_inspector",
+    "Comprehensive DNS propagation audit across global resolvers with detailed result analysis",
+    {
+      domain: z.string().describe("Domain name to check DNS propagation for"),
+      recordType: z.string().describe("DNS record type to query, e.g., A, AAAA, CNAME, TXT"),
+    },
+    async ({ domain, recordType }) =>
+      callApi(`https://dns-propagation-inspector.apimesh.xyz/check${qs({ domain, recordType })}`),
+  );
+
+  server.tool(
+    "performance_security_compliance_report",
+    "Comprehensive payable audit combining performance metrics, security headers, SSL cert and DNS analysis with scoring and prioritized fix suggestions",
+    {
+      url: z.string().describe("Target URL (http(s)://...) to scan."),
+    },
+    async ({ url }) =>
+      callApi(`https://performance-security-compliance-report.apimesh.xyz/check${qs({ url })}`),
+  );
+
+  server.tool(
+    "site_security_baseline",
+    "Comprehensive baseline audit with combined security headers, SSL, and configuration checks",
+    {
+      url: z.string().describe("Target website URL to analyze"),
+    },
+    async ({ url }) =>
+      callApi(`https://site-security-baseline.apimesh.xyz/check${qs({ url })}`),
+  );
+
+  server.tool(
+    "ssl_expiry_forecast",
+    "Paid endpoint combining certificate transparency logs, DNS, SSL cert data to forecast expiry across multiple domains",
+    {
+      domains: z.string().describe("Comma-separated list of domain names to check (max 10 domains)."),
+    },
+    async ({ domains }) =>
+      callApi(`https://ssl-expiry-forecast.apimesh.xyz/check${qs({ domains })}`),
   );
 
   return server;
