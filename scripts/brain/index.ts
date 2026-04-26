@@ -14,12 +14,35 @@ import { digest } from "./digest";
 import { githubEngage } from "./github-engage";
 import { directoryTracker } from "./directory-tracker";
 import { reapUnverifiedUsers } from "../reap-unverified";
+import { reconcileRegistryWithFile } from "../../shared/db";
+import { join } from "path";
 
 async function main() {
   const timestamp = new Date().toISOString();
   console.log(`\n${"=".repeat(60)}`);
   console.log(`[brain] Conway Brain starting at ${timestamp}`);
   console.log(`${"=".repeat(60)}\n`);
+
+  // Step 0: Reconcile DB ↔ registry.ts before any downstream step reads
+  // getActiveApis(). Without this, deactivated/renamed APIs accumulate as
+  // stale "active" rows and inflate every count produced downstream.
+  try {
+    const result = reconcileRegistryWithFile(
+      join(import.meta.dir, "..", "..", "apis", "registry.ts"),
+    );
+    if (result.marked_inactive.length || result.inserted.length) {
+      console.log(
+        `[brain] Reconciled DB with registry.ts: ${result.marked_inactive.length} marked inactive, ${result.inserted.length} inserted, ${result.active_count} now active`,
+      );
+    } else {
+      console.log(`[brain] DB ↔ registry.ts in sync: ${result.active_count} active APIs`);
+    }
+  } catch (err) {
+    console.error(
+      `[brain] Reconcile failed (non-fatal):`,
+      err instanceof Error ? err.message : err,
+    );
+  }
 
   const hasLlmKey = !!process.env.OPENAI_API_KEY;
   if (!hasLlmKey) {

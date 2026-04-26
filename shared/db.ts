@@ -181,6 +181,86 @@ export function deactivateApi(name: string) {
   db.run(`UPDATE api_registry SET status = 'inactive', updated_at = datetime('now') WHERE name = ?`, [name]);
 }
 
+/**
+ * Reconcile the api_registry table against apis/registry.ts (the truth that
+ * api-router actually serves). Marks any active DB row not in the registry
+ * as inactive, and inserts a row for any registry entry missing from the DB.
+ *
+ * The api_registry.name column stores the *directory name* (e.g. web-checker),
+ * not the registry slug (e.g. check), because requests.api_name is set by
+ * apiLogger from the API's hardcoded API_NAME constant — which equals the
+ * directory name. Stats joins (api_registry ⨝ requests) only work when both
+ * use the dir name.
+ *
+ * The api_registry.subdomain column stores the slug (the URL subdomain
+ * traffic actually arrives on), parsed from the registry map keys.
+ *
+ * Call this at the top of every brain run so getActiveApis() stays aligned
+ * with what's actually routable. Without this, deactivated/renamed APIs
+ * accumulate as stale "active" rows and inflate every count produced
+ * downstream (list.ts, changelog.ts, promote.ts, public discovery files).
+ */
+export function reconcileRegistryWithFile(registryFilePath: string): {
+  marked_inactive: string[];
+  inserted: string[];
+  active_count: number;
+} {
+  const src = require("fs").readFileSync(registryFilePath, "utf-8") as string;
+
+  // Parse `import { app as fooBar } from "./foo-bar/index"` → identifier ↔ dir
+  const idToDir = new Map<string, string>();
+  for (const m of src.matchAll(
+    /^import\s*\{\s*app\s+as\s+(\w+)\s*\}\s*from\s*"\.\/([\w-]+)\/index/gm,
+  )) {
+    idToDir.set(m[1], m[2]);
+  }
+
+  // Parse `"slug": identifier,` inside the registry map → slug ↔ identifier
+  const map = src.match(/^export const registry[\s\S]*?^};/m)?.[0] ?? "";
+  const truth = new Map<string, string>(); // dir → slug
+  for (const m of map.matchAll(/^\s*"([a-z0-9-]+)":\s*(\w+)\s*,/gm)) {
+    const slug = m[1];
+    const identifier = m[2];
+    const dir = idToDir.get(identifier) ?? slug;
+    truth.set(dir, slug);
+  }
+
+  const activeNames = new Set(
+    (db
+      .query(`SELECT name FROM api_registry WHERE status = 'active'`)
+      .all() as { name: string }[]).map((r) => r.name),
+  );
+
+  const markedInactive: string[] = [];
+  for (const name of activeNames) {
+    if (!truth.has(name)) {
+      db.run(
+        `UPDATE api_registry SET status = 'inactive', updated_at = datetime('now') WHERE name = ?`,
+        [name],
+      );
+      markedInactive.push(name);
+    }
+  }
+
+  const inserted: string[] = [];
+  for (const [dir, slug] of truth) {
+    if (!activeNames.has(dir)) {
+      db.run(
+        `INSERT OR REPLACE INTO api_registry (name, port, subdomain, status, updated_at)
+         VALUES (?, 3001, ?, 'active', datetime('now'))`,
+        [dir, slug],
+      );
+      inserted.push(dir);
+    }
+  }
+
+  return {
+    marked_inactive: markedInactive,
+    inserted,
+    active_count: truth.size,
+  };
+}
+
 export function getApiDetailedStats(apiName: string) {
   const allTime = db.query(`
     SELECT COUNT(*) as total_requests,
