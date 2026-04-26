@@ -78,6 +78,8 @@ import { app as sslConfigurationRank } from "./ssl-configuration-rank/index";
 import { app as dnsChangeForecast } from "./dns-change-forecast/index";
 import { app as networkPathInfer } from "./network-path-infer/index";
 import { app as websiteCspViolationReport } from "./website-csp-violation-report/index";
+import { app as apiTechnologyHeaders } from "./api-technology-headers/index";
+
 
 
 
@@ -219,4 +221,5 @@ export const registry: Record<string, Hono> = {
   "dns-change-forecast": dnsChangeForecast,
   "network-path-infer": networkPathInfer,
   "website-csp-violation-report": websiteCspViolationReport,
+  "api-technology-headers": apiTechnologyHeaders,
 };
