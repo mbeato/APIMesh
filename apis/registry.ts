@@ -77,6 +77,8 @@ import { app as subdomainResilienceScore } from "./subdomain-resilience-score/in
 import { app as sslConfigurationRank } from "./ssl-configuration-rank/index";
 import { app as dnsChangeForecast } from "./dns-change-forecast/index";
 import { app as networkPathInfer } from "./network-path-infer/index";
+import { app as websiteCspViolationReport } from "./website-csp-violation-report/index";
+
 
 
 
@@ -216,4 +218,5 @@ export const registry: Record<string, Hono> = {
   "ssl-configuration-rank": sslConfigurationRank,
   "dns-change-forecast": dnsChangeForecast,
   "network-path-infer": networkPathInfer,
+  "website-csp-violation-report": websiteCspViolationReport,
 };
