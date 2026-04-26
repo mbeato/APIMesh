@@ -57,12 +57,31 @@ function checkNpmPackage(newApis: { name: string }[]): string[] {
   return actions;
 }
 
-/** Step 2: Republish to MCP Registry if new tools were added. */
+/**
+ * Step 2: MCP Registry republish.
+ *
+ * Disabled 2026-04-26: the publish path needs `bun build` to bundle dist/index.js
+ * before npm publish, and bun's bundler writes scratch files to /tmp which the
+ * conway-brain.service systemd sandbox blocks (ReadOnlyFileSystem). Every cron
+ * run failed here. Manual `cd mcp-server && npm publish` from a developer
+ * machine is the real release path; tracking this in actions so we still
+ * surface "needs manual publish" in the daily summary.
+ */
 async function republishMcpRegistry(newApis: { name: string }[]): Promise<string[]> {
   const actions: string[] = [];
   if (newApis.length === 0) return actions;
 
-  console.log(`[promote] mcp-registry: attempting republish for ${newApis.length} new API(s)`);
+  console.log(
+    `[promote] mcp-registry: ${newApis.length} new API(s) need manual MCP wrapper + npm publish (auto-publish disabled — bun build can't write tempdir on prod)`,
+  );
+  for (const api of newApis) {
+    logPromotion(api.name, "mcp-registry", "manual");
+    actions.push(`mcp-registry: ${api.name} needs manual MCP wrapper + 'cd mcp-server && npm publish'`);
+  }
+  return actions;
+
+  // Original implementation kept inline below for reference; never reached.
+  // eslint-disable-next-line no-unreachable
   try {
     const BUN = Bun.argv[0];
     const proc = Bun.spawn([BUN, "x", "@anthropic-ai/mcp-publisher", "publish"], {
