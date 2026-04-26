@@ -73,6 +73,8 @@ import { app as siteSecurityBaseline } from "./site-security-baseline/index";
 import { app as dnsPropagationInspector } from "./dns-propagation-inspector/index";
 import { app as crossOriginResourcePolicymapper } from "./cross-origin-resource-policymapper/index";
 import { app as apiStandardCompliance } from "./api-standard-compliance/index";
+import { app as subdomainResilienceScore } from "./subdomain-resilience-score/index";
+
 
 
 
@@ -204,4 +206,5 @@ export const registry: Record<string, Hono> = {
   "dns-propagation-inspector": dnsPropagationInspector,
   "cross-origin-resource-policymapper": crossOriginResourcePolicymapper,
   "api-standard-compliance": apiStandardCompliance,
+  "subdomain-resilience-score": subdomainResilienceScore,
 };
