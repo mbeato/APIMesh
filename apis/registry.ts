@@ -80,6 +80,8 @@ import { app as networkPathInfer } from "./network-path-infer/index";
 import { app as websiteCspViolationReport } from "./website-csp-violation-report/index";
 import { app as apiTechnologyHeaders } from "./api-technology-headers/index";
 import { app as apiStructureValidator } from "./api-structure-validator/index";
+import { app as apiEndpointHeuristics } from "./api-endpoint-heuristics/index";
+
 
 
 
@@ -225,4 +227,5 @@ export const registry: Record<string, Hono> = {
   "website-csp-violation-report": websiteCspViolationReport,
   "api-technology-headers": apiTechnologyHeaders,
   "api-structure-validator": apiStructureValidator,
+  "api-endpoint-heuristics": apiEndpointHeuristics,
 };
