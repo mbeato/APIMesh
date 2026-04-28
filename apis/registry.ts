@@ -86,6 +86,8 @@ import { app as pagePerformanceMetrics } from "./page-performance-metrics/index"
 import { app as subdomainEnumAggregator } from "./subdomain-enum-aggregator/index";
 import { app as sslTlsProtocolCompliance } from "./ssl-tls-protocol-compliance/index";
 import { app as apiEndpointDiscoveryGraph } from "./api-endpoint-discovery-graph/index";
+import { app as subdomainConfigurationEntropy } from "./subdomain-configuration-entropy/index";
+
 
 
 
@@ -243,4 +245,5 @@ export const registry: Record<string, Hono> = {
   "subdomain-enum-aggregator": subdomainEnumAggregator,
   "ssl-tls-protocol-compliance": sslTlsProtocolCompliance,
   "api-endpoint-discovery-graph": apiEndpointDiscoveryGraph,
+  "subdomain-configuration-entropy": subdomainConfigurationEntropy,
 };
