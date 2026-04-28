@@ -84,6 +84,8 @@ import { app as apiEndpointHeuristics } from "./api-endpoint-heuristics/index";
 import { app as apiEndpointDisclosure } from "./api-endpoint-disclosure/index";
 import { app as pagePerformanceMetrics } from "./page-performance-metrics/index";
 import { app as subdomainEnumAggregator } from "./subdomain-enum-aggregator/index";
+import { app as sslTlsProtocolCompliance } from "./ssl-tls-protocol-compliance/index";
+
 
 
 
@@ -237,4 +239,5 @@ export const registry: Record<string, Hono> = {
   "api-endpoint-disclosure": apiEndpointDisclosure,
   "page-performance-metrics": pagePerformanceMetrics,
   "subdomain-enum-aggregator": subdomainEnumAggregator,
+  "ssl-tls-protocol-compliance": sslTlsProtocolCompliance,
 };
