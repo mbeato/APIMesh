@@ -33,8 +33,10 @@ app.use("*", async (c, next) => {
   return next();
 });
 
+// Single rate-limit zone applies to /check + landing alike. The earlier
+// double-registration (one wildcard, one /check-specific) summed to ~120/min
+// effective on /check (SECURITY-AUDIT M1). One zone, one limit.
 app.use("*", rateLimit("sigdebug", 60, 60_000));
-app.use("/check", rateLimit("sigdebug-check", 60, 60_000));
 app.use("*", apiLogger(API_NAME, 0));
 
 app.get("/", (c) => c.html(LANDING_HTML));
@@ -100,13 +102,31 @@ app.post("/check", async (c) => {
   const result = verify(input);
   const hints = generateHints({ result, input });
 
+  // Redact full HMAC bytes on failure paths to avoid leaking
+  // HMAC(user_secret, user_body) as an oracle (SECURITY-AUDIT FINDING-01).
+  // The first 8 hex chars + first_diff_byte preserve the user-facing diff UX
+  // while removing usable cryptographic material.
+  const details = result.valid
+    ? result.details
+    : {
+        ...result.details,
+        computed_signature: redact(result.details.computed_signature),
+        provided_signature: redact(result.details.provided_signature),
+      };
+
   return c.json({
     valid: result.valid,
     provider: result.provider,
     reason: result.reason,
     hints,
-    details: result.details,
+    details,
   });
 });
+
+function redact(sig: string | undefined): string | undefined {
+  if (!sig) return sig;
+  if (sig.length <= 12) return sig;
+  return sig.slice(0, 8) + "…(redacted)";
+}
 
 export { app };
