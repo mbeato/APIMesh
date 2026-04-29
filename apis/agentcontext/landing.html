@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>agentcontext — one source of truth for AGENTS.md, CLAUDE.md, .cursorrules, .clinerules</title>
+  <meta name="description" content="Normalize agent-context files across every AI coding tool. CLI, MCP server, and hosted endpoint. Free." />
+  <meta property="og:title" content="agentcontext — normalize AGENTS.md across every coding agent" />
+  <meta property="og:description" content="Stop maintaining CLAUDE.md, AGENTS.md, .cursorrules, .clinerules, and .windsurfrules by hand. Write one. Sync the rest." />
+  <link rel="canonical" href="https://agentsmd.apimesh.xyz/" />
+  <style>
+    * { box-sizing: border-box }
+    html, body { margin: 0; padding: 0; }
+    body {
+      font: 16px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+      color: #1a1a1a;
+      background: #fafaf9;
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 48px 24px 80px;
+    }
+    h1 { font-size: 36px; line-height: 1.15; margin: 0 0 12px; letter-spacing: -0.02em; }
+    h2 { font-size: 22px; margin: 40px 0 12px; letter-spacing: -0.01em; }
+    h3 { font-size: 16px; font-weight: 600; margin: 24px 0 8px; }
+    p { margin: 0 0 14px; }
+    a { color: #b45309; text-decoration: underline; text-underline-offset: 2px; }
+    code, pre {
+      font-family: "SF Mono", "JetBrains Mono", ui-monospace, monospace;
+      font-size: 14px;
+    }
+    code { background: #f1f0ee; padding: 2px 6px; border-radius: 3px; }
+    pre {
+      background: #1a1a1a; color: #f5f3ee;
+      padding: 16px 18px; border-radius: 6px;
+      overflow-x: auto;
+      line-height: 1.45;
+    }
+    pre code { background: none; padding: 0; color: inherit; }
+    .lede { color: #555; font-size: 18px; margin-bottom: 28px; }
+    .pill {
+      display: inline-block; font-size: 12px; padding: 2px 8px;
+      border-radius: 99px; background: #fbbf24; color: #422006;
+      margin-bottom: 16px; font-weight: 600;
+    }
+    table { border-collapse: collapse; margin: 12px 0 24px; width: 100%; font-size: 14px; }
+    th, td { text-align: left; padding: 8px 12px; border-bottom: 1px solid #e5e4e2; }
+    th { font-weight: 600; background: #f1f0ee; }
+    .demo {
+      border: 1px solid #d6d3d1; border-radius: 8px;
+      padding: 20px; background: #fff; margin: 20px 0;
+    }
+    textarea {
+      width: 100%; min-height: 180px; font-family: "SF Mono", ui-monospace, monospace;
+      font-size: 13px; padding: 12px; border: 1px solid #d6d3d1; border-radius: 4px;
+      resize: vertical;
+    }
+    select, button {
+      font-size: 14px; padding: 8px 14px; border-radius: 4px;
+      border: 1px solid #d6d3d1; background: #fff; cursor: pointer;
+    }
+    button { background: #1a1a1a; color: #fafaf9; border-color: #1a1a1a; font-weight: 600; }
+    button:hover { background: #b45309; border-color: #b45309; }
+    .row { display: flex; gap: 12px; align-items: center; margin: 12px 0; flex-wrap: wrap; }
+    #out { background: #1a1a1a; color: #f5f3ee; padding: 16px; border-radius: 6px; min-height: 60px; font-size: 13px; white-space: pre-wrap; word-break: break-word; }
+    .muted { color: #78716c; font-size: 13px; }
+    footer { margin-top: 60px; padding-top: 24px; border-top: 1px solid #e5e4e2; color: #78716c; font-size: 13px; }
+  </style>
+</head>
+<body>
+
+  <span class="pill">v0.1 — early</span>
+
+  <h1>agentcontext</h1>
+  <p class="lede">
+    One source of truth for the agent-context format zoo.
+    Maintain <code>AGENTS.md</code> once, sync everything else.
+  </p>
+
+  <h2>Why</h2>
+  <p>
+    Every AI coding tool invented its own rules-file format.
+    <code>CLAUDE.md</code>, <code>AGENTS.md</code>, <code>GEMINI.md</code>,
+    <code>.cursor/rules/*.mdc</code>, <code>.cursorrules</code>,
+    <code>.windsurf/rules/*.md</code>, <code>.windsurfrules</code>,
+    <code>.clinerules/*.md</code>, <code>CONVENTIONS.md</code>.
+    Maintaining them by hand drifts.
+    This tool keeps them in sync.
+  </p>
+
+  <h2>Install</h2>
+  <pre><code>npx @mbeato/agentcontext inspect</code></pre>
+  <p class="muted">No install step. Runs against the current directory and prints a summary.</p>
+
+  <h2>Try it</h2>
+  <p>Paste a CLAUDE.md, .cursorrules, or any agent-context file. We'll normalize it to AGENTS.md.</p>
+
+  <div class="demo">
+    <div class="row">
+      <label for="src-fmt">Source:</label>
+      <select id="src-fmt">
+        <option value="agents-md">AGENTS.md</option>
+        <option value="claude-md">CLAUDE.md</option>
+        <option value="gemini-md">GEMINI.md</option>
+        <option value="cursor-mdc">.cursor/rules/*.mdc</option>
+        <option value="cursor-legacy">.cursorrules (legacy)</option>
+        <option value="windsurf-mdc">.windsurf/rules/*.md</option>
+        <option value="windsurf-legacy">.windsurfrules (legacy)</option>
+        <option value="cline-file">.clinerules (file)</option>
+        <option value="conventions-md">CONVENTIONS.md</option>
+      </select>
+      <label for="tgt-fmt">→</label>
+      <select id="tgt-fmt">
+        <option value="agents-md">AGENTS.md</option>
+        <option value="claude-md">CLAUDE.md</option>
+        <option value="gemini-md">GEMINI.md</option>
+        <option value="cursor-mdc">.cursor/rules/*.mdc</option>
+        <option value="windsurf-mdc">.windsurf/rules/*.md</option>
+        <option value="cline-dir">.clinerules/*.md</option>
+        <option value="conventions-md">CONVENTIONS.md</option>
+      </select>
+    </div>
+    <textarea id="src" placeholder="# Project rules&#10;&#10;- TypeScript strict mode&#10;- Bun for everything"># Project rules
+
+- Use TypeScript strict mode.
+- Bun for everything.
+- Test before commit.</textarea>
+    <div class="row">
+      <button id="convert-btn">Convert</button>
+      <span class="muted" id="status"></span>
+    </div>
+    <pre id="out">(output appears here)</pre>
+  </div>
+
+  <h2>How it works</h2>
+  <p>
+    Detects all 10 agent-context formats in a repo, parses each into a unified IR
+    (rules + activation modes + scope), then renders to whichever target you ask for.
+    Round-trip is byte-identical for lossless pairs and bounded-diff for lossy ones.
+  </p>
+
+  <table>
+    <thead><tr><th>Format</th><th>What we do with it</th></tr></thead>
+    <tbody>
+      <tr><td><code>AGENTS.md</code></td><td>Canonical hub. Read + write.</td></tr>
+      <tr><td><code>CLAUDE.md</code></td><td>Read (with @-import resolution) + write.</td></tr>
+      <tr><td><code>GEMINI.md</code></td><td>Read (code-block-aware @-imports) + write.</td></tr>
+      <tr><td><code>.cursor/rules/*.mdc</code></td><td>Read all 4 activation modes + write.</td></tr>
+      <tr><td><code>.cursorrules</code></td><td>Read only (deprecated by Cursor in Agent mode).</td></tr>
+      <tr><td><code>.windsurf/rules/*.md</code></td><td>Read all triggers + write (with 12K char-limit warnings).</td></tr>
+      <tr><td><code>.windsurfrules</code></td><td>Read only (legacy pre-Wave-8).</td></tr>
+      <tr><td><code>.clinerules/*.md</code></td><td>Read (skips reserved subdirs) + write (numeric prefixes).</td></tr>
+      <tr><td><code>CONVENTIONS.md</code></td><td>Read + write + emits an <code>.aider.conf.yml</code> snippet.</td></tr>
+      <tr><td><code>.aider.conf.yml</code></td><td>Read <code>read:</code> list only — never round-tripped.</td></tr>
+    </tbody>
+  </table>
+
+  <h2>From an MCP-aware agent</h2>
+  <pre><code>{
+  "mcpServers": {
+    "agentcontext": {
+      "command": "npx",
+      "args": ["-y", "@mbeato/agentcontext-mcp"]
+    }
+  }
+}</code></pre>
+  <p>Two tools: <code>read_agent_context(path)</code> returns the IR, <code>convert_agent_context(ir, targets)</code> renders to a file map.</p>
+
+  <h2>CLI</h2>
+  <pre><code># Show what's in this repo
+npx @mbeato/agentcontext inspect
+
+# Detect everything, normalize to AGENTS.md, write per-tool shims
+npx @mbeato/agentcontext sync --write --shims claude,cursor,cline
+
+# Explicit one-direction conversion
+npx @mbeato/agentcontext convert --from cursor-mdc --to agents-md --in .cursor/rules/style.mdc</code></pre>
+
+  <footer>
+    <p>
+      MIT • <a href="https://github.com/mbeato/agentcontext">GitHub</a> •
+      <a href="https://www.npmjs.com/package/@mbeato/agentcontext">npm</a> •
+      <a href="https://www.npmjs.com/package/@mbeato/agentcontext-mcp">mcp on npm</a>
+    </p>
+    <p>Part of the <a href="https://apimesh.xyz">apimesh.xyz</a> portfolio.</p>
+  </footer>
+
+  <script>
+    const btn = document.getElementById('convert-btn');
+    const srcSel = document.getElementById('src-fmt');
+    const tgtSel = document.getElementById('tgt-fmt');
+    const srcTa = document.getElementById('src');
+    const out = document.getElementById('out');
+    const status = document.getElementById('status');
+
+    btn.addEventListener('click', async () => {
+      status.textContent = 'converting...';
+      out.textContent = '';
+      try {
+        const r = await fetch('/normalize', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({
+            source_format: srcSel.value,
+            content: srcTa.value,
+            targets: [tgtSel.value],
+          }),
+        });
+        const data = await r.json();
+        if (!r.ok) {
+          out.textContent = 'Error: ' + (data.error || r.statusText);
+          status.textContent = '';
+          return;
+        }
+        const lines = [];
+        for (const [path, content] of Object.entries(data.files || {})) {
+          lines.push('=== ' + path + ' ===');
+          lines.push(content);
+          lines.push('');
+        }
+        if (data.warnings && data.warnings.length) {
+          lines.push('--- warnings ---');
+          for (const w of data.warnings) lines.push(w);
+        }
+        out.textContent = lines.join('\n') || '(empty)';
+        status.textContent = 'done';
+      } catch (e) {
+        out.textContent = 'Error: ' + e.message;
+        status.textContent = '';
+      }
+    });
+  </script>
+
+</body>
+</html>

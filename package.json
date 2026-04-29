@@ -11,6 +11,7 @@
     "typescript": "^5"
   },
   "dependencies": {
+    "@mbeato/agentcontext": "file:../agentcontext",
     "@coinbase/cdp-sdk": "^1.44.1",
     "@modelcontextprotocol/sdk": "^1.27.1",
     "@x402/core": "^2.5.0",

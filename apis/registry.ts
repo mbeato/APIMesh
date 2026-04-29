@@ -21,6 +21,7 @@ import { app as techStack } from "./tech-stack/index";
 import { app as webResourceValidator } from "./web-resource-validator/index";
 import { app as websiteSecurityHeaderInfo } from "./website-security-header-info/index";
 import { app as websiteVulnerabilityScan } from "./website-vulnerability-scan/index";
+import { app as agentcontext } from "./agentcontext/index";
 import type { Hono } from "hono";
 import { app as subdomainVulnerabilityRankings } from "./subdomain-vulnerability-rankings/index";
 import { app as cspPolicyHeuristics } from "./csp-policy-heuristics/index";
@@ -246,4 +247,6 @@ export const registry: Record<string, Hono> = {
   "ssl-tls-protocol-compliance": sslTlsProtocolCompliance,
   "api-endpoint-discovery-graph": apiEndpointDiscoveryGraph,
   "subdomain-configuration-entropy": subdomainConfigurationEntropy,
+  "agentsmd": agentcontext,
+  "agentcontext": agentcontext,
 };
