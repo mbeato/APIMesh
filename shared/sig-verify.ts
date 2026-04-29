@@ -82,7 +82,7 @@ function verifyStripe(input: VerifyInput, headers: Record<string, string>): Veri
     return failure("stripe", "header_missing", { hash_algo: "sha256", encoding: "hex" });
   }
   const parts = parseStripeHeader(raw);
-  if (!parts.t || (!parts.v1 && !parts.v0)) {
+  if (!parts.t || (parts.v1.length === 0 && parts.v0.length === 0)) {
     return failure("stripe", "header_malformed", {
       hash_algo: "sha256",
       encoding: "hex",
@@ -100,7 +100,7 @@ function verifyStripe(input: VerifyInput, headers: Record<string, string>): Veri
 
   // Stripe currently only signs with v1 (sha256). v0 was a deprecated debug
   // scheme. We only attempt v1.
-  if (!parts.v1) {
+  if (parts.v1.length === 0) {
     return failure("stripe", "unsupported_scheme", {
       hash_algo: "sha256",
       encoding: "hex",
@@ -119,13 +119,26 @@ function verifyStripe(input: VerifyInput, headers: Record<string, string>): Veri
     .update(`${parts.t}.${input.raw_body}`)
     .digest("hex");
 
-  const matches = constantTimeEqualHex(computed, parts.v1);
+  // During Stripe's secret-rotation window the header carries multiple v1=
+  // entries — one per active signing secret. The official Stripe SDK tries
+  // each and accepts if any matches. We do the same so users debugging during
+  // rotation get the right answer (QUALITY-REVIEW B2).
+  let matchedSig: string | null = null;
+  for (const candidate of parts.v1) {
+    if (constantTimeEqualHex(computed, candidate)) {
+      matchedSig = candidate;
+      break;
+    }
+  }
 
-  if (!matches) {
+  if (!matchedSig) {
+    // For the diff/UX, point at the first provided v1 (most senders only emit
+    // one anyway).
+    const provided = parts.v1[0]!;
     return failure("stripe", "signature_mismatch", {
       computed_signature: computed,
-      provided_signature: parts.v1,
-      first_diff_byte: firstDiffByte(computed, parts.v1),
+      provided_signature: provided,
+      first_diff_byte: firstDiffByte(computed, provided),
       timestamp: t,
       age_seconds: age,
       hash_algo: "sha256",
@@ -138,7 +151,7 @@ function verifyStripe(input: VerifyInput, headers: Record<string, string>): Veri
   if (Math.abs(age) > tolerance) {
     return failure("stripe", "timestamp_skew", {
       computed_signature: computed,
-      provided_signature: parts.v1,
+      provided_signature: matchedSig,
       timestamp: t,
       age_seconds: age,
       hash_algo: "sha256",
@@ -150,7 +163,7 @@ function verifyStripe(input: VerifyInput, headers: Record<string, string>): Veri
 
   return success("stripe", {
     computed_signature: computed,
-    provided_signature: parts.v1,
+    provided_signature: matchedSig,
     timestamp: t,
     age_seconds: age,
     hash_algo: "sha256",
@@ -160,14 +173,18 @@ function verifyStripe(input: VerifyInput, headers: Record<string, string>): Veri
   });
 }
 
-function parseStripeHeader(raw: string): { t?: string; v1?: string; v0?: string } {
-  const out: { t?: string; v1?: string; v0?: string } = {};
+// Parses Stripe-Signature header into {t, v0[], v1[]}. Multiple v1= entries
+// occur during secret rotation windows (Stripe sends one per active secret).
+function parseStripeHeader(raw: string): { t?: string; v0: string[]; v1: string[] } {
+  const out: { t?: string; v0: string[]; v1: string[] } = { v0: [], v1: [] };
   for (const pair of raw.split(",")) {
     const idx = pair.indexOf("=");
     if (idx < 0) continue;
     const k = pair.slice(0, idx).trim();
     const v = pair.slice(idx + 1).trim();
-    if (k === "t" || k === "v0" || k === "v1") out[k] = v;
+    if (k === "t") out.t = v;
+    else if (k === "v0") out.v0.push(v);
+    else if (k === "v1") out.v1.push(v);
   }
   return out;
 }
@@ -244,8 +261,29 @@ function verifySlack(input: VerifyInput, headers: Record<string, string>): Verif
   const sig = headers["x-slack-signature"];
   const tsRaw = headers["x-slack-request-timestamp"];
 
-  if (!sig || !tsRaw) {
-    return failure("slack", "header_missing", { hash_algo: "sha256", encoding: "hex" });
+  // Distinguish which header is missing so the hint engine can be specific
+  // (QUALITY-REVIEW C1 — previously we said "header_missing" even when only
+  // the timestamp was absent).
+  if (!sig && !tsRaw) {
+    return failure("slack", "header_missing", {
+      hash_algo: "sha256",
+      encoding: "hex",
+      raw_header: "(both X-Slack-Signature and X-Slack-Request-Timestamp missing)",
+    });
+  }
+  if (!sig) {
+    return failure("slack", "header_missing", {
+      hash_algo: "sha256",
+      encoding: "hex",
+      raw_header: "(X-Slack-Signature missing; timestamp present)",
+    });
+  }
+  if (!tsRaw) {
+    return failure("slack", "header_missing", {
+      hash_algo: "sha256",
+      encoding: "hex",
+      raw_header: "(X-Slack-Request-Timestamp missing; signature present)",
+    });
   }
   const m = sig.match(/^v0=([a-fA-F0-9]+)$/);
   if (!m) {

@@ -74,6 +74,16 @@ app.post("/check", async (c) => {
   if (!body.headers || typeof body.headers !== "object") {
     return c.json({ error: "headers (object) required" }, 400);
   }
+  // Tolerance must be a non-negative finite number (QUALITY-REVIEW C3 — a
+  // negative tolerance turned every fresh event into "timestamp_skew").
+  if (
+    body.tolerance_seconds !== undefined &&
+    (typeof body.tolerance_seconds !== "number" ||
+      !Number.isFinite(body.tolerance_seconds) ||
+      body.tolerance_seconds < 0)
+  ) {
+    return c.json({ error: "tolerance_seconds must be a non-negative number" }, 400);
+  }
 
   // Size caps to prevent resource abuse.
   if (body.raw_body.length > MAX_BODY_CHARS) {

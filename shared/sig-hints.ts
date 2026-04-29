@@ -126,10 +126,12 @@ function bodyShapeHints(input: VerifyInput): string[] {
     return out;
   }
 
-  // JSON-parsed-then-stringified leaves a tell: 2-space indent and no trailing newline.
+  // Pretty-printed JSON tell: 2-space indent and key+colon+space pattern.
+  // Common sources: JSON.stringify(obj, null, 2), `jq` formatting, IDE
+  // auto-format, copy from a pretty-printer extension.
   if (body.startsWith("{") && body.includes('": ')) {
     out.push(
-      `Your body has '": ' (key + colon + space + value), which is what JSON.stringify() emits with 2-space indent. Webhook senders typically send compact JSON without that spacing. If you JSON.parse() then JSON.stringify() the body before signing, the bytes change and the signature breaks.`,
+      `Your body looks pretty-printed (key + colon + space, like '"id": "evt_..."'). Webhooks send compact JSON without that spacing. If you copied this from a logger that pretty-prints, from \`jq\`, from JSON.stringify(obj, null, 2), or from your IDE auto-format — those byte changes break the signature. Use the raw bytes the webhook sender actually transmitted.`,
     );
   }
 

@@ -118,6 +118,24 @@ describe("Stripe verifier", () => {
     });
     expect(result.valid).toBe(true);
   });
+
+  test("multiple v1= entries (secret-rotation window) — verifier tries each", () => {
+    // Stripe sends one v1= per active signing secret during rotation.
+    // QUALITY-REVIEW B2: previously we kept only the LAST v1=, so a user
+    // debugging during rotation with the OLDER secret (still active) got a
+    // false signature_mismatch.
+    const wrongSig = "0".repeat(64);
+    const result = verify({
+      provider: "stripe",
+      secret,
+      raw_body: body,
+      // wrong sig FIRST, correct sig SECOND
+      headers: { "stripe-signature": `t=${t},v1=${wrongSig},v1=${expected}` },
+      now_seconds: t,
+    });
+    expect(result.valid).toBe(true);
+    expect(result.details.provided_signature).toBe(expected);
+  });
 });
 
 describe("GitHub verifier — official reference vector", () => {
@@ -192,7 +210,9 @@ describe("Slack verifier", () => {
     expect(result.valid).toBe(true);
   });
 
-  test("missing timestamp header → header_missing", () => {
+  test("missing timestamp header → header_missing with specific raw_header note", () => {
+    // QUALITY-REVIEW C1: previously we said "header_missing" without
+    // distinguishing which header. Now raw_header carries which one is gone.
     const result = verify({
       provider: "slack",
       secret,
@@ -201,6 +221,19 @@ describe("Slack verifier", () => {
     });
     expect(result.valid).toBe(false);
     expect(result.reason).toBe("header_missing");
+    expect(result.details.raw_header).toContain("Timestamp");
+  });
+
+  test("missing signature header but timestamp present → specific error", () => {
+    const result = verify({
+      provider: "slack",
+      secret,
+      raw_body: body,
+      headers: { "x-slack-request-timestamp": "1700000000" },
+    });
+    expect(result.valid).toBe(false);
+    expect(result.reason).toBe("header_missing");
+    expect(result.details.raw_header).toContain("Signature");
   });
 
   test("stale timestamp → timestamp_skew", () => {
