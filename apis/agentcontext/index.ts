@@ -75,6 +75,11 @@ app.post("/signup-notify", signupNotifyHandler({
   ],
 }));
 
+// MCP directory crawlers probe /mcp for HTTP-transport capability. The real
+// MCP gateway lives at mcp.apimesh.xyz (exposes agentcontext + every other
+// apimesh API as tools). 308 preserves POST method through the redirect.
+app.all("/mcp", (c) => c.redirect("https://mcp.apimesh.xyz/mcp", 308));
+
 // Free conversion endpoint. Accepts source content + format, returns rendered file map.
 // No auth — rate-limited only. Cap input size to prevent abuse.
 const MAX_INPUT_CHARS = 100_000;
