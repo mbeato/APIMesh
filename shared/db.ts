@@ -33,6 +33,13 @@ migrate(db, join(import.meta.dir, "..", "data", "migrations"));
 
 export default db;
 
+export interface RequestAttribution {
+  referer?: string;
+  utmSource?: string;
+  utmMedium?: string;
+  utmCampaign?: string;
+}
+
 export function logRequest(
   apiName: string,
   endpoint: string,
@@ -45,13 +52,99 @@ export function logRequest(
   payerWallet?: string,
   userId?: string,
   apiKeyId?: string,
-  userAgent?: string
+  userAgent?: string,
+  attribution?: RequestAttribution
 ) {
   db.run(
-    `INSERT INTO requests (api_name, endpoint, method, status_code, response_time_ms, paid, amount_usd, client_ip, payer_wallet, user_id, api_key_id, user_agent)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    [apiName, endpoint, method, statusCode, responseTimeMs, paid ? 1 : 0, amountUsd, clientIp, payerWallet ?? null, userId ?? null, apiKeyId ?? null, userAgent ?? null]
+    `INSERT INTO requests (api_name, endpoint, method, status_code, response_time_ms, paid, amount_usd, client_ip, payer_wallet, user_id, api_key_id, user_agent, referer, utm_source, utm_medium, utm_campaign)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [
+      apiName, endpoint, method, statusCode, responseTimeMs,
+      paid ? 1 : 0, amountUsd, clientIp,
+      payerWallet ?? null, userId ?? null, apiKeyId ?? null, userAgent ?? null,
+      attribution?.referer ?? null,
+      attribution?.utmSource ?? null,
+      attribution?.utmMedium ?? null,
+      attribution?.utmCampaign ?? null,
+    ]
   );
+}
+
+// --- Signup notifications (email capture from wedge landing pages) ---
+
+export interface SignupNotification {
+  id: number;
+  email: string;
+  source: string;
+  interest: string | null;
+  ip: string | null;
+  created_at: string;
+}
+
+/**
+ * Records a signup-notification request. Idempotent: duplicate (email, source)
+ * pairs are silently dropped via INSERT OR IGNORE. Returns true if a new row
+ * was inserted, false if it was a duplicate.
+ *
+ * Throws SignupTableFullError if the table has reached SIGNUP_MAX_ROWS — see
+ * SECURITY-AUDIT H2 (the table grows forever otherwise; the IPv4-rate-limit
+ * doesn't bound distinct senders).
+ */
+export const SIGNUP_MAX_ROWS = 100_000;
+
+export class SignupTableFullError extends Error {
+  constructor() { super("signup_notifications table is full"); }
+}
+
+export function recordSignupNotification(
+  email: string,
+  source: string,
+  interest: string | null,
+  ip: string | null
+): boolean {
+  const totalRow = db
+    .query(`SELECT COUNT(*) AS cnt FROM signup_notifications`)
+    .get() as { cnt: number };
+  if (totalRow.cnt >= SIGNUP_MAX_ROWS) {
+    throw new SignupTableFullError();
+  }
+  const result = db.run(
+    `INSERT OR IGNORE INTO signup_notifications (email, source, interest, ip)
+     VALUES (?, ?, ?, ?)`,
+    [email, source, interest, ip]
+  );
+  return result.changes > 0;
+}
+
+export function getSignupNotificationCounts(): { source: string; count: number }[] {
+  return db.query(`
+    SELECT source, COUNT(*) as count
+    FROM signup_notifications
+    GROUP BY source
+    ORDER BY count DESC
+  `).all() as { source: string; count: number }[];
+}
+
+export function getRecentSignupNotifications(
+  source?: string,
+  limit: number = 50
+): SignupNotification[] {
+  const safeLimit = Math.max(1, Math.min(200, Math.floor(limit)));
+  if (source) {
+    return db.query(`
+      SELECT id, email, source, interest, ip, created_at
+      FROM signup_notifications
+      WHERE source = ?
+      ORDER BY created_at DESC
+      LIMIT ?
+    `).all(source, safeLimit) as SignupNotification[];
+  }
+  return db.query(`
+    SELECT id, email, source, interest, ip, created_at
+    FROM signup_notifications
+    ORDER BY created_at DESC
+    LIMIT ?
+  `).all(safeLimit) as SignupNotification[];
 }
 
 export function logRevenue(apiName: string, amountUsd: number, txHash: string, network: string, payerWallet?: string) {

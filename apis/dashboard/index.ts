@@ -3,7 +3,7 @@ import { cors } from "hono/cors";
 import { bearerAuth } from "hono/bearer-auth";
 import { setCookie, getCookie, deleteCookie } from "hono/cookie";
 import { resolve, join } from "path";
-import db, { getRevenueByApi, getTotalRevenue, getRequestCount, getErrorRate, getApiRevenue, getRecentRequests, getActiveApis, getDailyRevenue, getDailyRequests, getHourlyRequests, getAuditLog, getWalletSummaries, getAllSpendCaps, upsertSpendCap, deleteSpendCap, getWalletSpend, getSpendCap, getApiDetailedStats, getApiRequests, getApiErrors, getApiStatusBreakdown } from "../../shared/db";
+import db, { getRevenueByApi, getTotalRevenue, getRequestCount, getErrorRate, getApiRevenue, getRecentRequests, getActiveApis, getDailyRevenue, getDailyRequests, getHourlyRequests, getAuditLog, getWalletSummaries, getAllSpendCaps, upsertSpendCap, deleteSpendCap, getWalletSpend, getSpendCap, getApiDetailedStats, getApiRequests, getApiErrors, getApiStatusBreakdown, getSignupNotificationCounts, getRecentSignupNotifications } from "../../shared/db";
 import { WALLET_ADDRESS } from "../../shared/x402";
 import { rateLimit } from "../../shared/rate-limit";
 import { hashPassword, verifyPassword, createSession, getSession, deleteSession, deleteUserSessions, refreshSessionExpiry, logAuthEvent } from "../../shared/auth";
@@ -1710,6 +1710,10 @@ app.get("/api/stats", (c) => {
     apis,
     total_requests: totalRequestsRange,
     recent_requests: getRecentRequests(20),
+    signup_notifications: {
+      counts: getSignupNotificationCounts(),
+      recent: getRecentSignupNotifications(undefined, 20),
+    },
     charts: {
       daily_revenue_7d: getDailyRevenue(7),
       daily_revenue_30d: getDailyRevenue(30),

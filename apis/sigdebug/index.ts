@@ -4,6 +4,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { rateLimit } from "../../shared/rate-limit";
 import { apiLogger } from "../../shared/logger";
+import { signupNotifyHandler } from "../../shared/signup-notify";
 import { verify, type Provider, type VerifyInput } from "../../shared/sig-verify";
 import { generateHints } from "../../shared/sig-hints";
 
@@ -36,10 +37,22 @@ app.use("*", async (c, next) => {
 // Single rate-limit zone applies to /check + landing alike. The earlier
 // double-registration (one wildcard, one /check-specific) summed to ~120/min
 // effective on /check (SECURITY-AUDIT M1). One zone, one limit.
+// Path-scoped /signup-notify limit runs BEFORE the wildcard so the
+// signup-notify counter is the binding constraint without first burning
+// the wildcard 60/min quota. (SECURITY-AUDIT B1.)
+app.use("/signup-notify", rateLimit("sigdebug-signup", 5, 60_000));
 app.use("*", rateLimit("sigdebug", 60, 60_000));
 app.use("*", apiLogger(API_NAME, 0));
 
 app.get("/", (c) => c.html(LANDING_HTML));
+
+app.post("/signup-notify", signupNotifyHandler({
+  allowed: [{ source: "sigdebug", interest: "paid-tier" }],
+  allowedOrigins: [
+    "https://stripesig.apimesh.xyz",
+    "https://sigdebug.apimesh.xyz",
+  ],
+}));
 
 const SUPPORTED_PROVIDERS: Provider[] = ["stripe", "github", "slack", "shopify"];
 const MAX_BODY_CHARS = 100_000;

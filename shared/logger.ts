@@ -42,7 +42,41 @@ export function apiLogger(apiName: string, priceUsd: number = 0): MiddlewareHand
     const userId = c.req.header("x-apimesh-user-id") || undefined;
     const apiKeyId = c.req.header("x-apimesh-key-id") || undefined;
 
-    logRequest(apiName, path, c.req.method, c.res.status, ms, paid, amount, clientIp, payerWallet, userId, apiKeyId, userAgent);
+    // Traffic attribution: where did this request come from?
+    // Strip query string + fragment from the Referer URL to avoid persisting
+    // accidental bearer tokens / session params from the upstream page's URL.
+    // (SECURITY-AUDIT M2.) Modern browsers usually strip these via Referer-Policy,
+    // but we don't trust client behavior — store only origin + pathname.
+    const refererRaw = c.req.header("referer") || c.req.header("referrer");
+    let referer: string | undefined;
+    if (refererRaw) {
+      try {
+        const r = new URL(refererRaw);
+        referer = sanitizeLogField(r.origin + r.pathname, 512);
+      } catch {
+        // Malformed referer — skip rather than store a junk value.
+      }
+    }
+    let utmSource: string | undefined;
+    let utmMedium: string | undefined;
+    let utmCampaign: string | undefined;
+    try {
+      const reqUrl = new URL(c.req.url);
+      const u = reqUrl.searchParams.get("utm_source");
+      const m = reqUrl.searchParams.get("utm_medium");
+      const cmp = reqUrl.searchParams.get("utm_campaign");
+      if (u) utmSource = sanitizeLogField(u, 128);
+      if (m) utmMedium = sanitizeLogField(m, 128);
+      if (cmp) utmCampaign = sanitizeLogField(cmp, 128);
+    } catch {
+      // Malformed URL — skip UTM extraction silently
+    }
+
+    logRequest(
+      apiName, path, c.req.method, c.res.status, ms,
+      paid, amount, clientIp, payerWallet, userId, apiKeyId, userAgent,
+      { referer, utmSource, utmMedium, utmCampaign }
+    );
 
     if (paid && amount > 0) {
       if (x402Paid) {
