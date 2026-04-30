@@ -54,6 +54,10 @@ app.post("/signup-notify", signupNotifyHandler({
   ],
 }));
 
+// MCP directory crawlers probe /mcp for HTTP-transport capability. Redirect
+// (308 preserves POST) to the real apimesh MCP gateway.
+app.all("/mcp", (c) => c.redirect("https://mcp.apimesh.xyz/mcp", 308));
+
 const SUPPORTED_PROVIDERS: Provider[] = ["stripe", "github", "slack", "shopify"];
 const MAX_BODY_CHARS = 100_000;
 const MAX_SECRET_CHARS = 1_024;
