@@ -89,6 +89,8 @@ import { app as subdomainEnumAggregator } from "./subdomain-enum-aggregator/inde
 import { app as sslTlsProtocolCompliance } from "./ssl-tls-protocol-compliance/index";
 import { app as apiEndpointDiscoveryGraph } from "./api-endpoint-discovery-graph/index";
 import { app as subdomainConfigurationEntropy } from "./subdomain-configuration-entropy/index";
+import { app as privacyPolicyDiff } from "./privacy-policy-diff/index";
+
 
 
 
@@ -252,4 +254,5 @@ export const registry: Record<string, Hono> = {
   "agentcontext": agentcontext,
   "stripesig": sigdebug,
   "sigdebug": sigdebug,
+  "privacy-policy-diff": privacyPolicyDiff,
 };
