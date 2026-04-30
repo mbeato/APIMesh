@@ -313,6 +313,33 @@ function render(data) {
         '<td>' + (r.paid ? '<span class="badge badge-paid">paid</span>' : '<span class="badge badge-free">free</span>') + '</td></tr>';
     }).join("");
   }
+
+  var sn = data.signup_notifications || { counts: [], recent: [] };
+  var summaryEl = document.getElementById("signup-summary");
+  if (summaryEl) {
+    if (sn.counts && sn.counts.length) {
+      var total = sn.counts.reduce(function(s, x) { return s + (x.count || 0); }, 0);
+      // textContent escapes automatically — don't double-encode via esc().
+      var per = sn.counts.map(function(x) { return x.source + " " + fmtN(x.count); }).join(" · ");
+      summaryEl.textContent = fmtN(total) + " total — " + per;
+    } else {
+      summaryEl.textContent = "0 total";
+    }
+  }
+  var sb = document.getElementById("signup-table");
+  if (sb) {
+    if (!sn.recent || !sn.recent.length) {
+      sb.innerHTML = '<tr><td colspan="4" class="empty-state">No signups yet</td></tr>';
+    } else {
+      sb.innerHTML = sn.recent.slice(0, 20).map(function(r) {
+        return '<tr>' +
+          '<td class="mono dim">' + fmtTime(r.created_at) + '</td>' +
+          '<td class="primary">' + esc(r.source) + '</td>' +
+          '<td class="mono dim">' + esc(r.interest || "") + '</td>' +
+          '<td class="mono">' + esc(r.email) + '</td></tr>';
+      }).join("");
+    }
+  }
 }
 
 // --- API Detail Modal ---

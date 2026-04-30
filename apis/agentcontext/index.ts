@@ -4,6 +4,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { rateLimit } from "../../shared/rate-limit";
 import { apiLogger } from "../../shared/logger";
+import { signupNotifyHandler } from "../../shared/signup-notify";
 
 import {
   parseAgentsMd,
@@ -54,12 +55,25 @@ app.use("*", async (c, next) => {
   return next();
 });
 
-app.use("*", rateLimit("agentcontext", 60, 60_000));
+// Path-scoped limits run BEFORE the wildcard so that hitting one of these
+// limits doesn't also burn the wildcard's 60/min quota — and so that
+// /signup-notify cannot ride the wildcard's larger budget if either rule's
+// counter happens to be in a different state. (SECURITY-AUDIT B1.)
 app.use("/normalize", rateLimit("agentcontext-normalize", 30, 60_000));
+app.use("/signup-notify", rateLimit("agentcontext-signup", 5, 60_000));
+app.use("*", rateLimit("agentcontext", 60, 60_000));
 app.use("*", apiLogger(API_NAME, 0));
 
 // Landing page (single HTML, embedded inline form for /normalize).
 app.get("/", (c) => c.html(LANDING_HTML));
+
+app.post("/signup-notify", signupNotifyHandler({
+  allowed: [{ source: "agentcontext", interest: "github-app" }],
+  allowedOrigins: [
+    "https://agentsmd.apimesh.xyz",
+    "https://agentcontext.apimesh.xyz",
+  ],
+}));
 
 // Free conversion endpoint. Accepts source content + format, returns rendered file map.
 // No auth — rate-limited only. Cap input size to prevent abuse.

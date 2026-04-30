@@ -168,6 +168,15 @@
   <h2>Privacy</h2>
   <p>We don't log your secret or body. Each <code>/check</code> request is processed in-memory and discarded. CORS allows direct browser calls — your secret never leaves your machine if you call the API client-side.</p>
 
+  <h2>Notify me</h2>
+  <p class="muted">A paid tier is on the roadmap (replay attempts, history, more providers, team views). Drop your email if you want a heads-up.</p>
+  <form id="notify-form" style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; align-items: center;">
+    <input id="notify-email" type="email" required placeholder="you@company.com"
+      style="flex: 1; min-width: 220px; padding: 9px 12px; font-size: 14px; border: 1px solid #d6d3d1; border-radius: 4px; background: #fff;" />
+    <button id="notify-btn" type="submit">Notify me</button>
+    <span class="muted" id="notify-status"></span>
+  </form>
+
   <footer>
     <p>
       Part of the <a href="https://apimesh.xyz">apimesh.xyz</a> portfolio. MIT-spirited (no published source yet — single endpoint, easy to audit).
@@ -292,6 +301,38 @@
       div.textContent = String(s);
       return div.innerHTML;
     }
+
+    (function setupNotify() {
+      const form = document.getElementById('notify-form');
+      const emailInput = document.getElementById('notify-email');
+      const btn = document.getElementById('notify-btn');
+      const statusEl = document.getElementById('notify-status');
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = (emailInput.value || '').trim();
+        if (!email) return;
+        btn.disabled = true;
+        statusEl.textContent = 'sending...';
+        try {
+          const r = await fetch('/signup-notify', {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ email, source: 'sigdebug', interest: 'paid-tier' })
+          });
+          const data = await r.json().catch(() => ({}));
+          if (r.ok) {
+            statusEl.textContent = data.deduped ? "you're already on the list" : "got it — you're on the list";
+            emailInput.value = '';
+          } else {
+            statusEl.textContent = data.error || 'failed';
+          }
+        } catch (err) {
+          statusEl.textContent = 'failed: ' + err.message;
+        } finally {
+          btn.disabled = false;
+        }
+      });
+    })();
   </script>
 
 </body>

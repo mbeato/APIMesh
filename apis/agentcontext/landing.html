@@ -175,6 +175,15 @@ npx @mbeato/agentcontext sync --write --shims claude,cursor,cline
 # Explicit one-direction conversion
 npx @mbeato/agentcontext convert --from cursor-mdc --to agents-md --in .cursor/rules/style.mdc</code></pre>
 
+  <h2>Notify me</h2>
+  <p class="muted">A GitHub App version is on the roadmap (auto-sync rules across all your repos). Drop your email if you want a heads-up when it lands.</p>
+  <form id="notify-form" class="row" style="margin-bottom: 8px;">
+    <input id="notify-email" type="email" required placeholder="you@company.com"
+      style="flex: 1; min-width: 220px; padding: 8px 12px; font-size: 14px; border: 1px solid #d6d3d1; border-radius: 4px; background: #fff;" />
+    <button id="notify-btn" type="submit">Notify me</button>
+    <span class="muted" id="notify-status"></span>
+  </form>
+
   <footer>
     <p>
       MIT • <a href="https://github.com/mbeato/agentcontext">GitHub</a> •
@@ -191,6 +200,37 @@ npx @mbeato/agentcontext convert --from cursor-mdc --to agents-md --in .cursor/r
     const srcTa = document.getElementById('src');
     const out = document.getElementById('out');
     const status = document.getElementById('status');
+
+    const notifyForm = document.getElementById('notify-form');
+    const notifyEmail = document.getElementById('notify-email');
+    const notifyBtn = document.getElementById('notify-btn');
+    const notifyStatus = document.getElementById('notify-status');
+
+    notifyForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = (notifyEmail.value || '').trim();
+      if (!email) return;
+      notifyBtn.disabled = true;
+      notifyStatus.textContent = 'sending...';
+      try {
+        const r = await fetch('/signup-notify', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ email, source: 'agentcontext', interest: 'github-app' }),
+        });
+        const data = await r.json().catch(() => ({}));
+        if (r.ok) {
+          notifyStatus.textContent = data.deduped ? "you're already on the list" : "got it — you're on the list";
+          notifyEmail.value = '';
+        } else {
+          notifyStatus.textContent = data.error || 'failed';
+        }
+      } catch (err) {
+        notifyStatus.textContent = 'failed: ' + err.message;
+      } finally {
+        notifyBtn.disabled = false;
+      }
+    });
 
     btn.addEventListener('click', async () => {
       status.textContent = 'converting...';
