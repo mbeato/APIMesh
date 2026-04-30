@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>stripesig — Stripe webhook signature debugger (also GitHub, Slack, Shopify)</title>
+  <meta name="description" content="Paste your failing Stripe / GitHub / Slack / Shopify webhook payload + secret. Get a plain-English answer in 5 seconds: why it failed, not just that it failed." />
+  <meta property="og:title" content="stripesig — debug webhook signature failures in 5 seconds" />
+  <meta property="og:description" content="Paste your failing webhook + secret. Get a plain-English explanation of WHY the signature didn't verify." />
+  <link rel="canonical" href="https://stripesig.apimesh.xyz/" />
+  <style>
+    * { box-sizing: border-box }
+    html, body { margin: 0; padding: 0; }
+    body {
+      font: 16px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+      color: #1a1a1a;
+      background: #fafaf9;
+      max-width: 880px;
+      margin: 0 auto;
+      padding: 36px 24px 80px;
+    }
+    h1 { font-size: 32px; line-height: 1.15; margin: 0 0 8px; letter-spacing: -0.02em; }
+    h2 { font-size: 20px; margin: 32px 0 12px; letter-spacing: -0.01em; }
+    p { margin: 0 0 14px; }
+    a { color: #b45309; text-decoration: underline; text-underline-offset: 2px; }
+    code, pre {
+      font-family: "SF Mono", "JetBrains Mono", ui-monospace, monospace;
+      font-size: 13px;
+    }
+    code { background: #f1f0ee; padding: 2px 6px; border-radius: 3px; }
+    pre {
+      background: #1a1a1a; color: #f5f3ee;
+      padding: 14px 16px; border-radius: 6px;
+      overflow-x: auto;
+      line-height: 1.5;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+    pre code { background: none; padding: 0; color: inherit; }
+    .lede { color: #555; font-size: 18px; margin-bottom: 28px; }
+    .pill {
+      display: inline-block; font-size: 12px; padding: 2px 8px;
+      border-radius: 99px; background: #fbbf24; color: #422006;
+      margin-bottom: 16px; font-weight: 600;
+    }
+    .form {
+      border: 1px solid #d6d3d1; border-radius: 8px;
+      padding: 20px; background: #fff; margin: 12px 0 24px;
+      display: grid; gap: 14px;
+    }
+    label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 4px; color: #44403c; }
+    .hint { font-weight: 400; color: #78716c; font-size: 12px; }
+    select, input, textarea {
+      width: 100%; font: 14px/1.4 inherit; padding: 9px 12px;
+      border: 1px solid #d6d3d1; border-radius: 4px; background: #fff;
+    }
+    textarea {
+      font-family: "SF Mono", ui-monospace, monospace; font-size: 13px;
+      resize: vertical;
+    }
+    #raw-body { min-height: 110px; }
+    #headers { min-height: 70px; }
+    #secret { font-family: "SF Mono", ui-monospace, monospace; }
+    button {
+      font: 14px/1 inherit; padding: 10px 18px; border-radius: 4px;
+      border: 1px solid #1a1a1a; background: #1a1a1a; color: #fafaf9;
+      font-weight: 600; cursor: pointer;
+      align-self: start;
+    }
+    button:hover { background: #b45309; border-color: #b45309; }
+    .verdict {
+      padding: 14px 18px; border-radius: 8px; margin: 16px 0; font-weight: 600;
+      display: flex; gap: 12px; align-items: center;
+    }
+    .verdict.valid { background: #f0fdf4; color: #14532d; border: 1px solid #86efac; }
+    .verdict.invalid { background: #fef2f2; color: #7f1d1d; border: 1px solid #fca5a5; }
+    .reason { font-family: "SF Mono", ui-monospace, monospace; font-size: 13px; opacity: 0.75; font-weight: 400; }
+    .hints { background: #fffbeb; border: 1px solid #fcd34d; border-radius: 8px; padding: 16px 20px; margin: 8px 0 20px; }
+    .hints ul { margin: 0; padding-left: 22px; }
+    .hints li { margin: 8px 0; line-height: 1.55; }
+    .details {
+      background: #fafaf9; border: 1px solid #e7e5e4; border-radius: 8px; padding: 14px 18px;
+      font-family: "SF Mono", ui-monospace, monospace; font-size: 12px;
+      margin-bottom: 16px;
+    }
+    .details .row { display: flex; gap: 12px; padding: 4px 0; border-bottom: 1px dashed #e7e5e4; }
+    .details .row:last-child { border-bottom: 0; }
+    .details .key { color: #78716c; min-width: 140px; }
+    .details .val { word-break: break-all; }
+    .muted { color: #78716c; font-size: 13px; }
+    footer { margin-top: 60px; padding-top: 24px; border-top: 1px solid #e5e4e2; color: #78716c; font-size: 13px; }
+    .examples { display: flex; gap: 8px; flex-wrap: wrap; margin-top: -6px; margin-bottom: 12px; }
+    .examples button {
+      background: #f5f5f4; color: #44403c; border: 1px solid #d6d3d1;
+      font-weight: 400; padding: 5px 10px; font-size: 12px;
+    }
+    .examples button:hover { background: #fef3c7; border-color: #fbbf24; color: #1a1a1a; }
+  </style>
+</head>
+<body>
+
+  <span class="pill">v0.1 — early</span>
+
+  <h1>Why is my webhook signature failing?</h1>
+  <p class="lede">
+    Paste your failing webhook payload, secret, and signature header.
+    Get a plain-English answer in 5 seconds — <em>why</em> it failed, not just that it failed.
+    Stripe, GitHub, Slack, Shopify supported. Free. No signup.
+  </p>
+
+  <div class="form">
+    <div>
+      <label for="provider">Provider</label>
+      <select id="provider">
+        <option value="stripe">Stripe</option>
+        <option value="github">GitHub</option>
+        <option value="slack">Slack</option>
+        <option value="shopify">Shopify</option>
+      </select>
+    </div>
+    <div class="examples">
+      <span class="muted">load example: </span>
+      <button onclick="loadExample('stripe-valid')">stripe valid</button>
+      <button onclick="loadExample('stripe-stale')">stripe stale timestamp</button>
+      <button onclick="loadExample('stripe-wrong-secret')">stripe wrong secret</button>
+      <button onclick="loadExample('github-valid')">github valid</button>
+    </div>
+
+    <div>
+      <label for="secret">Webhook signing secret <span class="hint">— Stripe: starts with <code>whsec_</code></span></label>
+      <input type="text" id="secret" placeholder="whsec_..." spellcheck="false" autocomplete="off" />
+    </div>
+    <div>
+      <label for="raw-body">Raw request body <span class="hint">— exactly the bytes you received, before any JSON.parse()</span></label>
+      <textarea id="raw-body" spellcheck="false" placeholder='{"id":"evt_...","object":"event","type":"..."}'></textarea>
+    </div>
+    <div>
+      <label for="headers">Headers <span class="hint">— one per line, format <code>Name: value</code></span></label>
+      <textarea id="headers" spellcheck="false" placeholder="Stripe-Signature: t=1577836800,v1=abc..."></textarea>
+    </div>
+
+    <button id="check-btn" onclick="runCheck()">Check signature →</button>
+  </div>
+
+  <div id="output"></div>
+
+  <h2>How it works</h2>
+  <p>Each provider signs webhooks with HMAC-SHA256 over a known input. We compute the expected signature against your raw body + secret, compare against what you received, and explain the mismatch in human terms.</p>
+  <ul>
+    <li><strong>Stripe:</strong> <code>HMAC-SHA256(secret, "${'{t}'}.${'{body}'}")</code>, hex-encoded as the <code>v1</code> field of <code>Stripe-Signature</code></li>
+    <li><strong>GitHub:</strong> <code>HMAC-SHA256(secret, body)</code>, hex-encoded in <code>X-Hub-Signature-256</code> as <code>sha256=...</code></li>
+    <li><strong>Slack:</strong> <code>HMAC-SHA256(secret, "v0:${'{ts}'}:${'{body}'}")</code>, hex-encoded in <code>X-Slack-Signature</code> as <code>v0=...</code></li>
+    <li><strong>Shopify:</strong> <code>HMAC-SHA256(secret, body)</code>, base64-encoded in <code>X-Shopify-Hmac-SHA256</code></li>
+  </ul>
+
+  <h2>API</h2>
+  <pre><code>curl -X POST https://stripesig.apimesh.xyz/check \
+  -H "content-type: application/json" \
+  -d '{
+    "provider": "stripe",
+    "secret": "whsec_...",
+    "raw_body": "{\"id\":\"evt_...\"}",
+    "headers": { "stripe-signature": "t=1577836800,v1=..." }
+  }'</code></pre>
+
+  <p>Returns <code>{ valid, provider, reason, hints[], details }</code>. Rate-limited 60/min/IP. Free for now — paid tiers (replay + persistence) coming if there's demand.</p>
+
+  <h2>Privacy</h2>
+  <p>We don't log your secret or body. Each <code>/check</code> request is processed in-memory and discarded. CORS allows direct browser calls — your secret never leaves your machine if you call the API client-side.</p>
+
+  <footer>
+    <p>
+      Part of the <a href="https://apimesh.xyz">apimesh.xyz</a> portfolio. MIT-spirited (no published source yet — single endpoint, easy to audit).
+    </p>
+  </footer>
+
+  <script>
+    const EXAMPLES = {
+      'stripe-valid': {
+        provider: 'stripe',
+        secret: 'whsec_test_secret_for_demo_only_not_real',
+        raw_body: '{"id":"evt_test","object":"event","type":"payment_intent.succeeded"}',
+        headers: 'Stripe-Signature: t=__NOW__,v1=__VALID__'
+      },
+      'stripe-stale': {
+        provider: 'stripe',
+        secret: 'whsec_test_secret',
+        raw_body: '{"id":"evt_test","object":"event"}',
+        headers: 'Stripe-Signature: t=1577836800,v1=fakesignature1234567890abcdef1234567890abcdef1234567890abcdef1234'
+      },
+      'stripe-wrong-secret': {
+        provider: 'stripe',
+        secret: 'pk_live_thisIsAPublishableKeyNotASecret',
+        raw_body: '{"id":"evt_test","object":"event"}',
+        headers: 'Stripe-Signature: t=__NOW__,v1=fakesignature1234567890abcdef1234567890abcdef1234567890abcdef1234'
+      },
+      'github-valid': {
+        provider: 'github',
+        secret: 'It\\'s a Secret to Everybody',
+        raw_body: 'Hello, World!',
+        headers: 'X-Hub-Signature-256: sha256=757107ea0eb2509fc211221cce984b8a37570b6d7586c22c46f4379c8b043e17'
+      }
+    };
+
+    function loadExample(name) {
+      const ex = EXAMPLES[name];
+      if (!ex) return;
+      document.getElementById('provider').value = ex.provider;
+      document.getElementById('secret').value = ex.secret;
+      document.getElementById('raw-body').value = ex.raw_body;
+      let headers = ex.headers;
+      if (headers.includes('__NOW__')) {
+        const now = Math.floor(Date.now() / 1000);
+        headers = headers.replace('__NOW__', String(now));
+      }
+      document.getElementById('headers').value = headers;
+      document.getElementById('output').innerHTML = '';
+    }
+
+    function parseHeaders(text) {
+      const out = {};
+      for (const line of text.split('\\n')) {
+        const trimmed = line.trim();
+        if (!trimmed) continue;
+        const idx = trimmed.indexOf(':');
+        if (idx < 0) continue;
+        const k = trimmed.slice(0, idx).trim().toLowerCase();
+        const v = trimmed.slice(idx + 1).trim();
+        if (k && v) out[k] = v;
+      }
+      return out;
+    }
+
+    async function runCheck() {
+      const out = document.getElementById('output');
+      out.innerHTML = '<p class="muted">checking...</p>';
+      const payload = {
+        provider: document.getElementById('provider').value,
+        secret: document.getElementById('secret').value,
+        raw_body: document.getElementById('raw-body').value,
+        headers: parseHeaders(document.getElementById('headers').value)
+      };
+      try {
+        const r = await fetch('/check', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await r.json();
+        if (!r.ok) {
+          out.innerHTML = '<div class="verdict invalid">Error: ' + escapeHtml(data.error || r.statusText) + '</div>';
+          return;
+        }
+        renderResult(data);
+      } catch (e) {
+        out.innerHTML = '<div class="verdict invalid">Network error: ' + escapeHtml(e.message) + '</div>';
+      }
+    }
+
+    function renderResult(data) {
+      const out = document.getElementById('output');
+      const parts = [];
+      const verdictClass = data.valid ? 'valid' : 'invalid';
+      const verdictIcon = data.valid ? '✓' : '✗';
+      const verdictText = data.valid ? 'Valid signature' : 'Invalid signature';
+      parts.push('<div class="verdict ' + verdictClass + '">' +
+        '<span style="font-size:22px">' + verdictIcon + '</span>' +
+        '<span>' + verdictText + '</span>' +
+        (data.reason ? '<span class="reason">' + escapeHtml(data.reason) + '</span>' : '') +
+        '</div>');
+
+      if (data.hints && data.hints.length > 0) {
+        parts.push('<div class="hints"><strong>Likely causes:</strong><ul>' +
+          data.hints.map((h) => '<li>' + escapeHtml(h) + '</li>').join('') +
+          '</ul></div>');
+      }
+
+      if (data.details && Object.keys(data.details).length > 0) {
+        const rows = Object.entries(data.details)
+          .filter(([, v]) => v !== undefined && v !== null && v !== '')
+          .map(([k, v]) => '<div class="row"><span class="key">' + escapeHtml(k) + '</span>' +
+            '<span class="val">' + escapeHtml(typeof v === 'object' ? JSON.stringify(v) : String(v)) + '</span></div>')
+          .join('');
+        parts.push('<div class="details">' + rows + '</div>');
+      }
+
+      out.innerHTML = parts.join('');
+    }
+
+    function escapeHtml(s) {
+      const div = document.createElement('div');
+      div.textContent = String(s);
+      return div.innerHTML;
+    }
+  </script>
+
+</body>
+</html>
