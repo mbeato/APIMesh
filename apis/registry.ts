@@ -92,6 +92,8 @@ import { app as subdomainConfigurationEntropy } from "./subdomain-configuration-
 import { app as privacyPolicyDiff } from "./privacy-policy-diff/index";
 import { app as networkPathHeatmap } from "./network-path-heatmap/index";
 import { app as sslTlsVulnerabilityAssessment } from "./ssl-tls-vulnerability-assessment/index";
+import { app as webConfigurationFingerprint } from "./web-configuration-fingerprint/index";
+
 
 
 
@@ -261,4 +263,5 @@ export const registry: Record<string, Hono> = {
   "privacy-policy-diff": privacyPolicyDiff,
   "network-path-heatmap": networkPathHeatmap,
   "ssl-tls-vulnerability-assessment": sslTlsVulnerabilityAssessment,
+  "web-configuration-fingerprint": webConfigurationFingerprint,
 };
