@@ -90,6 +90,8 @@ import { app as sslTlsProtocolCompliance } from "./ssl-tls-protocol-compliance/i
 import { app as apiEndpointDiscoveryGraph } from "./api-endpoint-discovery-graph/index";
 import { app as subdomainConfigurationEntropy } from "./subdomain-configuration-entropy/index";
 import { app as privacyPolicyDiff } from "./privacy-policy-diff/index";
+import { app as networkPathHeatmap } from "./network-path-heatmap/index";
+
 
 
 
@@ -255,4 +257,5 @@ export const registry: Record<string, Hono> = {
   "stripesig": sigdebug,
   "sigdebug": sigdebug,
   "privacy-policy-diff": privacyPolicyDiff,
+  "network-path-heatmap": networkPathHeatmap,
 };
