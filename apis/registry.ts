@@ -91,6 +91,8 @@ import { app as apiEndpointDiscoveryGraph } from "./api-endpoint-discovery-graph
 import { app as subdomainConfigurationEntropy } from "./subdomain-configuration-entropy/index";
 import { app as privacyPolicyDiff } from "./privacy-policy-diff/index";
 import { app as networkPathHeatmap } from "./network-path-heatmap/index";
+import { app as sslTlsVulnerabilityAssessment } from "./ssl-tls-vulnerability-assessment/index";
+
 
 
 
@@ -258,4 +260,5 @@ export const registry: Record<string, Hono> = {
   "sigdebug": sigdebug,
   "privacy-policy-diff": privacyPolicyDiff,
   "network-path-heatmap": networkPathHeatmap,
+  "ssl-tls-vulnerability-assessment": sslTlsVulnerabilityAssessment,
 };
