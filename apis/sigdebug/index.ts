@@ -37,9 +37,7 @@ app.use("*", async (c, next) => {
 // Single rate-limit zone applies to /check + landing alike. The earlier
 // double-registration (one wildcard, one /check-specific) summed to ~120/min
 // effective on /check (SECURITY-AUDIT M1). One zone, one limit.
-// Path-scoped /signup-notify limit runs BEFORE the wildcard so the
-// signup-notify counter is the binding constraint without first burning
-// the wildcard 60/min quota. (SECURITY-AUDIT B1.)
+// /signup-notify limit before the wildcard so it's the binding constraint.
 app.use("/signup-notify", rateLimit("sigdebug-signup", 5, 60_000));
 app.use("*", rateLimit("sigdebug", 60, 60_000));
 app.use("*", apiLogger(API_NAME, 0));
@@ -54,8 +52,7 @@ app.post("/signup-notify", signupNotifyHandler({
   ],
 }));
 
-// MCP directory crawlers probe /mcp for HTTP-transport capability. Redirect
-// (308 preserves POST) to the real apimesh MCP gateway.
+// MCP directory crawlers probe /mcp; the real gateway is mcp.apimesh.xyz.
 app.all("/mcp", (c) => c.redirect("https://mcp.apimesh.xyz/mcp", 308));
 
 const SUPPORTED_PROVIDERS: Provider[] = ["stripe", "github", "slack", "shopify"];

@@ -21,9 +21,6 @@ const RL_ZONE = "test-sigdebug-signup-" + Date.now();
 const TEST_DOMAIN = "@example.invalid";
 
 beforeAll(() => {
-  // Set NODE_ENV=development so rate-limit accepts missing x-real-ip
-  // (it falls back to 127.0.0.1). We always pass x-real-ip explicitly,
-  // but this guards against test runners that strip env.
   process.env.NODE_ENV = process.env.NODE_ENV ?? "development";
 });
 

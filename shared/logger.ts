@@ -42,11 +42,8 @@ export function apiLogger(apiName: string, priceUsd: number = 0): MiddlewareHand
     const userId = c.req.header("x-apimesh-user-id") || undefined;
     const apiKeyId = c.req.header("x-apimesh-key-id") || undefined;
 
-    // Traffic attribution: where did this request come from?
-    // Strip query string + fragment from the Referer URL to avoid persisting
-    // accidental bearer tokens / session params from the upstream page's URL.
-    // (SECURITY-AUDIT M2.) Modern browsers usually strip these via Referer-Policy,
-    // but we don't trust client behavior — store only origin + pathname.
+    // Strip query+fragment from Referer before persist — upstream URLs can
+    // carry bearer tokens / session params we don't want in our request log.
     const refererRaw = c.req.header("referer") || c.req.header("referrer");
     let referer: string | undefined;
     if (refererRaw) {
@@ -54,29 +51,23 @@ export function apiLogger(apiName: string, priceUsd: number = 0): MiddlewareHand
         const r = new URL(refererRaw);
         referer = sanitizeLogField(r.origin + r.pathname, 512);
       } catch {
-        // Malformed referer — skip rather than store a junk value.
+        // malformed Referer — drop rather than store junk
       }
     }
-    let utmSource: string | undefined;
-    let utmMedium: string | undefined;
-    let utmCampaign: string | undefined;
-    try {
-      const reqUrl = new URL(c.req.url);
-      const u = reqUrl.searchParams.get("utm_source");
-      const m = reqUrl.searchParams.get("utm_medium");
-      const cmp = reqUrl.searchParams.get("utm_campaign");
-      if (u) utmSource = sanitizeLogField(u, 128);
-      if (m) utmMedium = sanitizeLogField(m, 128);
-      if (cmp) utmCampaign = sanitizeLogField(cmp, 128);
-    } catch {
-      // Malformed URL — skip UTM extraction silently
-    }
+    const u = c.req.query("utm_source");
+    const m = c.req.query("utm_medium");
+    const cmp = c.req.query("utm_campaign");
 
-    logRequest(
-      apiName, path, c.req.method, c.res.status, ms,
-      paid, amount, clientIp, payerWallet, userId, apiKeyId, userAgent,
-      { referer, utmSource, utmMedium, utmCampaign }
-    );
+    logRequest({
+      apiName, endpoint: path, method: c.req.method,
+      statusCode: c.res.status, responseTimeMs: ms,
+      paid, amountUsd: amount, clientIp,
+      payerWallet, userId, apiKeyId, userAgent,
+      referer,
+      utmSource: u ? sanitizeLogField(u, 128) : undefined,
+      utmMedium: m ? sanitizeLogField(m, 128) : undefined,
+      utmCampaign: cmp ? sanitizeLogField(cmp, 128) : undefined,
+    });
 
     if (paid && amount > 0) {
       if (x402Paid) {

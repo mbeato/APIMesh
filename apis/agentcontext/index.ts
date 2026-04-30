@@ -55,10 +55,8 @@ app.use("*", async (c, next) => {
   return next();
 });
 
-// Path-scoped limits run BEFORE the wildcard so that hitting one of these
-// limits doesn't also burn the wildcard's 60/min quota — and so that
-// /signup-notify cannot ride the wildcard's larger budget if either rule's
-// counter happens to be in a different state. (SECURITY-AUDIT B1.)
+// Path-scoped limits before the wildcard so the tighter signup quota
+// is the binding constraint and doesn't also burn the 60/min wildcard.
 app.use("/normalize", rateLimit("agentcontext-normalize", 30, 60_000));
 app.use("/signup-notify", rateLimit("agentcontext-signup", 5, 60_000));
 app.use("*", rateLimit("agentcontext", 60, 60_000));
@@ -75,9 +73,7 @@ app.post("/signup-notify", signupNotifyHandler({
   ],
 }));
 
-// MCP directory crawlers probe /mcp for HTTP-transport capability. The real
-// MCP gateway lives at mcp.apimesh.xyz (exposes agentcontext + every other
-// apimesh API as tools). 308 preserves POST method through the redirect.
+// MCP directory crawlers probe /mcp; the real gateway is mcp.apimesh.xyz.
 app.all("/mcp", (c) => c.redirect("https://mcp.apimesh.xyz/mcp", 308));
 
 // Free conversion endpoint. Accepts source content + format, returns rendered file map.

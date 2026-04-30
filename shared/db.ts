@@ -33,39 +33,34 @@ migrate(db, join(import.meta.dir, "..", "data", "migrations"));
 
 export default db;
 
-export interface RequestAttribution {
+export interface LogRequestArgs {
+  apiName: string;
+  endpoint: string;
+  method: string;
+  statusCode: number;
+  responseTimeMs: number;
+  paid: boolean;
+  amountUsd: number;
+  clientIp: string;
+  payerWallet?: string;
+  userId?: string;
+  apiKeyId?: string;
+  userAgent?: string;
   referer?: string;
   utmSource?: string;
   utmMedium?: string;
   utmCampaign?: string;
 }
 
-export function logRequest(
-  apiName: string,
-  endpoint: string,
-  method: string,
-  statusCode: number,
-  responseTimeMs: number,
-  paid: boolean,
-  amountUsd: number,
-  clientIp: string,
-  payerWallet?: string,
-  userId?: string,
-  apiKeyId?: string,
-  userAgent?: string,
-  attribution?: RequestAttribution
-) {
+export function logRequest(a: LogRequestArgs) {
   db.run(
     `INSERT INTO requests (api_name, endpoint, method, status_code, response_time_ms, paid, amount_usd, client_ip, payer_wallet, user_id, api_key_id, user_agent, referer, utm_source, utm_medium, utm_campaign)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
-      apiName, endpoint, method, statusCode, responseTimeMs,
-      paid ? 1 : 0, amountUsd, clientIp,
-      payerWallet ?? null, userId ?? null, apiKeyId ?? null, userAgent ?? null,
-      attribution?.referer ?? null,
-      attribution?.utmSource ?? null,
-      attribution?.utmMedium ?? null,
-      attribution?.utmCampaign ?? null,
+      a.apiName, a.endpoint, a.method, a.statusCode, a.responseTimeMs,
+      a.paid ? 1 : 0, a.amountUsd, a.clientIp,
+      a.payerWallet ?? null, a.userId ?? null, a.apiKeyId ?? null, a.userAgent ?? null,
+      a.referer ?? null, a.utmSource ?? null, a.utmMedium ?? null, a.utmCampaign ?? null,
     ]
   );
 }
@@ -77,43 +72,36 @@ export interface SignupNotification {
   email: string;
   source: string;
   interest: string | null;
-  ip: string | null;
   created_at: string;
 }
 
-/**
- * Records a signup-notification request. Idempotent: duplicate (email, source)
- * pairs are silently dropped via INSERT OR IGNORE. Returns true if a new row
- * was inserted, false if it was a duplicate.
- *
- * Throws SignupTableFullError if the table has reached SIGNUP_MAX_ROWS — see
- * SECURITY-AUDIT H2 (the table grows forever otherwise; the IPv4-rate-limit
- * doesn't bound distinct senders).
- */
-export const SIGNUP_MAX_ROWS = 100_000;
+export type SignupNotificationResult =
+  | { ok: true; deduped: boolean }
+  | { ok: false; reason: "table_full" };
 
-export class SignupTableFullError extends Error {
-  constructor() { super("signup_notifications table is full"); }
-}
+// Bound on signup_notifications row count to keep the table from growing
+// without limit even with rate-limited but distributed signups. Append-only,
+// so checking MAX(id) (PK index → O(1)) is equivalent to checking COUNT(*).
+const SIGNUP_MAX_ROWS = 100_000;
 
 export function recordSignupNotification(
   email: string,
   source: string,
   interest: string | null,
-  ip: string | null
-): boolean {
-  const totalRow = db
-    .query(`SELECT COUNT(*) AS cnt FROM signup_notifications`)
-    .get() as { cnt: number };
-  if (totalRow.cnt >= SIGNUP_MAX_ROWS) {
-    throw new SignupTableFullError();
+  ip: string | null,
+): SignupNotificationResult {
+  const maxRow = db
+    .query(`SELECT MAX(id) AS id FROM signup_notifications`)
+    .get() as { id: number | null };
+  if ((maxRow.id ?? 0) >= SIGNUP_MAX_ROWS) {
+    return { ok: false, reason: "table_full" };
   }
   const result = db.run(
     `INSERT OR IGNORE INTO signup_notifications (email, source, interest, ip)
      VALUES (?, ?, ?, ?)`,
-    [email, source, interest, ip]
+    [email, source, interest, ip],
   );
-  return result.changes > 0;
+  return { ok: true, deduped: result.changes === 0 };
 }
 
 export function getSignupNotificationCounts(): { source: string; count: number }[] {
@@ -127,12 +115,12 @@ export function getSignupNotificationCounts(): { source: string; count: number }
 
 export function getRecentSignupNotifications(
   source?: string,
-  limit: number = 50
+  limit: number = 50,
 ): SignupNotification[] {
   const safeLimit = Math.max(1, Math.min(200, Math.floor(limit)));
   if (source) {
     return db.query(`
-      SELECT id, email, source, interest, ip, created_at
+      SELECT id, email, source, interest, created_at
       FROM signup_notifications
       WHERE source = ?
       ORDER BY created_at DESC
@@ -140,7 +128,7 @@ export function getRecentSignupNotifications(
     `).all(source, safeLimit) as SignupNotification[];
   }
   return db.query(`
-    SELECT id, email, source, interest, ip, created_at
+    SELECT id, email, source, interest, created_at
     FROM signup_notifications
     ORDER BY created_at DESC
     LIMIT ?
