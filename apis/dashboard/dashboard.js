@@ -314,6 +314,35 @@ function render(data) {
     }).join("");
   }
 
+  var ev = data.wedge_events_24h || [];
+  var evBySrc = {};
+  for (var i = 0; i < ev.length; i++) {
+    var row = ev[i];
+    if (!evBySrc[row.source]) evBySrc[row.source] = {};
+    evBySrc[row.source][row.event_type] = row.count;
+  }
+  var srcs = Object.keys(evBySrc).sort();
+  var evSummaryEl = document.getElementById("wedge-events-summary");
+  if (evSummaryEl) {
+    evSummaryEl.textContent = srcs.length === 0
+      ? "no events yet"
+      : srcs.map(function(s) { return s + ": " + (evBySrc[s].page_load || 0) + " loads"; }).join(" · ");
+  }
+  var evTb = document.getElementById("wedge-events-table");
+  if (evTb) {
+    if (srcs.length === 0) {
+      evTb.innerHTML = '<tr><td colspan="7" class="empty-state">No events yet</td></tr>';
+    } else {
+      var EV_COLS = ["page_load", "demo_visible", "demo_started", "demo_success", "demo_error", "signup_focused"];
+      evTb.innerHTML = srcs.map(function(s) {
+        var counts = evBySrc[s];
+        return '<tr><td class="primary">' + esc(s) + '</td>' +
+          EV_COLS.map(function(c) { return '<td class="mono">' + fmtN(counts[c] || 0) + '</td>'; }).join("") +
+          '</tr>';
+      }).join("");
+    }
+  }
+
   var sn = data.signup_notifications || { counts: [], recent: [] };
   var summaryEl = document.getElementById("signup-summary");
   if (summaryEl) {

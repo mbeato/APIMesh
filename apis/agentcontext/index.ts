@@ -5,6 +5,16 @@ import { resolve } from "node:path";
 import { rateLimit } from "../../shared/rate-limit";
 import { apiLogger } from "../../shared/logger";
 import { signupNotifyHandler } from "../../shared/signup-notify";
+import { eventTrackHandler } from "../../shared/event-track";
+
+const AGENTCONTEXT_EVENTS = [
+  "page_load", "demo_visible", "demo_started",
+  "demo_success", "demo_error", "signup_focused",
+] as const;
+const AGENTCONTEXT_ORIGINS = [
+  "https://agentsmd.apimesh.xyz",
+  "https://agentcontext.apimesh.xyz",
+] as const;
 
 import {
   parseAgentsMd,
@@ -59,6 +69,7 @@ app.use("*", async (c, next) => {
 // is the binding constraint and doesn't also burn the 60/min wildcard.
 app.use("/normalize", rateLimit("agentcontext-normalize", 30, 60_000));
 app.use("/signup-notify", rateLimit("agentcontext-signup", 5, 60_000));
+app.use("/event", rateLimit("agentcontext-event", 30, 60_000));
 app.use("*", rateLimit("agentcontext", 60, 60_000));
 app.use("*", apiLogger(API_NAME, 0));
 
@@ -67,10 +78,13 @@ app.get("/", (c) => c.html(LANDING_HTML));
 
 app.post("/signup-notify", signupNotifyHandler({
   allowed: [{ source: "agentcontext", interest: "github-app" }],
-  allowedOrigins: [
-    "https://agentsmd.apimesh.xyz",
-    "https://agentcontext.apimesh.xyz",
-  ],
+  allowedOrigins: [...AGENTCONTEXT_ORIGINS],
+}));
+
+app.post("/event", eventTrackHandler({
+  source: "agentcontext",
+  allowedEvents: AGENTCONTEXT_EVENTS,
+  allowedOrigins: AGENTCONTEXT_ORIGINS,
 }));
 
 // MCP directory crawlers probe /mcp; the real gateway is mcp.apimesh.xyz.

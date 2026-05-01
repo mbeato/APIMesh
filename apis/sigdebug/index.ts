@@ -5,6 +5,16 @@ import { resolve } from "node:path";
 import { rateLimit } from "../../shared/rate-limit";
 import { apiLogger } from "../../shared/logger";
 import { signupNotifyHandler } from "../../shared/signup-notify";
+import { eventTrackHandler } from "../../shared/event-track";
+
+const SIGDEBUG_EVENTS = [
+  "page_load", "demo_visible", "demo_started",
+  "demo_success", "demo_error", "signup_focused",
+] as const;
+const SIGDEBUG_ORIGINS = [
+  "https://stripesig.apimesh.xyz",
+  "https://sigdebug.apimesh.xyz",
+] as const;
 import { verify, type Provider, type VerifyInput } from "../../shared/sig-verify";
 import { generateHints } from "../../shared/sig-hints";
 
@@ -39,6 +49,7 @@ app.use("*", async (c, next) => {
 // effective on /check (SECURITY-AUDIT M1). One zone, one limit.
 // /signup-notify limit before the wildcard so it's the binding constraint.
 app.use("/signup-notify", rateLimit("sigdebug-signup", 5, 60_000));
+app.use("/event", rateLimit("sigdebug-event", 30, 60_000));
 app.use("*", rateLimit("sigdebug", 60, 60_000));
 app.use("*", apiLogger(API_NAME, 0));
 
@@ -46,10 +57,13 @@ app.get("/", (c) => c.html(LANDING_HTML));
 
 app.post("/signup-notify", signupNotifyHandler({
   allowed: [{ source: "sigdebug", interest: "paid-tier" }],
-  allowedOrigins: [
-    "https://stripesig.apimesh.xyz",
-    "https://sigdebug.apimesh.xyz",
-  ],
+  allowedOrigins: [...SIGDEBUG_ORIGINS],
+}));
+
+app.post("/event", eventTrackHandler({
+  source: "sigdebug",
+  allowedEvents: SIGDEBUG_EVENTS,
+  allowedOrigins: SIGDEBUG_ORIGINS,
 }));
 
 // MCP directory crawlers probe /mcp; the real gateway is mcp.apimesh.xyz.

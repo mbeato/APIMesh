@@ -135,6 +135,33 @@ export function getRecentSignupNotifications(
   `).all(safeLimit) as SignupNotification[];
 }
 
+// --- Wedge funnel events ---
+
+export type EventCounts = Array<{ source: string; event_type: string; count: number }>;
+
+export function recordEvent(
+  source: string,
+  eventType: string,
+  clientIp: string | null,
+  userAgent: string | null,
+): void {
+  db.run(
+    `INSERT INTO events (source, event_type, client_ip, user_agent) VALUES (?, ?, ?, ?)`,
+    [source, eventType, clientIp, userAgent],
+  );
+}
+
+export function getEventCounts(hoursBack: number = 24): EventCounts {
+  const safeHours = Math.max(1, Math.min(720, Math.floor(hoursBack)));
+  return db.query(`
+    SELECT source, event_type, COUNT(*) AS count
+    FROM events
+    WHERE created_at > datetime('now', '-' || ? || ' hours')
+    GROUP BY source, event_type
+    ORDER BY source, count DESC
+  `).all(safeHours) as EventCounts;
+}
+
 export function logRevenue(apiName: string, amountUsd: number, txHash: string, network: string, payerWallet?: string) {
   db.run(
     `INSERT INTO revenue (api_name, amount_usd, tx_hash, network, payer_wallet) VALUES (?, ?, ?, ?, ?)`,
