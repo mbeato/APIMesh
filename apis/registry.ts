@@ -94,6 +94,8 @@ import { app as networkPathHeatmap } from "./network-path-heatmap/index";
 import { app as sslTlsVulnerabilityAssessment } from "./ssl-tls-vulnerability-assessment/index";
 import { app as webConfigurationFingerprint } from "./web-configuration-fingerprint/index";
 import { app as corsPolicyCheck } from "./cors-policy-check/index";
+import { app as subdomainRiskAssessment } from "./subdomain-risk-assessment/index";
+
 
 
 
@@ -267,4 +269,5 @@ export const registry: Record<string, Hono> = {
   "ssl-tls-vulnerability-assessment": sslTlsVulnerabilityAssessment,
   "web-configuration-fingerprint": webConfigurationFingerprint,
   "cors-policy-check": corsPolicyCheck,
+  "subdomain-risk-assessment": subdomainRiskAssessment,
 };
