@@ -76,6 +76,48 @@
     Maintain <code>AGENTS.md</code> once, sync everything else.
   </p>
 
+  <div class="demo">
+    <div class="row">
+      <label for="src-fmt">Source:</label>
+      <select id="src-fmt">
+        <option value="claude-md" selected>CLAUDE.md</option>
+        <option value="agents-md">AGENTS.md</option>
+        <option value="gemini-md">GEMINI.md</option>
+        <option value="cursor-mdc">.cursor/rules/*.mdc</option>
+        <option value="cursor-legacy">.cursorrules (legacy)</option>
+        <option value="windsurf-mdc">.windsurf/rules/*.md</option>
+        <option value="windsurf-legacy">.windsurfrules (legacy)</option>
+        <option value="cline-file">.clinerules (file)</option>
+        <option value="conventions-md">CONVENTIONS.md</option>
+      </select>
+      <label for="tgt-fmt">→</label>
+      <select id="tgt-fmt">
+        <option value="agents-md" selected>AGENTS.md</option>
+        <option value="claude-md">CLAUDE.md</option>
+        <option value="gemini-md">GEMINI.md</option>
+        <option value="cursor-mdc">.cursor/rules/*.mdc</option>
+        <option value="windsurf-mdc">.windsurf/rules/*.md</option>
+        <option value="cline-dir">.clinerules/*.md</option>
+        <option value="conventions-md">CONVENTIONS.md</option>
+      </select>
+    </div>
+    <textarea id="src" placeholder="# Project rules&#10;&#10;- TypeScript strict mode&#10;- Bun for everything"># Project rules
+
+- Use TypeScript strict mode for all new code.
+- Bun for everything (no Node.js fallbacks).
+- Test before commit; CI is not a substitute for local testing.
+
+## Style
+
+- Lowercase commit messages.
+- Surgical changes: don't refactor outside the scope of the request.</textarea>
+    <div class="row">
+      <button id="convert-btn">Convert</button>
+      <span class="muted" id="status"></span>
+    </div>
+    <pre id="out">(output appears here)</pre>
+  </div>
+
   <h2>Why</h2>
   <p>
     Every AI coding tool invented its own rules-file format.
@@ -90,46 +132,6 @@
   <h2>Install</h2>
   <pre><code>npx @mbeato/agentcontext inspect</code></pre>
   <p class="muted">No install step. Runs against the current directory and prints a summary.</p>
-
-  <h2>Try it</h2>
-  <p>Paste a CLAUDE.md, .cursorrules, or any agent-context file. We'll normalize it to AGENTS.md.</p>
-
-  <div class="demo">
-    <div class="row">
-      <label for="src-fmt">Source:</label>
-      <select id="src-fmt">
-        <option value="agents-md">AGENTS.md</option>
-        <option value="claude-md">CLAUDE.md</option>
-        <option value="gemini-md">GEMINI.md</option>
-        <option value="cursor-mdc">.cursor/rules/*.mdc</option>
-        <option value="cursor-legacy">.cursorrules (legacy)</option>
-        <option value="windsurf-mdc">.windsurf/rules/*.md</option>
-        <option value="windsurf-legacy">.windsurfrules (legacy)</option>
-        <option value="cline-file">.clinerules (file)</option>
-        <option value="conventions-md">CONVENTIONS.md</option>
-      </select>
-      <label for="tgt-fmt">→</label>
-      <select id="tgt-fmt">
-        <option value="agents-md">AGENTS.md</option>
-        <option value="claude-md">CLAUDE.md</option>
-        <option value="gemini-md">GEMINI.md</option>
-        <option value="cursor-mdc">.cursor/rules/*.mdc</option>
-        <option value="windsurf-mdc">.windsurf/rules/*.md</option>
-        <option value="cline-dir">.clinerules/*.md</option>
-        <option value="conventions-md">CONVENTIONS.md</option>
-      </select>
-    </div>
-    <textarea id="src" placeholder="# Project rules&#10;&#10;- TypeScript strict mode&#10;- Bun for everything"># Project rules
-
-- Use TypeScript strict mode.
-- Bun for everything.
-- Test before commit.</textarea>
-    <div class="row">
-      <button id="convert-btn">Convert</button>
-      <span class="muted" id="status"></span>
-    </div>
-    <pre id="out">(output appears here)</pre>
-  </div>
 
   <h2>How it works</h2>
   <p>
@@ -230,6 +232,12 @@ npx @mbeato/agentcontext convert --from cursor-mdc --to agents-md --in .cursor/r
       } finally {
         notifyBtn.disabled = false;
       }
+    });
+
+    // Auto-fire the demo on page load so visitors see normalized output
+    // appear without having to scroll, click, or paste.
+    window.addEventListener('DOMContentLoaded', () => {
+      setTimeout(() => btn.click(), 500);
     });
 
     btn.addEventListener('click', async () => {

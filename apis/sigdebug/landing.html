@@ -211,7 +211,17 @@
       }
     };
 
-    function loadExample(name) {
+    async function hmacSha256Hex(key, data) {
+      const enc = new TextEncoder();
+      const cryptoKey = await crypto.subtle.importKey(
+        'raw', enc.encode(key), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']
+      );
+      const sig = await crypto.subtle.sign('HMAC', cryptoKey, enc.encode(data));
+      return Array.from(new Uint8Array(sig))
+        .map((b) => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    async function loadExample(name) {
       const ex = EXAMPLES[name];
       if (!ex) return;
       document.getElementById('provider').value = ex.provider;
@@ -219,8 +229,12 @@
       document.getElementById('raw-body').value = ex.raw_body;
       let headers = ex.headers;
       if (headers.includes('__NOW__')) {
-        const now = Math.floor(Date.now() / 1000);
-        headers = headers.replace('__NOW__', String(now));
+        headers = headers.replace('__NOW__', String(Math.floor(Date.now() / 1000)));
+      }
+      if (headers.includes('__VALID__')) {
+        const t = Number((headers.match(/t=(\d+)/) || [])[1] || Math.floor(Date.now() / 1000));
+        const v1 = await hmacSha256Hex(ex.secret, t + '.' + ex.raw_body);
+        headers = headers.replace('__VALID__', v1);
       }
       document.getElementById('headers').value = headers;
       document.getElementById('output').innerHTML = '';
@@ -301,6 +315,15 @@
       div.textContent = String(s);
       return div.innerHTML;
     }
+
+    // Auto-load the wrong-secret example + run the check on page load. New
+    // visitors see "✗ Invalid signature → likely cause: you used a pk_ key"
+    // before doing anything, so the tool's diagnostic value is the first
+    // thing on screen.
+    window.addEventListener('DOMContentLoaded', async () => {
+      await loadExample('stripe-wrong-secret');
+      setTimeout(runCheck, 600);
+    });
 
     (function setupNotify() {
       const form = document.getElementById('notify-form');
