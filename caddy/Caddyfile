@@ -26,16 +26,17 @@ import /etc/caddy/conf.d/*.caddyfile
 }
 
 # Wedge sub-apps (agentsmd, stripesig) serve full landing.html with inline
-# <style> + <script>. They need a relaxed CSP — the wildcard *.apimesh.xyz
-# block uses default-src 'none' which strips all styles and breaks the demo
-# JS. System fonts only — no external font allowance needed.
+# <style> + <script> and pull Instrument Serif / DM Sans / JetBrains Mono
+# from Google Fonts (added in the apimesh-brand rebrand). The wildcard
+# *.apimesh.xyz block's default-src 'none' would strip styles and block the
+# fonts; this snippet allows inline + the two fonts.googleapis/gstatic origins.
 (wedge_headers) {
     header {
         Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
         X-Content-Type-Options "nosniff"
         X-Frame-Options "DENY"
         Referrer-Policy "strict-origin-when-cross-origin"
-        Content-Security-Policy "default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'"
+        Content-Security-Policy "default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'"
         Permissions-Policy "geolocation=(), camera=(), microphone=()"
         -Server
     }
@@ -135,6 +136,14 @@ agentsmd.apimesh.xyz, stripesig.apimesh.xyz {
     request_body {
         max_size 16KB
     }
+
+    # Brand assets — served from the same /opt/conway-agent/public dir the
+    # apex uses, so the wedge nav <img> renders instead of 404'ing.
+    handle /logo*.svg {
+        root * /opt/conway-agent/public
+        file_server
+    }
+
     reverse_proxy localhost:3001 {
         header_up X-Real-IP {remote_host}
         header_up -X-Forwarded-For
