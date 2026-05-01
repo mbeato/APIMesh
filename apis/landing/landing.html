@@ -1,861 +1,113 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>APIMesh — Web Analysis APIs for AI Agents</title>
-    <meta name="description" content="Self-building web analysis APIs for AI agents. An autonomous brain generates, audits, and deploys new endpoints daily. Pay per call with x402, Stripe MPP, or API key credits." />
-    <meta property="og:title" content="APIMesh — The Infrastructure That Builds Itself" />
-    <meta property="og:description" content="23 web analysis APIs generated, audited & deployed by machine. Pay per call." />
-    <meta property="og:image" content="/logo-nav.svg" />
-    <meta name="twitter:card" content="summary" />
-    <link rel="icon" type="image/svg+xml" href="/logo-nav.svg" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Instrument+Serif&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
-    <style>
-      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>apimesh — single-purpose dev tools</title>
+  <meta name="description" content="apimesh ships small dev tools that solve one specific pain. each one stands alone." />
+  <meta property="og:title" content="apimesh — single-purpose dev tools" />
+  <meta property="og:description" content="small things that solve one specific pain. each one stands alone." />
+  <link rel="canonical" href="https://apimesh.xyz/" />
+  <style>
+    * { box-sizing: border-box }
+    html, body { margin: 0; padding: 0; }
+    body {
+      font: 16px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+      color: #1a1a1a;
+      background: #fafaf9;
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 48px 24px 80px;
+    }
+    a { color: #b45309; text-decoration: underline; text-underline-offset: 2px; }
+    code {
+      font-family: "SF Mono", "JetBrains Mono", ui-monospace, monospace;
+      font-size: 14px;
+      background: #f1f0ee;
+      padding: 2px 6px;
+      border-radius: 3px;
+    }
+    header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 56px;
+    }
+    .logo { font-weight: 600; letter-spacing: -0.01em; font-size: 16px; }
+    .nav-links { display: flex; gap: 18px; font-size: 14px; }
+    .nav-links a { color: #78716c; text-decoration: none; }
+    .nav-links a:hover { color: #b45309; }
 
-      :root {
-        --bg: #0a0a0a;
-        --surface: #111111;
-        --border: #1c1c1c;
-        --border-hover: #2a2a2a;
-        --text: #e0e0e0;
-        --text-secondary: #777;
-        --text-dim: #555;
-        --accent: #3ddc84;
-        --accent-dim: rgba(61, 220, 132, 0.08);
-        --amber: #f0a030;
-        --amber-dim: rgba(240, 160, 48, 0.06);
-        --serif: "Instrument Serif", Georgia, serif;
-        --sans: "DM Sans", -apple-system, sans-serif;
-        --mono: "JetBrains Mono", "SF Mono", monospace;
-      }
+    h1 {
+      font-size: 36px; line-height: 1.15; margin: 0 0 12px;
+      letter-spacing: -0.02em;
+    }
+    .lede { color: #555; font-size: 18px; margin-bottom: 48px; }
 
-      body {
-        font-family: var(--sans);
-        background: var(--bg);
-        color: var(--text);
-        min-height: 100vh;
-        -webkit-font-smoothing: antialiased;
-        font-size: 15px;
-        line-height: 1.6;
-        overflow-x: hidden;
-      }
+    .wedges {
+      display: grid; gap: 16px; margin-bottom: 64px;
+    }
+    .wedge {
+      display: block;
+      border: 1px solid #d6d3d1; border-radius: 8px;
+      padding: 24px; background: #fff;
+      text-decoration: none; color: inherit;
+      transition: border-color 0.15s, transform 0.15s;
+    }
+    .wedge:hover { border-color: #b45309; }
+    .wedge h2 {
+      font-size: 22px; margin: 0 0 6px; letter-spacing: -0.01em;
+    }
+    .wedge p { margin: 0 0 14px; color: #44403c; font-size: 15px; line-height: 1.5; }
+    .wedge-arrow {
+      font-family: "SF Mono", ui-monospace, monospace;
+      font-size: 13px; color: #b45309;
+    }
 
-      a { color: var(--text); text-decoration: none; }
+    .more {
+      color: #78716c; font-size: 14px; margin-bottom: 48px;
+    }
 
-      .container {
-        max-width: 1080px;
-        margin: 0 auto;
-        padding: 0 24px;
-      }
+    footer {
+      margin-top: 80px; padding-top: 24px;
+      border-top: 1px solid #e5e4e2;
+      color: #78716c; font-size: 13px;
+      display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+    }
+    footer a { color: #78716c; }
+    footer a:hover { color: #b45309; }
+  </style>
+</head>
+<body>
 
-      /* --- Nav --- */
-      nav {
-        border-bottom: 1px solid var(--border);
-        padding: 14px 0;
-        position: sticky;
-        top: 0;
-        background: rgba(10, 10, 10, 0.88);
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
-        z-index: 100;
-      }
-      .nav-inner {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-      }
-      .nav-left {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-      }
-      .nav-live {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        font-family: var(--mono);
-        font-size: 10px;
-        font-weight: 500;
-        color: var(--accent);
-        text-transform: uppercase;
-        letter-spacing: 1.5px;
-      }
-      .nav-live-dot {
-        width: 5px;
-        height: 5px;
-        border-radius: 50%;
-        background: var(--accent);
-        animation: pulse 2s ease-in-out infinite;
-      }
-      @keyframes pulse {
-        0%, 100% { opacity: 1; }
-        50% { opacity: 0.3; }
-      }
-      .nav-links {
-        display: flex;
-        align-items: center;
-        gap: 24px;
-        font-size: 13px;
-        font-weight: 400;
-      }
-      .nav-links a {
-        color: var(--text-dim);
-        transition: color 0.15s;
-      }
-      .nav-links a:hover { color: var(--text); }
-      .nav-links a.nav-signup { color: var(--accent); }
-      .nav-hamburger {
-        display: none;
-        background: none;
-        border: none;
-        cursor: pointer;
-        padding: 4px;
-      }
-      .nav-hamburger span {
-        display: block;
-        width: 18px;
-        height: 1.5px;
-        background: var(--text);
-        margin: 4px 0;
-        transition: transform 0.2s, opacity 0.2s;
-      }
-
-      /* --- Hero --- */
-      .hero-wrap {
-        position: relative;
-        overflow: hidden;
-      }
-      /* Scan lines — full hero+stats area */
-      .hero-wrap::after {
-        content: '';
-        position: absolute;
-        inset: 0;
-        background: repeating-linear-gradient(
-          0deg,
-          transparent,
-          transparent 3px,
-          rgba(255, 255, 255, 0.012) 3px,
-          rgba(255, 255, 255, 0.012) 4px
-        );
-        pointer-events: none;
-        z-index: 2;
-      }
-      .hero {
-        padding: 80px 0 0;
-        position: relative;
-        z-index: 3;
-      }
-      .hero-split {
-        display: grid;
-        grid-template-columns: 1fr 1.15fr;
-        gap: 56px;
-        align-items: center;
-      }
-      .hero-eyebrow {
-        font-family: var(--mono);
-        font-size: 11px;
-        font-weight: 500;
-        color: var(--accent);
-        text-transform: uppercase;
-        letter-spacing: 2.5px;
-        margin-bottom: 20px;
-        opacity: 0;
-        animation: fadeIn 0.6s ease 0.2s forwards;
-      }
-      @keyframes fadeIn {
-        to { opacity: 1; }
-      }
-      .hero-headline {
-        font-family: var(--serif);
-        font-size: 46px;
-        font-weight: 400;
-        line-height: 1.12;
-        letter-spacing: -0.5px;
-        color: var(--text);
-        margin-bottom: 20px;
-      }
-      /* Staggered word reveal */
-      .hero-headline .word {
-        display: inline-block;
-        overflow: hidden;
-        vertical-align: bottom;
-        margin-right: 0.22em;
-      }
-      .hero-headline .word-inner {
-        display: inline-block;
-        transform: translateY(110%);
-        animation: wordReveal 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-      }
-      @keyframes wordReveal {
-        to { transform: translateY(0); }
-      }
-      .hero-headline .word:nth-child(1) .word-inner { animation-delay: 0.1s; }
-      .hero-headline .word:nth-child(2) .word-inner { animation-delay: 0.15s; }
-      .hero-headline .word:nth-child(3) .word-inner { animation-delay: 0.2s; }
-      .hero-headline .word:nth-child(4) .word-inner { animation-delay: 0.25s; }
-      .hero-headline .word:nth-child(5) .word-inner { animation-delay: 0.3s; }
-      .hero-headline .word:nth-child(6) .word-inner { animation-delay: 0.35s; }
-      .hero-headline .word:nth-child(7) .word-inner { animation-delay: 0.4s; }
-      .hero-headline .word:nth-child(8) .word-inner { animation-delay: 0.45s; }
-      .hero-headline .word:nth-child(9) .word-inner { animation-delay: 0.5s; }
-      .hero-headline .word-br { display: block; height: 0; margin: 0; }
-      .hero-sub {
-        font-size: 16px;
-        color: var(--text-secondary);
-        line-height: 1.65;
-        max-width: 420px;
-        opacity: 0;
-        animation: fadeIn 0.8s ease 0.55s forwards;
-      }
-
-      /* Terminal */
-      .hero-right {
-        position: relative;
-      }
-      /* Radial glow behind terminal */
-      .hero-right::before {
-        content: '';
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        width: 120%;
-        height: 140%;
-        transform: translate(-50%, -50%);
-        background: radial-gradient(
-          ellipse at center,
-          rgba(61, 220, 132, 0.04) 0%,
-          rgba(61, 220, 132, 0.02) 40%,
-          transparent 70%
-        );
-        pointer-events: none;
-        z-index: -1;
-      }
-      .terminal {
-        border: 1px solid var(--border);
-        background: #080808;
-        overflow: hidden;
-        box-shadow: 0 0 60px rgba(61, 220, 132, 0.03), 0 0 120px rgba(61, 220, 132, 0.015);
-        opacity: 0;
-        animation: terminalIn 0.9s ease 0.3s forwards;
-      }
-      @keyframes terminalIn {
-        to { opacity: 1; }
-      }
-      .terminal-header {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        padding: 10px 16px;
-        border-bottom: 1px solid var(--border);
-        background: var(--surface);
-      }
-      .terminal-dot {
-        width: 7px;
-        height: 7px;
-        border-radius: 50%;
-        background: var(--amber);
-        animation: pulse 2s ease-in-out infinite;
-      }
-      .terminal-title {
-        font-family: var(--mono);
-        font-size: 11px;
-        color: var(--text-dim);
-        letter-spacing: 0.3px;
-      }
-      .terminal-body {
-        padding: 16px;
-        font-family: var(--mono);
-        font-size: 12px;
-        line-height: 1.8;
-        height: 260px;
-        overflow-y: hidden;
-        white-space: pre-wrap;
-        color: var(--text-dim);
-      }
-      .terminal-body .t-dim { color: var(--text-dim); }
-      .terminal-body .t-accent { color: var(--amber); }
-      .terminal-body .t-green { color: var(--accent); }
-      .terminal-body .t-text { color: var(--text-secondary); }
-      .terminal-cursor {
-        display: inline-block;
-        width: 7px;
-        height: 14px;
-        background: var(--amber);
-        vertical-align: text-bottom;
-        animation: blink 1s step-end infinite;
-      }
-      @keyframes blink {
-        0%, 100% { opacity: 1; }
-        50% { opacity: 0; }
-      }
-
-      /* --- Stats Ticker --- */
-      .stats-ticker {
-        border-top: 1px solid var(--border);
-        border-bottom: 1px solid var(--border);
-        background: var(--surface);
-        padding: 24px 0;
-        margin-top: 64px;
-        position: relative;
-        z-index: 3;
-      }
-      .stats-inner {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-      }
-      .stat {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 4px;
-      }
-      .stat-value {
-        font-family: var(--mono);
-        font-size: 22px;
-        font-weight: 500;
-        color: var(--text);
-        letter-spacing: -0.5px;
-      }
-      .stat-label {
-        font-family: var(--sans);
-        font-size: 10px;
-        font-weight: 500;
-        text-transform: uppercase;
-        letter-spacing: 1.5px;
-        color: var(--text-dim);
-      }
-      .stat-sep {
-        width: 1px;
-        height: 32px;
-        background: var(--border);
-      }
-
-      /* --- Install --- */
-      .install-section {
-        padding: 56px 0 0;
-      }
-      .install-label {
-        font-family: var(--mono);
-        font-size: 10px;
-        font-weight: 500;
-        text-transform: uppercase;
-        letter-spacing: 2px;
-        color: var(--text-dim);
-        margin-bottom: 12px;
-      }
-      .install-block {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        background: #080808;
-        border: 1px solid var(--border);
-        padding: 16px 20px;
-        cursor: pointer;
-        transition: border-color 0.15s;
-      }
-      .install-block:hover { border-color: var(--border-hover); }
-      .install-prompt {
-        color: var(--text-dim);
-        font-family: var(--mono);
-        font-size: 15px;
-        user-select: none;
-      }
-      .install-block code {
-        font-family: var(--mono);
-        font-size: 15px;
-        color: var(--text);
-        font-weight: 500;
-        flex: 1;
-      }
-      .install-copy {
-        font-family: var(--mono);
-        font-size: 11px;
-        color: var(--text-dim);
-        background: none;
-        border: 1px solid var(--border);
-        padding: 4px 12px;
-        cursor: pointer;
-        transition: color 0.15s, border-color 0.15s;
-      }
-      .install-copy:hover {
-        color: var(--text-secondary);
-        border-color: var(--border-hover);
-      }
-      .install-note {
-        font-size: 13px;
-        color: var(--text-dim);
-        margin-top: 12px;
-      }
-
-      /* --- Section Labels --- */
-      .section-label {
-        font-family: var(--mono);
-        font-size: 10px;
-        font-weight: 500;
-        text-transform: uppercase;
-        letter-spacing: 2px;
-        color: var(--text-dim);
-        margin-bottom: 28px;
-      }
-
-      /* --- Pipeline --- */
-      .pipeline-section {
-        padding: 64px 0;
-        border-top: 1px solid var(--border);
-      }
-      .pipeline {
-        position: relative;
-        padding-left: 32px;
-      }
-      .pipeline::before {
-        content: '';
-        position: absolute;
-        left: 5px;
-        top: 5px;
-        bottom: 5px;
-        width: 1px;
-        background: var(--border);
-      }
-      .pipeline-step {
-        position: relative;
-        padding: 0 0 40px 28px;
-      }
-      .pipeline-step:last-child { padding-bottom: 0; }
-      .pipeline-marker {
-        position: absolute;
-        left: -32px;
-        top: 4px;
-        width: 11px;
-        height: 11px;
-        border-radius: 50%;
-        background: var(--accent);
-        border: 2px solid var(--bg);
-      }
-      .pipeline-step[data-status="active"] .pipeline-marker {
-        background: var(--amber);
-        box-shadow: 0 0 8px rgba(240, 160, 48, 0.3);
-        animation: pulse 2s ease-in-out infinite;
-      }
-      .pipeline-phase {
-        font-family: var(--mono);
-        font-size: 11px;
-        font-weight: 500;
-        text-transform: uppercase;
-        letter-spacing: 2px;
-        color: var(--text-dim);
-        margin-bottom: 6px;
-        display: block;
-      }
-      .pipeline-step[data-status="active"] .pipeline-phase {
-        color: var(--amber);
-      }
-      .pipeline-desc {
-        font-size: 15px;
-        color: var(--text-secondary);
-        line-height: 1.6;
-        max-width: 520px;
-      }
-
-      /* --- Tools Marquee --- */
-      .tools-section {
-        padding: 64px 0;
-        border-top: 1px solid var(--border);
-      }
-      .tools-header {
-        display: flex;
-        align-items: baseline;
-        justify-content: space-between;
-        margin-bottom: 24px;
-      }
-      .tools-count {
-        font-family: var(--mono);
-        font-size: 11px;
-        color: var(--text-dim);
-      }
-      .marquee-wrap {
-        overflow: hidden;
-        margin: 0 -24px;
-        padding: 0 0 12px;
-      }
-      .marquee-track {
-        display: flex;
-        gap: 10px;
-        white-space: nowrap;
-        animation: marquee 120s linear infinite;
-        width: max-content;
-      }
-      .marquee-track.reverse {
-        animation-direction: reverse;
-        animation-duration: 100s;
-      }
-      @keyframes marquee {
-        from { transform: translateX(0); }
-        to { transform: translateX(-50%); }
-      }
-      .marquee-pill {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        border: 1px solid var(--border);
-        padding: 8px 16px;
-        font-family: var(--mono);
-        font-size: 12px;
-        color: var(--text-secondary);
-        white-space: nowrap;
-        transition: color 0.15s, border-color 0.15s, background 0.15s;
-        text-decoration: none;
-        flex-shrink: 0;
-      }
-      .marquee-pill .pill-price {
-        color: var(--accent);
-        opacity: 0.7;
-      }
-      .marquee-pill:hover {
-        color: var(--accent);
-        border-color: var(--accent);
-        background: var(--accent-dim);
-      }
-      .marquee-track:hover { animation-play-state: paused; }
-      @media (prefers-reduced-motion: reduce) {
-        .marquee-track, .terminal, .hero-eyebrow, .hero-sub, .hero-headline .word-inner { animation: none; opacity: 1; transform: none; }
-        .terminal-dot, .nav-live-dot, .pipeline-step[data-status="active"] .pipeline-marker { animation: none; }
-      }
-      .tools-view-all {
-        display: inline-block;
-        margin-top: 20px;
-        font-family: var(--mono);
-        font-size: 12px;
-        color: var(--text-dim);
-        transition: color 0.15s;
-      }
-      .tools-view-all:hover { color: var(--text); }
-
-      /* --- Pricing --- */
-      .pricing-section {
-        padding: 48px 0;
-        border-top: 1px solid var(--border);
-      }
-      .pricing-row {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 32px;
-        padding: 32px 0;
-        border-top: 1px solid var(--border);
-        border-bottom: 1px solid var(--border);
-      }
-      .pricing-main {
-        display: flex;
-        align-items: baseline;
-        gap: 12px;
-      }
-      .pricing-range {
-        font-family: var(--mono);
-        font-size: 28px;
-        font-weight: 500;
-        color: var(--text);
-        letter-spacing: -0.5px;
-      }
-      .pricing-unit {
-        font-family: var(--mono);
-        font-size: 13px;
-        color: var(--text-dim);
-      }
-      .pricing-details {
-        display: flex;
-        gap: 20px;
-        font-size: 13px;
-        color: var(--text-dim);
-      }
-      .pricing-details span {
-        position: relative;
-        padding-left: 14px;
-      }
-      .pricing-details span::before {
-        content: '';
-        position: absolute;
-        left: 0;
-        top: 50%;
-        width: 4px;
-        height: 4px;
-        border-radius: 50%;
-        background: var(--border-hover);
-        transform: translateY(-50%);
-      }
-      .pricing-cta {
-        display: inline-flex;
-        align-items: center;
-        padding: 10px 24px;
-        background: var(--accent);
-        color: #0a0a0a;
-        font-family: var(--sans);
-        font-size: 14px;
-        font-weight: 600;
-        border-radius: 2px;
-        transition: opacity 0.15s;
-        text-decoration: none;
-        flex-shrink: 0;
-      }
-      .pricing-cta:hover { opacity: 0.9; color: #0a0a0a; }
-
-      /* --- Footer --- */
-      footer {
-        border-top: 1px solid var(--border);
-        padding: 28px 0;
-        margin-top: 16px;
-      }
-      .footer-inner {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        font-size: 13px;
-        color: var(--text-dim);
-      }
-      .footer-left {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-family: var(--serif);
-      }
-      .footer-links {
-        display: flex;
-        gap: 20px;
-      }
-      .footer-links a {
-        color: var(--text-dim);
-        transition: color 0.15s;
-      }
-      .footer-links a:hover { color: var(--text); }
-      .footer-legal {
-        display: flex;
-        gap: 16px;
-        flex-wrap: wrap;
-      }
-      .footer-legal a {
-        color: var(--text-dim);
-        text-decoration: none;
-        font-size: 12px;
-      }
-      .footer-legal a:hover { color: var(--text-secondary); }
-
-      /* --- Responsive --- */
-      @media (max-width: 1024px) {
-        .hero-split {
-          grid-template-columns: 1fr;
-          gap: 40px;
-        }
-        .terminal { max-width: 600px; }
-        .hero-headline { font-size: 40px; }
-      }
-
-      @media (max-width: 768px) {
-        .nav-links { display: none; }
-        .nav-links.open {
-          display: flex;
-          flex-direction: column;
-          position: absolute;
-          top: 100%;
-          left: 0;
-          right: 0;
-          background: rgba(10, 10, 10, 0.96);
-          backdrop-filter: blur(12px);
-          border-bottom: 1px solid var(--border);
-          padding: 16px 24px;
-          gap: 14px;
-        }
-        .nav-hamburger { display: block; }
-        .hero { padding: 48px 0 0; }
-        .hero-headline { font-size: 34px; }
-        .hero-sub { font-size: 15px; }
-        .stats-inner { flex-wrap: wrap; gap: 20px; justify-content: center; }
-        .stat-sep { display: none; }
-        .stat { min-width: 120px; }
-        .pricing-row { flex-direction: column; align-items: flex-start; gap: 20px; }
-        .pricing-details { flex-direction: column; gap: 6px; }
-        .pricing-cta { width: 100%; justify-content: center; }
-        .terminal-body { min-height: 200px; font-size: 11px; }
-      }
-
-      @media (max-width: 480px) {
-        .hero-headline { font-size: 28px; }
-        .hero-eyebrow { font-size: 10px; letter-spacing: 2px; }
-        .stats-inner { flex-direction: column; gap: 16px; }
-        .stat-value { font-size: 18px; }
-        .install-block { flex-wrap: wrap; }
-        .install-block code { font-size: 13px; }
-        .footer-inner { flex-direction: column; gap: 12px; }
-        .pricing-range { font-size: 22px; }
-        .marquee-pill { font-size: 11px; padding: 6px 12px; }
-      }
-    </style>
-  </head>
-  <body>
-    <nav>
-      <div class="container nav-inner">
-        <div class="nav-left">
-          <img src="/logo-nav.svg" alt="APIMesh" width="36" height="36" style="border-radius:7px;vertical-align:middle" />
-          <span style="font-family:var(--serif);font-size:18px;letter-spacing:-0.3px">APIMesh</span>
-          <span class="nav-live"><span class="nav-live-dot"></span>live</span>
-        </div>
-        <button class="nav-hamburger" id="nav-toggle" aria-label="Menu" aria-expanded="false">
-          <span></span><span></span><span></span>
-        </button>
-        <div class="nav-links" id="nav-links">
-          <a href="#how-it-works">How it works</a>
-          <a href="#tools">Tools</a>
-          <a href="#pricing">Pricing</a>
-          <a href="https://github.com/mbeato/conway" target="_blank" rel="noopener noreferrer">GitHub</a>
-          <a href="/login">Log In</a>
-          <a href="/signup" class="nav-signup">Sign Up</a>
-        </div>
-      </div>
+  <header>
+    <span class="logo">apimesh</span>
+    <nav class="nav-links">
+      <a href="https://github.com/mbeato/conway">github</a>
+      <a href="https://www.npmjs.com/package/@mbeato/apimesh-mcp-server">npm</a>
     </nav>
+  </header>
 
-    <div class="hero-wrap">
-      <div class="container">
-        <section class="hero">
-          <div class="hero-split">
-            <div class="hero-left">
-              <p class="hero-eyebrow">The infrastructure that builds itself</p>
-              <h1 class="hero-headline"><span class="word"><span class="word-inner">Web</span></span><span class="word"><span class="word-inner">analysis</span></span><span class="word"><span class="word-inner">APIs</span></span><span class="word-br"></span><span class="word"><span class="word-inner">generated,</span></span><span class="word"><span class="word-inner">audited</span></span><span class="word"><span class="word-inner">&amp;</span></span><span class="word-br"></span><span class="word"><span class="word-inner">deployed</span></span><span class="word"><span class="word-inner">by</span></span><span class="word"><span class="word-inner" style="margin-right:0">machine.</span></span></h1>
-              <p class="hero-sub">An autonomous brain scans demand signals daily, writes new APIs, security-audits the code, and ships to production. Pay per call with USDC, cards, or credits.</p>
-            </div>
-            <div class="hero-right">
-              <div class="terminal">
-                <div class="terminal-header">
-                  <span class="terminal-dot"></span>
-                  <span class="terminal-title">brain cycle #1847 &mdash; running</span>
-                </div>
-                <div class="terminal-body" id="terminal-output"><span class="terminal-cursor"></span></div>
-              </div>
-            </div>
-          </div>
-        </section>
-      </div>
+  <h1>apimesh ships single-purpose dev tools.</h1>
+  <p class="lede">small things that solve one specific pain. each one stands alone — its own URL, its own demo, no signup.</p>
 
-    <div class="stats-ticker">
-      <div class="container stats-inner">
-        <div class="stat">
-          <span class="stat-value" id="stat-apis" data-target="23">0</span>
-          <span class="stat-label">APIs live</span>
-        </div>
-        <div class="stat-sep"></div>
-        <div class="stat">
-          <span class="stat-value" id="stat-requests" data-target="0">0</span>
-          <span class="stat-label">Requests served</span>
-        </div>
-        <div class="stat-sep"></div>
-        <div class="stat">
-          <span class="stat-value">99.9%</span>
-          <span class="stat-label">Uptime</span>
-        </div>
-        <div class="stat-sep"></div>
-        <div class="stat">
-          <span class="stat-value">3</span>
-          <span class="stat-label">Payment rails</span>
-        </div>
-      </div>
-    </div>
-    </div>
+  <div class="wedges">
+    <a class="wedge" href="https://agentsmd.apimesh.xyz">
+      <h2>agentsmd</h2>
+      <p>maintain <code>AGENTS.md</code>, <code>CLAUDE.md</code>, <code>.cursorrules</code>, <code>.clinerules</code>, <code>.windsurfrules</code> from one source. cli + mcp server.</p>
+      <span class="wedge-arrow">agentsmd.apimesh.xyz →</span>
+    </a>
+    <a class="wedge" href="https://stripesig.apimesh.xyz">
+      <h2>stripesig</h2>
+      <p>paste a failing stripe (or github / slack / shopify) webhook. get a plain-english answer in 5 seconds — <em>why</em> it failed, not just that it failed.</p>
+      <span class="wedge-arrow">stripesig.apimesh.xyz →</span>
+    </a>
+  </div>
 
-    <div class="container">
-      <section class="install-section">
-        <p class="install-label">Install</p>
-        <div class="install-block" id="install-block">
-          <span class="install-prompt">$</span>
-          <code>npx @mbeato/apimesh-mcp-server</code>
-          <button class="install-copy" id="copy-btn">copy</button>
-        </div>
-        <p class="install-note">Works with Claude Desktop, Cursor, Windsurf, and any MCP client.</p>
-      </section>
+  <p class="more">more wedges coming. the pattern: spot a specific dev pain, build the smallest tool that fixes it, ship it.</p>
 
-      <section class="pipeline-section" id="how-it-works">
-        <p class="section-label">How the brain works</p>
-        <div class="pipeline">
-          <div class="pipeline-step" data-status="complete">
-            <div class="pipeline-marker"></div>
-            <span class="pipeline-phase">01 Scout</span>
-            <p class="pipeline-desc">Scans market signals, developer forums, and API gap analyses to identify high-value endpoints nobody has built yet.</p>
-          </div>
-          <div class="pipeline-step" data-status="complete">
-            <div class="pipeline-marker"></div>
-            <span class="pipeline-phase">02 Build</span>
-            <p class="pipeline-desc">Generates API code with AI &mdash; routes, validation, error handling, pricing, OpenAPI spec &mdash; from a single backlog entry.</p>
-          </div>
-          <div class="pipeline-step" data-status="complete">
-            <div class="pipeline-marker"></div>
-            <span class="pipeline-phase">03 Audit</span>
-            <p class="pipeline-desc">Runs automated security audit on generated code. Checks for injection, auth bypass, rate limiting, input sanitization. 14+ rules.</p>
-          </div>
-          <div class="pipeline-step" data-status="active">
-            <div class="pipeline-marker"></div>
-            <span class="pipeline-phase">04 Deploy</span>
-            <p class="pipeline-desc">Pushes to staging, runs integration tests, promotes to production. New API is live with x402 + Stripe MPP + API key payments.</p>
-          </div>
-        </div>
-      </section>
+  <footer>
+    <span>made by max — <a href="https://mbeato.dev">mbeato.dev</a></span>
+    <span>part of <a href="https://github.com/mbeato/conway">apimesh/conway</a> · MIT</span>
+  </footer>
 
-      <section class="tools-section" id="tools">
-        <div class="tools-header">
-          <p class="section-label" style="margin-bottom:0">Tools</p>
-          <span class="tools-count" id="tools-count">loading...</span>
-        </div>
-      </section>
-    </div>
-
-    <div class="marquee-wrap">
-      <div class="marquee-track" id="marquee-row-1"></div>
-      <div style="height:10px"></div>
-      <div class="marquee-track reverse" id="marquee-row-2"></div>
-    </div>
-
-    <div class="container">
-      <a href="/tools" class="tools-view-all">View all tools &rarr;</a>
-
-      <section class="pricing-section" id="pricing">
-        <p class="section-label">Pricing</p>
-        <div class="pricing-row">
-          <div class="pricing-main">
-            <span class="pricing-range">$0.001 &mdash; $0.01</span>
-            <span class="pricing-unit">per call</span>
-          </div>
-          <div class="pricing-details">
-            <span>Free /preview on every tool</span>
-            <span>x402 &middot; Stripe MPP &middot; API key credits</span>
-            <span>No subscriptions</span>
-          </div>
-          <a href="/signup" class="pricing-cta">Get started</a>
-        </div>
-      </section>
-    </div>
-
-    <footer>
-      <div class="container footer-inner">
-        <div class="footer-left">
-          <img src="/logo-nav.svg" alt="" width="20" height="20" style="border-radius:4px" />
-          <span>APIMesh</span>
-        </div>
-        <div class="footer-links">
-          <a href="https://github.com/mbeato/conway" target="_blank" rel="noopener noreferrer">GitHub</a>
-          <a href="https://www.npmjs.com/package/@mbeato/apimesh-mcp-server" target="_blank" rel="noopener noreferrer">npm</a>
-          <a href="/dashboard">Dashboard</a>
-          <a href="/signup">Sign Up</a>
-        </div>
-        <div class="footer-legal">
-          <a href="/legal/terms">Terms</a>
-          <a href="/legal/privacy">Privacy</a>
-          <a href="/legal/acceptable-use">Acceptable Use</a>
-          <a href="/legal/refund">Refund Policy</a>
-          <a href="/legal/cookies">Cookies</a>
-          <a href="/legal/abuse">DMCA/Abuse</a>
-        </div>
-      </div>
-    </footer>
-    <script src="/landing.js"></script>
-  </body>
+</body>
 </html>
