@@ -25,6 +25,22 @@ import /etc/caddy/conf.d/*.caddyfile
     }
 }
 
+# Wedge sub-apps (agentsmd, stripesig) serve full landing.html with inline
+# <style> + <script>. They need a relaxed CSP — the wildcard *.apimesh.xyz
+# block uses default-src 'none' which strips all styles and breaks the demo
+# JS. System fonts only — no external font allowance needed.
+(wedge_headers) {
+    header {
+        Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+        X-Content-Type-Options "nosniff"
+        X-Frame-Options "DENY"
+        Referrer-Policy "strict-origin-when-cross-origin"
+        Content-Security-Policy "default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'"
+        Permissions-Policy "geolocation=(), camera=(), microphone=()"
+        -Server
+    }
+}
+
 apimesh.xyz {
     request_body {
         max_size 64KB
@@ -103,6 +119,29 @@ mcp.apimesh.xyz {
     reverse_proxy localhost:3002 {
         header_up X-Real-IP {remote_host}
         header_up -X-Forwarded-For
+    }
+}
+
+# Wedge subdomains — must come BEFORE *.apimesh.xyz so Caddy's most-specific
+# match wins and we get the relaxed wedge_headers CSP instead of the wildcard's
+# default-src 'none' (which breaks inline styles + scripts in landing.html).
+agentsmd.apimesh.xyz, stripesig.apimesh.xyz {
+    import wedge_headers
+
+    tls {
+        dns cloudflare {env.CF_API_TOKEN}
+    }
+
+    request_body {
+        max_size 16KB
+    }
+    reverse_proxy localhost:3001 {
+        header_up X-Real-IP {remote_host}
+        header_up -X-Forwarded-For
+        header_up -X-APIMesh-Internal
+        header_up -X-APIMesh-User-Id
+        header_up -X-APIMesh-Key-Id
+        header_up -X-APIMesh-Paid
     }
 }
 
