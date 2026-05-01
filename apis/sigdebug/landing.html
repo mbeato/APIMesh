@@ -8,179 +8,565 @@
   <meta property="og:title" content="stripesig — debug webhook signature failures in 5 seconds" />
   <meta property="og:description" content="Paste your failing webhook + secret. Get a plain-English explanation of WHY the signature didn't verify." />
   <link rel="canonical" href="https://stripesig.apimesh.xyz/" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Instrument+Serif&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <style>
-    * { box-sizing: border-box }
+    :root {
+      --bg: #0a0a0a;
+      --surface: #111111;
+      --border: #1c1c1c;
+      --border-hover: #2a2a2a;
+      --text: #e0e0e0;
+      --text-secondary: #777;
+      --text-dim: #555;
+      --accent: #3ddc84;
+      --accent-dim: rgba(61, 220, 132, 0.08);
+      --amber: #f0a030;
+      --amber-dim: rgba(240, 160, 48, 0.06);
+      --serif: "Instrument Serif", Georgia, serif;
+      --sans: "DM Sans", -apple-system, sans-serif;
+      --mono: "JetBrains Mono", "SF Mono", monospace;
+    }
+    * { box-sizing: border-box; }
     html, body { margin: 0; padding: 0; }
     body {
-      font: 16px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
-      color: #1a1a1a;
-      background: #fafaf9;
-      max-width: 880px;
-      margin: 0 auto;
-      padding: 36px 24px 80px;
+      font-family: var(--sans);
+      font-size: 16px;
+      line-height: 1.55;
+      color: var(--text);
+      background: var(--bg);
+      -webkit-font-smoothing: antialiased;
     }
-    h1 { font-size: 32px; line-height: 1.15; margin: 0 0 8px; letter-spacing: -0.02em; }
-    h2 { font-size: 20px; margin: 32px 0 12px; letter-spacing: -0.01em; }
-    p { margin: 0 0 14px; }
-    a { color: #b45309; text-decoration: underline; text-underline-offset: 2px; }
-    code, pre {
-      font-family: "SF Mono", "JetBrains Mono", ui-monospace, monospace;
-      font-size: 13px;
+    a { color: inherit; text-decoration: none; }
+
+    /* nav */
+    .nav {
+      position: sticky; top: 0; z-index: 50;
+      background: rgba(10,10,10,0.85); backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
     }
-    code { background: #f1f0ee; padding: 2px 6px; border-radius: 3px; }
-    pre {
-      background: #1a1a1a; color: #f5f3ee;
-      padding: 14px 16px; border-radius: 6px;
-      overflow-x: auto;
-      line-height: 1.5;
-      white-space: pre-wrap;
-      word-break: break-all;
+    .nav-inner {
+      max-width: 1180px; margin: 0 auto;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 28px;
     }
-    pre code { background: none; padding: 0; color: inherit; }
-    .lede { color: #555; font-size: 18px; margin-bottom: 28px; }
-    .pill {
-      display: inline-block; font-size: 12px; padding: 2px 8px;
-      border-radius: 99px; background: #fbbf24; color: #422006;
-      margin-bottom: 16px; font-weight: 600;
+    .nav-brand { display: flex; align-items: center; gap: 10px; font-weight: 600; letter-spacing: -0.01em; }
+    .nav-brand .wedge-tag {
+      font-family: var(--mono); font-size: 11px;
+      color: var(--accent); letter-spacing: 0.08em;
+      padding: 3px 8px; margin-left: 8px;
+      border: 1px solid var(--border-hover); border-radius: 999px;
+      text-transform: lowercase;
     }
+    .nav-links { display: flex; gap: 24px; font-family: var(--mono); font-size: 13px; color: var(--text-secondary); }
+    .nav-links a:hover { color: var(--accent); }
+
+    /* shared block */
+    .block { padding: 96px 28px; position: relative; }
+    .block-inner { max-width: 1080px; margin: 0 auto; }
+    .eyebrow {
+      font-family: var(--mono); font-size: 12px;
+      color: var(--accent); text-transform: uppercase;
+      letter-spacing: 0.12em; margin-bottom: 18px;
+    }
+    .eyebrow.amber { color: var(--amber); }
+    .display {
+      font-family: var(--serif);
+      font-weight: 400; letter-spacing: -0.01em;
+      line-height: 1.05;
+      margin: 0 0 22px;
+    }
+    .lede {
+      color: var(--text-secondary); font-size: 18px;
+      max-width: 620px; line-height: 1.6;
+    }
+
+    /* hero */
+    .hero { background: var(--bg); text-align: center; padding-top: 110px; padding-bottom: 110px; overflow: hidden; }
+    .hero::before {
+      content: ""; position: absolute; inset: 0;
+      background: radial-gradient(ellipse at 50% 30%, var(--accent-dim), transparent 60%);
+      pointer-events: none;
+    }
+    .hero .block-inner { position: relative; }
+    .hero h1 { font-size: clamp(44px, 7vw, 84px); margin-bottom: 26px; }
+    .hero h1 em { font-style: italic; color: var(--accent); }
+    .hero .lede { margin: 0 auto 40px; }
+    .hero-cta {
+      display: inline-flex; align-items: center; gap: 10px;
+      padding: 14px 22px;
+      background: var(--accent); color: #062812;
+      border-radius: 999px; font-weight: 600; font-size: 14px;
+      font-family: var(--mono);
+      transition: transform 0.15s;
+    }
+    .hero-cta:hover { transform: translateY(-1px); }
+    .hero-cta-row { display: flex; justify-content: center; gap: 14px; flex-wrap: wrap; }
+    .hero-cta.ghost {
+      background: transparent; color: var(--text);
+      border: 1px solid var(--border-hover);
+    }
+
+    /* wave dividers */
+    .wave { display: block; width: 100%; height: 60px; }
+
+    /* demo block */
+    .demo { background: var(--surface); }
+    .demo .display { font-size: clamp(32px, 4.4vw, 52px); }
+    .demo-head { max-width: 720px; margin: 0 0 40px; }
+
     .form {
-      border: 1px solid #d6d3d1; border-radius: 8px;
-      padding: 20px; background: #fff; margin: 12px 0 24px;
-      display: grid; gap: 14px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      display: grid; gap: 16px;
     }
-    label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 4px; color: #44403c; }
-    .hint { font-weight: 400; color: #78716c; font-size: 12px; }
+    .form label {
+      display: block;
+      font-family: var(--mono); font-size: 11px;
+      color: var(--accent); text-transform: uppercase;
+      letter-spacing: 0.12em;
+      margin-bottom: 8px;
+    }
+    .form .hint {
+      font-family: var(--mono); font-size: 11px;
+      color: var(--text-dim); text-transform: none; letter-spacing: 0;
+      margin-left: 8px;
+    }
+    .form .hint code {
+      font-family: var(--mono); font-size: 11px;
+      color: var(--text-secondary); background: transparent; padding: 0;
+    }
     select, input, textarea {
-      width: 100%; font: 14px/1.4 inherit; padding: 9px 12px;
-      border: 1px solid #d6d3d1; border-radius: 4px; background: #fff;
+      width: 100%;
+      font-family: var(--mono); font-size: 13px; line-height: 1.5;
+      padding: 10px 12px;
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      outline: none;
     }
-    textarea {
-      font-family: "SF Mono", ui-monospace, monospace; font-size: 13px;
-      resize: vertical;
-    }
+    select:focus, input:focus, textarea:focus { border-color: var(--accent); }
+    textarea { resize: vertical; }
     #raw-body { min-height: 110px; }
     #headers { min-height: 70px; }
-    #secret { font-family: "SF Mono", ui-monospace, monospace; }
-    button {
-      font: 14px/1 inherit; padding: 10px 18px; border-radius: 4px;
-      border: 1px solid #1a1a1a; background: #1a1a1a; color: #fafaf9;
-      font-weight: 600; cursor: pointer;
+    select { appearance: none; padding-right: 32px;
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path fill='%23777' d='M0 0l5 6 5-6z'/></svg>");
+      background-repeat: no-repeat; background-position: right 12px center;
+    }
+    button#check-btn {
+      font-family: var(--mono); font-size: 13px;
+      padding: 12px 22px; border-radius: 999px;
+      background: var(--accent); color: #062812;
+      border: none; font-weight: 600; cursor: pointer;
       align-self: start;
+      transition: transform 0.15s;
     }
-    button:hover { background: #b45309; border-color: #b45309; }
-    .verdict {
-      padding: 14px 18px; border-radius: 8px; margin: 16px 0; font-weight: 600;
-      display: flex; gap: 12px; align-items: center;
+    button#check-btn:hover { transform: translateY(-1px); }
+
+    .examples {
+      display: flex; gap: 8px; flex-wrap: wrap; align-items: center;
+      margin-top: -4px;
     }
-    .verdict.valid { background: #f0fdf4; color: #14532d; border: 1px solid #86efac; }
-    .verdict.invalid { background: #fef2f2; color: #7f1d1d; border: 1px solid #fca5a5; }
-    .reason { font-family: "SF Mono", ui-monospace, monospace; font-size: 13px; opacity: 0.75; font-weight: 400; }
-    .hints { background: #fffbeb; border: 1px solid #fcd34d; border-radius: 8px; padding: 16px 20px; margin: 8px 0 20px; }
-    .hints ul { margin: 0; padding-left: 22px; }
-    .hints li { margin: 8px 0; line-height: 1.55; }
-    .details {
-      background: #fafaf9; border: 1px solid #e7e5e4; border-radius: 8px; padding: 14px 18px;
-      font-family: "SF Mono", ui-monospace, monospace; font-size: 12px;
-      margin-bottom: 16px;
+    .examples .muted {
+      font-family: var(--mono); font-size: 11px;
+      color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.12em;
+      margin-right: 4px;
     }
-    .details .row { display: flex; gap: 12px; padding: 4px 0; border-bottom: 1px dashed #e7e5e4; }
-    .details .row:last-child { border-bottom: 0; }
-    .details .key { color: #78716c; min-width: 140px; }
-    .details .val { word-break: break-all; }
-    .muted { color: #78716c; font-size: 13px; }
-    footer { margin-top: 60px; padding-top: 24px; border-top: 1px solid #e5e4e2; color: #78716c; font-size: 13px; }
-    .examples { display: flex; gap: 8px; flex-wrap: wrap; margin-top: -6px; margin-bottom: 12px; }
     .examples button {
-      background: #f5f5f4; color: #44403c; border: 1px solid #d6d3d1;
-      font-weight: 400; padding: 5px 10px; font-size: 12px;
+      font-family: var(--mono); font-size: 11px;
+      background: transparent; color: var(--text-secondary);
+      border: 1px solid var(--border-hover);
+      padding: 5px 10px; border-radius: 999px;
+      cursor: pointer;
     }
-    .examples button:hover { background: #fef3c7; border-color: #fbbf24; color: #1a1a1a; }
+    .examples button:hover {
+      color: var(--accent); border-color: var(--accent);
+      background: var(--accent-dim);
+    }
+
+    /* verdict / result */
+    #output { margin-top: 22px; }
+    .verdict {
+      padding: 14px 18px; border-radius: 8px; margin: 0 0 14px;
+      display: flex; gap: 12px; align-items: center;
+      font-family: var(--mono); font-size: 13px; font-weight: 500;
+    }
+    .verdict.valid {
+      background: #0d2818; color: #86efac; border: 1px solid #14532d;
+    }
+    .verdict.invalid {
+      background: #2a0d0d; color: #fca5a5; border: 1px solid #7f1d1d;
+    }
+    .reason {
+      font-family: var(--mono); font-size: 12px;
+      opacity: 0.75; font-weight: 400;
+    }
+    .hints {
+      background: rgba(240, 160, 48, 0.08);
+      border: 1px solid #fcd34d;
+      border-radius: 8px;
+      padding: 14px 20px;
+      margin: 0 0 14px;
+      color: #fcd34d;
+    }
+    .hints strong {
+      font-family: var(--mono); font-size: 11px;
+      text-transform: uppercase; letter-spacing: 0.12em;
+      color: var(--amber);
+      display: block; margin-bottom: 8px;
+    }
+    .hints ul { margin: 0; padding-left: 22px; font-family: var(--sans); font-size: 14px; color: var(--text); }
+    .hints li { margin: 6px 0; line-height: 1.55; }
+    .details {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px 18px;
+      font-family: var(--mono); font-size: 12px;
+    }
+    .details .row {
+      display: flex; gap: 12px; padding: 5px 0;
+      border-bottom: 1px dashed var(--border);
+    }
+    .details .row:last-child { border-bottom: 0; }
+    .details .key { color: var(--text-dim); min-width: 140px; }
+    .details .val { color: var(--text); word-break: break-all; }
+    .muted-status {
+      font-family: var(--mono); font-size: 12px;
+      color: var(--text-dim);
+    }
+
+    /* providers grid */
+    .providers { background: #0f0d09; position: relative; }
+    .providers::before {
+      content: ""; position: absolute; inset: 0;
+      background: radial-gradient(circle at 80% 25%, var(--amber-dim), transparent 50%);
+      pointer-events: none;
+    }
+    .providers .block-inner { position: relative; }
+    .providers .display { font-size: clamp(32px, 4.4vw, 52px); }
+    .providers-grid {
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      gap: 22px; margin-top: 44px;
+    }
+    .provider-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 22px;
+    }
+    .provider-card h3 {
+      font-family: var(--serif); font-weight: 400;
+      font-size: 24px; margin: 6px 0 10px;
+      letter-spacing: -0.01em;
+    }
+    .provider-card .scheme {
+      font-family: var(--mono); font-size: 11px;
+      color: var(--accent); display: block;
+      text-transform: uppercase; letter-spacing: 0.1em;
+    }
+    .provider-card p {
+      margin: 0; color: var(--text-secondary);
+      font-size: 13.5px; line-height: 1.55;
+    }
+    .provider-card code {
+      font-family: var(--mono); font-size: 12px;
+      color: var(--text); background: var(--surface);
+      padding: 1px 5px; border-radius: 3px;
+    }
+
+    /* api block */
+    .api { background: var(--surface); }
+    .api .display { font-size: clamp(28px, 3.6vw, 42px); }
+    .api .grid-2 {
+      display: grid; grid-template-columns: 0.9fr 1.1fr;
+      gap: 56px; align-items: start;
+    }
+    .curl {
+      background: #0f0f0f;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px 22px;
+      font-family: var(--mono); font-size: 13px;
+      line-height: 1.7;
+      overflow-x: auto;
+    }
+    .curl .cmd { color: var(--accent); }
+    .curl .flag { color: var(--text-secondary); }
+    .curl .str { color: var(--amber); }
+    .curl .key { color: var(--text); }
+
+    /* privacy block */
+    .privacy { background: var(--bg); }
+    .privacy .display { font-size: clamp(28px, 3.6vw, 42px); }
+    .privacy .lede { max-width: 720px; }
+
+    /* philosophy block */
+    .philosophy { background: #0f0f0f; text-align: center; }
+    .philosophy::before {
+      content: ""; position: absolute; inset: 0;
+      background: radial-gradient(ellipse at 50% 50%, var(--accent-dim), transparent 70%);
+      pointer-events: none;
+    }
+    .philosophy .block-inner { position: relative; max-width: 760px; }
+    .philosophy .display { font-size: clamp(36px, 5vw, 56px); }
+    .philosophy .lede { margin: 0 auto; }
+
+    /* notify block */
+    .notify { background: var(--bg); border-top: 1px solid var(--border); }
+    .notify .display { font-size: clamp(28px, 3.6vw, 42px); }
+    .notify .lede { max-width: 620px; margin-bottom: 28px; }
+    #notify-form {
+      display: flex; gap: 10px; flex-wrap: wrap; align-items: center;
+      max-width: 560px;
+    }
+    #notify-email {
+      flex: 1; min-width: 220px;
+      font-family: var(--sans); font-size: 14px;
+      padding: 11px 14px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 999px;
+    }
+    #notify-email:focus { border-color: var(--accent); outline: none; }
+    #notify-btn {
+      font-family: var(--mono); font-size: 13px; font-weight: 600;
+      padding: 11px 22px; border-radius: 999px;
+      background: var(--accent); color: #062812;
+      border: none; cursor: pointer;
+      transition: transform 0.15s;
+    }
+    #notify-btn:hover { transform: translateY(-1px); }
+    #notify-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+    #notify-status {
+      font-family: var(--mono); font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    /* footer */
+    footer {
+      max-width: 1080px; margin: 0 auto;
+      padding: 24px 28px;
+      border-top: 1px solid var(--border);
+      display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+      font-family: var(--mono); font-size: 12px;
+      color: var(--text-dim);
+    }
+    footer a { color: var(--text-secondary); }
+    footer a:hover { color: var(--accent); }
+
+    @media (max-width: 760px) {
+      .block { padding: 72px 22px; }
+      .providers-grid { grid-template-columns: 1fr 1fr; }
+      .api .grid-2 { grid-template-columns: 1fr; gap: 32px; }
+      .hero { padding-top: 70px; padding-bottom: 80px; }
+    }
+    @media (max-width: 480px) {
+      .providers-grid { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
 
-  <span class="pill">v0.1 — early</span>
-
-  <h1>Why is my webhook signature failing?</h1>
-  <p class="lede">
-    Paste your failing webhook payload, secret, and signature header.
-    Get a plain-English answer in 5 seconds — <em>why</em> it failed, not just that it failed.
-    Stripe, GitHub, Slack, Shopify supported. Free. No signup.
-  </p>
-
-  <div class="form">
-    <div>
-      <label for="provider">Provider</label>
-      <select id="provider">
-        <option value="stripe">Stripe</option>
-        <option value="github">GitHub</option>
-        <option value="slack">Slack</option>
-        <option value="shopify">Shopify</option>
-      </select>
+  <!-- NAV -->
+  <nav class="nav">
+    <div class="nav-inner">
+      <div class="nav-brand">
+        <img src="/logo-nav.svg" alt="apimesh" width="32" height="32" style="border-radius:6px" />
+        <span>apimesh</span>
+        <span class="wedge-tag">stripesig</span>
+      </div>
+      <div class="nav-links">
+        <a href="https://github.com/mbeato/conway">github</a>
+        <a href="https://www.npmjs.com/package/@mbeato/apimesh-mcp-server">npm</a>
+      </div>
     </div>
-    <div class="examples">
-      <span class="muted">load example: </span>
-      <button onclick="loadExample('stripe-valid')">stripe valid</button>
-      <button onclick="loadExample('stripe-stale')">stripe stale timestamp</button>
-      <button onclick="loadExample('stripe-wrong-secret')">stripe wrong secret</button>
-      <button onclick="loadExample('github-valid')">github valid</button>
+  </nav>
+
+  <!-- HERO -->
+  <section class="block hero">
+    <div class="block-inner">
+      <div class="eyebrow">// stripesig</div>
+      <h1 class="display">why is my webhook <em>signature</em> failing?</h1>
+      <p class="lede">paste your failing webhook payload, secret, and signature header. plain-english answer in 5 seconds — <em>why</em> it failed, not just that it failed. stripe, github, slack, shopify. free. no signup.</p>
+      <div class="hero-cta-row">
+        <a class="hero-cta" href="#demo">check a signature →</a>
+        <a class="hero-cta ghost" href="#how">see how it works</a>
+      </div>
     </div>
+  </section>
 
-    <div>
-      <label for="secret">Webhook signing secret <span class="hint">— Stripe: starts with <code>whsec_</code></span></label>
-      <input type="text" id="secret" placeholder="whsec_..." spellcheck="false" autocomplete="off" />
+  <!-- wave: hero(#0a0a0a) -> demo(#111) -->
+  <svg class="wave" viewBox="0 0 1440 60" preserveAspectRatio="none" aria-hidden="true">
+    <path d="M0,30 C360,60 720,0 1080,30 C1260,45 1380,40 1440,30 L1440,60 L0,60 Z" fill="#111111" />
+  </svg>
+
+  <!-- DEMO -->
+  <section class="block demo" id="demo">
+    <div class="block-inner">
+      <div class="demo-head">
+        <div class="eyebrow">// the diagnostic</div>
+        <h2 class="display">paste it. get the actual reason.</h2>
+        <p class="lede">we recompute the expected signature against your raw body + secret, compare it to what you received, and tell you what's wrong in human terms.</p>
+      </div>
+
+      <div class="form">
+        <div>
+          <label for="provider">provider</label>
+          <select id="provider">
+            <option value="stripe">stripe</option>
+            <option value="github">github</option>
+            <option value="slack">slack</option>
+            <option value="shopify">shopify</option>
+          </select>
+        </div>
+
+        <div class="examples">
+          <span class="muted">load example:</span>
+          <button onclick="loadExample('stripe-valid')">stripe valid</button>
+          <button onclick="loadExample('stripe-stale')">stripe stale timestamp</button>
+          <button onclick="loadExample('stripe-wrong-secret')">stripe wrong secret</button>
+          <button onclick="loadExample('github-valid')">github valid</button>
+        </div>
+
+        <div>
+          <label for="secret">webhook signing secret <span class="hint">— stripe: starts with <code>whsec_</code></span></label>
+          <input type="text" id="secret" placeholder="whsec_..." spellcheck="false" autocomplete="off" />
+        </div>
+        <div>
+          <label for="raw-body">raw request body <span class="hint">— exactly the bytes you received, before any JSON.parse()</span></label>
+          <textarea id="raw-body" spellcheck="false" placeholder='{"id":"evt_...","object":"event","type":"..."}'></textarea>
+        </div>
+        <div>
+          <label for="headers">headers <span class="hint">— one per line, format <code>Name: value</code></span></label>
+          <textarea id="headers" spellcheck="false" placeholder="Stripe-Signature: t=1577836800,v1=abc..."></textarea>
+        </div>
+
+        <button id="check-btn" onclick="userRunCheck()">check signature →</button>
+      </div>
+
+      <div id="output"></div>
     </div>
-    <div>
-      <label for="raw-body">Raw request body <span class="hint">— exactly the bytes you received, before any JSON.parse()</span></label>
-      <textarea id="raw-body" spellcheck="false" placeholder='{"id":"evt_...","object":"event","type":"..."}'></textarea>
+  </section>
+
+  <!-- wave: demo(#111) -> providers(#0f0d09) -->
+  <svg class="wave" viewBox="0 0 1440 60" preserveAspectRatio="none" aria-hidden="true">
+    <path d="M0,30 C240,5 480,55 720,30 C960,5 1200,55 1440,30 L1440,60 L0,60 Z" fill="#0f0d09" />
+  </svg>
+
+  <!-- PROVIDERS -->
+  <section class="block providers" id="how">
+    <div class="block-inner">
+      <div class="eyebrow amber">// how it works</div>
+      <h2 class="display">four providers. one diagnostic.</h2>
+      <p class="lede">each provider signs webhooks with HMAC-SHA256 over a known input. stripesig knows all four schemes and tells you which step in the chain broke.</p>
+
+      <div class="providers-grid">
+        <div class="provider-card">
+          <span class="scheme">hmac-sha256 · hex</span>
+          <h3>stripe</h3>
+          <p>signs <code>"{t}.{body}"</code>. hex-encoded as the <code>v1</code> field of <code>Stripe-Signature</code>.</p>
+        </div>
+        <div class="provider-card">
+          <span class="scheme">hmac-sha256 · hex</span>
+          <h3>github</h3>
+          <p>signs the raw body. hex-encoded in <code>X-Hub-Signature-256</code> as <code>sha256=...</code>.</p>
+        </div>
+        <div class="provider-card">
+          <span class="scheme">hmac-sha256 · hex</span>
+          <h3>slack</h3>
+          <p>signs <code>"v0:{ts}:{body}"</code>. hex-encoded in <code>X-Slack-Signature</code> as <code>v0=...</code>.</p>
+        </div>
+        <div class="provider-card">
+          <span class="scheme">hmac-sha256 · base64</span>
+          <h3>shopify</h3>
+          <p>signs the raw body. base64-encoded in <code>X-Shopify-Hmac-SHA256</code>.</p>
+        </div>
+      </div>
     </div>
-    <div>
-      <label for="headers">Headers <span class="hint">— one per line, format <code>Name: value</code></span></label>
-      <textarea id="headers" spellcheck="false" placeholder="Stripe-Signature: t=1577836800,v1=abc..."></textarea>
-    </div>
+  </section>
 
-    <button id="check-btn" onclick="userRunCheck()">Check signature →</button>
-  </div>
+  <!-- wave: providers(#0f0d09) -> api(#111) -->
+  <svg class="wave" viewBox="0 0 1440 60" preserveAspectRatio="none" aria-hidden="true">
+    <path d="M0,30 C300,55 600,5 900,30 C1140,50 1320,15 1440,30 L1440,60 L0,60 Z" fill="#111111" />
+  </svg>
 
-  <div id="output"></div>
-
-  <h2>How it works</h2>
-  <p>Each provider signs webhooks with HMAC-SHA256 over a known input. We compute the expected signature against your raw body + secret, compare against what you received, and explain the mismatch in human terms.</p>
-  <ul>
-    <li><strong>Stripe:</strong> <code>HMAC-SHA256(secret, "${'{t}'}.${'{body}'}")</code>, hex-encoded as the <code>v1</code> field of <code>Stripe-Signature</code></li>
-    <li><strong>GitHub:</strong> <code>HMAC-SHA256(secret, body)</code>, hex-encoded in <code>X-Hub-Signature-256</code> as <code>sha256=...</code></li>
-    <li><strong>Slack:</strong> <code>HMAC-SHA256(secret, "v0:${'{ts}'}:${'{body}'}")</code>, hex-encoded in <code>X-Slack-Signature</code> as <code>v0=...</code></li>
-    <li><strong>Shopify:</strong> <code>HMAC-SHA256(secret, body)</code>, base64-encoded in <code>X-Shopify-Hmac-SHA256</code></li>
-  </ul>
-
-  <h2>API</h2>
-  <pre><code>curl -X POST https://stripesig.apimesh.xyz/check \
-  -H "content-type: application/json" \
-  -d '{
+  <!-- API -->
+  <section class="block api">
+    <div class="block-inner">
+      <div class="grid-2">
+        <div>
+          <div class="eyebrow">// api</div>
+          <h2 class="display">also a plain HTTP endpoint.</h2>
+          <p class="lede">same diagnostic, callable from your terminal or your CI. returns <code style="font-family:var(--mono);font-size:13px;color:var(--accent);">{ valid, provider, reason, hints[], details }</code>. rate-limited 60/min/IP. free for now.</p>
+        </div>
+        <pre class="curl"><span class="cmd">curl</span> <span class="flag">-X</span> POST https://stripesig.apimesh.xyz/check
+  <span class="flag">-H</span> <span class="str">"content-type: application/json"</span>
+  <span class="flag">-d</span> <span class="str">'{
     "provider": "stripe",
     "secret": "whsec_...",
     "raw_body": "{\"id\":\"evt_...\"}",
     "headers": { "stripe-signature": "t=1577836800,v1=..." }
-  }'</code></pre>
+  }'</span></pre>
+      </div>
+    </div>
+  </section>
 
-  <p>Returns <code>{ valid, provider, reason, hints[], details }</code>. Rate-limited 60/min/IP. Free for now — paid tiers (replay + persistence) coming if there's demand.</p>
+  <!-- wave: api(#111) -> privacy(#0a0a0a) -->
+  <svg class="wave" viewBox="0 0 1440 60" preserveAspectRatio="none" aria-hidden="true">
+    <path d="M0,30 C360,5 720,55 1080,30 C1260,15 1380,40 1440,30 L1440,60 L0,60 Z" fill="#0a0a0a" />
+  </svg>
 
-  <h2>Privacy</h2>
-  <p>We don't log your secret or body. Each <code>/check</code> request is processed in-memory and discarded. CORS allows direct browser calls — your secret never leaves your machine if you call the API client-side.</p>
+  <!-- PRIVACY -->
+  <section class="block privacy">
+    <div class="block-inner">
+      <div class="eyebrow">// privacy</div>
+      <h2 class="display">we don't log your secret. or your body.</h2>
+      <p class="lede">each <code style="font-family:var(--mono);font-size:14px;color:var(--accent);">/check</code> request is processed in-memory and discarded. CORS allows direct browser calls — your secret never leaves your machine if you call the API client-side.</p>
+    </div>
+  </section>
 
-  <h2>Notify me</h2>
-  <p class="muted">A paid tier is on the roadmap (replay attempts, history, more providers, team views). Drop your email if you want a heads-up.</p>
-  <form id="notify-form" style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; align-items: center;">
-    <input id="notify-email" type="email" required placeholder="you@company.com"
-      style="flex: 1; min-width: 220px; padding: 9px 12px; font-size: 14px; border: 1px solid #d6d3d1; border-radius: 4px; background: #fff;" />
-    <button id="notify-btn" type="submit">Notify me</button>
-    <span class="muted" id="notify-status"></span>
-  </form>
+  <!-- wave: privacy(#0a0a0a) -> philosophy(#0f0f0f) -->
+  <svg class="wave" viewBox="0 0 1440 60" preserveAspectRatio="none" aria-hidden="true">
+    <path d="M0,30 C300,55 600,5 900,30 C1140,50 1320,15 1440,30 L1440,60 L0,60 Z" fill="#0f0f0f" />
+  </svg>
+
+  <!-- PHILOSOPHY -->
+  <section class="block philosophy">
+    <div class="block-inner">
+      <div class="eyebrow">// the pattern</div>
+      <h2 class="display">debug webhooks the way you'd debug code: with an actual diagnostic, not a 500.</h2>
+      <p class="lede">stripesig is one wedge in apimesh — single-purpose dev tools, one specific pain each. its own subdomain, its own demo, no signup wall.</p>
+    </div>
+  </section>
+
+  <!-- wave: philosophy(#0f0f0f) -> notify(#0a0a0a) -->
+  <svg class="wave" viewBox="0 0 1440 60" preserveAspectRatio="none" aria-hidden="true">
+    <path d="M0,30 C360,5 720,55 1080,30 C1260,15 1380,40 1440,30 L1440,60 L0,60 Z" fill="#0a0a0a" />
+  </svg>
+
+  <!-- NOTIFY -->
+  <section class="block notify">
+    <div class="block-inner">
+      <div class="eyebrow">// notify me</div>
+      <h2 class="display">heads-up when the paid tier ships.</h2>
+      <p class="lede">replay attempts, history, more providers, team views. drop your email if that sounds useful — i'll only message you when it's actually live.</p>
+      <form id="notify-form">
+        <input id="notify-email" type="email" required placeholder="you@company.com" />
+        <button id="notify-btn" type="submit">notify me</button>
+        <span id="notify-status"></span>
+      </form>
+    </div>
+  </section>
 
   <footer>
-    <p>
-      Part of the <a href="https://apimesh.xyz">apimesh.xyz</a> portfolio. MIT-spirited (no published source yet — single endpoint, easy to audit).
-    </p>
+    <span>made by max — <a href="https://mbeato.dev">mbeato.dev</a></span>
+    <span>part of <a href="https://github.com/mbeato/conway">apimesh/conway</a> · MIT</span>
   </footer>
 
   <script>
@@ -265,7 +651,7 @@
 
     async function runCheck() {
       const out = document.getElementById('output');
-      out.innerHTML = '<p class="muted">checking...</p>';
+      out.innerHTML = '<p class="muted-status">checking...</p>';
       const payload = {
         provider: document.getElementById('provider').value,
         secret: document.getElementById('secret').value,
@@ -311,7 +697,7 @@
         '</div>');
 
       if (data.hints && data.hints.length > 0) {
-        parts.push('<div class="hints"><strong>Likely causes:</strong><ul>' +
+        parts.push('<div class="hints"><strong>Likely causes</strong><ul>' +
           data.hints.map((h) => '<li>' + escapeHtml(h) + '</li>').join('') +
           '</ul></div>');
       }
