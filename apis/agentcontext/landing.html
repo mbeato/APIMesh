@@ -203,10 +203,23 @@ npx @mbeato/agentcontext convert --from cursor-mdc --to agents-md --in .cursor/r
     const out = document.getElementById('out');
     const status = document.getElementById('status');
 
+    // Fire-and-forget event tracking — sendBeacon survives page unload,
+    // fetch keepalive is the fallback. Failures are silent by design.
+    function track(event) {
+      try {
+        const body = JSON.stringify({ event });
+        const blob = new Blob([body], { type: 'application/json' });
+        if (navigator.sendBeacon && navigator.sendBeacon('/event', blob)) return;
+        fetch('/event', { method: 'POST', headers: { 'content-type': 'application/json' }, body, keepalive: true });
+      } catch {}
+    }
+
     const notifyForm = document.getElementById('notify-form');
     const notifyEmail = document.getElementById('notify-email');
     const notifyBtn = document.getElementById('notify-btn');
     const notifyStatus = document.getElementById('notify-status');
+
+    notifyEmail.addEventListener('focus', () => track('signup_focused'), { once: true });
 
     notifyForm.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -234,13 +247,7 @@ npx @mbeato/agentcontext convert --from cursor-mdc --to agents-md --in .cursor/r
       }
     });
 
-    // Auto-fire the demo on page load so visitors see normalized output
-    // appear without having to scroll, click, or paste.
-    window.addEventListener('DOMContentLoaded', () => {
-      setTimeout(() => btn.click(), 500);
-    });
-
-    btn.addEventListener('click', async () => {
+    async function convertOnce() {
       status.textContent = 'converting...';
       out.textContent = '';
       try {
@@ -257,6 +264,7 @@ npx @mbeato/agentcontext convert --from cursor-mdc --to agents-md --in .cursor/r
         if (!r.ok) {
           out.textContent = 'Error: ' + (data.error || r.statusText);
           status.textContent = '';
+          track('demo_error');
           return;
         }
         const lines = [];
@@ -271,10 +279,36 @@ npx @mbeato/agentcontext convert --from cursor-mdc --to agents-md --in .cursor/r
         }
         out.textContent = lines.join('\n') || '(empty)';
         status.textContent = 'done';
+        track('demo_success');
       } catch (e) {
         out.textContent = 'Error: ' + e.message;
         status.textContent = '';
+        track('demo_error');
       }
+    }
+
+    btn.addEventListener('click', () => {
+      track('demo_started');
+      convertOnce();
+    });
+
+    // demo_visible fires once when the demo box scrolls into view —
+    // distinguishes "saw it" from "loaded then bounced".
+    if ('IntersectionObserver' in window) {
+      const demoEl = document.querySelector('.demo');
+      if (demoEl) {
+        const obs = new IntersectionObserver((entries) => {
+          for (const e of entries) {
+            if (e.isIntersecting) { track('demo_visible'); obs.disconnect(); break; }
+          }
+        }, { threshold: 0.4 });
+        obs.observe(demoEl);
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      track('page_load');
+      setTimeout(convertOnce, 500);
     });
   </script>
 

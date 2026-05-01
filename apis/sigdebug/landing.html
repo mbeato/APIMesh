@@ -139,7 +139,7 @@
       <textarea id="headers" spellcheck="false" placeholder="Stripe-Signature: t=1577836800,v1=abc..."></textarea>
     </div>
 
-    <button id="check-btn" onclick="runCheck()">Check signature →</button>
+    <button id="check-btn" onclick="userRunCheck()">Check signature →</button>
   </div>
 
   <div id="output"></div>
@@ -184,6 +184,15 @@
   </footer>
 
   <script>
+    function track(event) {
+      try {
+        const body = JSON.stringify({ event });
+        const blob = new Blob([body], { type: 'application/json' });
+        if (navigator.sendBeacon && navigator.sendBeacon('/event', blob)) return;
+        fetch('/event', { method: 'POST', headers: { 'content-type': 'application/json' }, body, keepalive: true });
+      } catch {}
+    }
+
     const EXAMPLES = {
       'stripe-valid': {
         provider: 'stripe',
@@ -272,12 +281,21 @@
         const data = await r.json();
         if (!r.ok) {
           out.innerHTML = '<div class="verdict invalid">Error: ' + escapeHtml(data.error || r.statusText) + '</div>';
+          track('demo_error');
           return;
         }
         renderResult(data);
+        track('demo_success');
       } catch (e) {
         out.innerHTML = '<div class="verdict invalid">Network error: ' + escapeHtml(e.message) + '</div>';
+        track('demo_error');
       }
+    }
+
+    // User-initiated check (button click) — track separately from auto-fire.
+    function userRunCheck() {
+      track('demo_started');
+      runCheck();
     }
 
     function renderResult(data) {
@@ -321,15 +339,29 @@
     // before doing anything, so the tool's diagnostic value is the first
     // thing on screen.
     window.addEventListener('DOMContentLoaded', async () => {
+      track('page_load');
       await loadExample('stripe-wrong-secret');
       setTimeout(runCheck, 600);
     });
+
+    if ('IntersectionObserver' in window) {
+      const formEl = document.querySelector('.form');
+      if (formEl) {
+        const obs = new IntersectionObserver((entries) => {
+          for (const e of entries) {
+            if (e.isIntersecting) { track('demo_visible'); obs.disconnect(); break; }
+          }
+        }, { threshold: 0.4 });
+        obs.observe(formEl);
+      }
+    }
 
     (function setupNotify() {
       const form = document.getElementById('notify-form');
       const emailInput = document.getElementById('notify-email');
       const btn = document.getElementById('notify-btn');
       const statusEl = document.getElementById('notify-status');
+      emailInput.addEventListener('focus', () => track('signup_focused'), { once: true });
       form.addEventListener('submit', async (e) => {
         e.preventDefault();
         const email = (emailInput.value || '').trim();
