@@ -96,6 +96,8 @@ import { app as webConfigurationFingerprint } from "./web-configuration-fingerpr
 import { app as corsPolicyCheck } from "./cors-policy-check/index";
 import { app as subdomainRiskAssessment } from "./subdomain-risk-assessment/index";
 import { app as sslTlsVulnerabiltyScorer } from "./ssl-tls-vulnerabilty-scorer/index";
+import { app as privacyPolicyDrift } from "./privacy-policy-drift/index";
+
 
 
 
@@ -273,4 +275,5 @@ export const registry: Record<string, Hono> = {
   "cors-policy-check": corsPolicyCheck,
   "subdomain-risk-assessment": subdomainRiskAssessment,
   "ssl-tls-vulnerabilty-scorer": sslTlsVulnerabiltyScorer,
+  "privacy-policy-drift": privacyPolicyDrift,
 };
