@@ -8,106 +8,416 @@
   <meta property="og:title" content="apimesh — single-purpose dev tools" />
   <meta property="og:description" content="small things that solve one specific pain. each one stands alone." />
   <link rel="canonical" href="https://apimesh.xyz/" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Instrument+Serif&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <style>
-    * { box-sizing: border-box }
+    :root {
+      --bg: #0a0a0a;
+      --surface: #111111;
+      --border: #1c1c1c;
+      --border-hover: #2a2a2a;
+      --text: #e0e0e0;
+      --text-secondary: #777;
+      --text-dim: #555;
+      --accent: #3ddc84;
+      --accent-dim: rgba(61, 220, 132, 0.08);
+      --amber: #f0a030;
+      --amber-dim: rgba(240, 160, 48, 0.06);
+      --serif: "Instrument Serif", Georgia, serif;
+      --sans: "DM Sans", -apple-system, sans-serif;
+      --mono: "JetBrains Mono", "SF Mono", monospace;
+    }
+    * { box-sizing: border-box; }
     html, body { margin: 0; padding: 0; }
     body {
-      font: 16px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
-      color: #1a1a1a;
-      background: #fafaf9;
-      max-width: 760px;
-      margin: 0 auto;
-      padding: 48px 24px 80px;
+      font-family: var(--sans);
+      font-size: 16px;
+      line-height: 1.55;
+      color: var(--text);
+      background: var(--bg);
+      -webkit-font-smoothing: antialiased;
     }
-    a { color: #b45309; text-decoration: underline; text-underline-offset: 2px; }
-    code {
-      font-family: "SF Mono", "JetBrains Mono", ui-monospace, monospace;
-      font-size: 14px;
-      background: #f1f0ee;
-      padding: 2px 6px;
-      border-radius: 3px;
+    a { color: inherit; text-decoration: none; }
+
+    /* nav */
+    .nav {
+      position: sticky; top: 0; z-index: 50;
+      background: rgba(10,10,10,0.85); backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
     }
-    header {
+    .nav-inner {
+      max-width: 1180px; margin: 0 auto;
       display: flex; align-items: center; justify-content: space-between;
-      margin-bottom: 56px;
+      padding: 14px 28px;
     }
-    .logo { font-weight: 600; letter-spacing: -0.01em; font-size: 16px; }
-    .nav-links { display: flex; gap: 18px; font-size: 14px; }
-    .nav-links a { color: #78716c; text-decoration: none; }
-    .nav-links a:hover { color: #b45309; }
+    .nav-brand { display: flex; align-items: center; gap: 10px; font-weight: 600; letter-spacing: -0.01em; }
+    .nav-links { display: flex; gap: 24px; font-family: var(--mono); font-size: 13px; color: var(--text-secondary); }
+    .nav-links a:hover { color: var(--accent); }
 
-    h1 {
-      font-size: 36px; line-height: 1.15; margin: 0 0 12px;
-      letter-spacing: -0.02em;
+    /* shared block */
+    .block { padding: 96px 28px; position: relative; }
+    .block-inner { max-width: 1080px; margin: 0 auto; }
+    .eyebrow {
+      font-family: var(--mono); font-size: 12px;
+      color: var(--accent); text-transform: uppercase;
+      letter-spacing: 0.12em; margin-bottom: 18px;
     }
-    .lede { color: #555; font-size: 18px; margin-bottom: 48px; }
-
-    .wedges {
-      display: grid; gap: 16px; margin-bottom: 64px;
+    .eyebrow.amber { color: var(--amber); }
+    .display {
+      font-family: var(--serif);
+      font-weight: 400; letter-spacing: -0.01em;
+      line-height: 1.05;
+      margin: 0 0 22px;
     }
-    .wedge {
-      display: block;
-      border: 1px solid #d6d3d1; border-radius: 8px;
-      padding: 24px; background: #fff;
-      text-decoration: none; color: inherit;
-      transition: border-color 0.15s, transform 0.15s;
-    }
-    .wedge:hover { border-color: #b45309; }
-    .wedge h2 {
-      font-size: 22px; margin: 0 0 6px; letter-spacing: -0.01em;
-    }
-    .wedge p { margin: 0 0 14px; color: #44403c; font-size: 15px; line-height: 1.5; }
-    .wedge-arrow {
-      font-family: "SF Mono", ui-monospace, monospace;
-      font-size: 13px; color: #b45309;
+    .lede {
+      color: var(--text-secondary); font-size: 18px;
+      max-width: 620px; line-height: 1.6;
     }
 
-    .more {
-      color: #78716c; font-size: 14px; margin-bottom: 48px;
+    /* hero */
+    .hero { background: var(--bg); text-align: center; padding-top: 120px; padding-bottom: 140px; overflow: hidden; }
+    .hero::before {
+      content: ""; position: absolute; inset: 0;
+      background: radial-gradient(ellipse at 50% 30%, var(--accent-dim), transparent 60%);
+      pointer-events: none;
+    }
+    .hero .block-inner { position: relative; }
+    .hero h1 { font-size: clamp(56px, 9vw, 104px); margin-bottom: 28px; }
+    .hero h1 em { font-style: italic; color: var(--accent); }
+    .hero .lede { margin: 0 auto 44px; }
+    .hero-cta {
+      display: inline-flex; align-items: center; gap: 10px;
+      padding: 14px 22px;
+      background: var(--accent); color: #062812;
+      border-radius: 999px; font-weight: 600; font-size: 14px;
+      font-family: var(--mono);
+      transition: transform 0.15s;
+    }
+    .hero-cta:hover { transform: translateY(-1px); }
+    .hero-cta-row { display: flex; justify-content: center; gap: 14px; flex-wrap: wrap; }
+    .hero-cta.ghost {
+      background: transparent; color: var(--text);
+      border: 1px solid var(--border-hover);
     }
 
+    /* wave dividers */
+    .wave { display: block; width: 100%; height: 60px; }
+
+    /* agentsmd block */
+    .agentsmd { background: var(--surface); }
+    .grid-2 {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 64px; align-items: center;
+    }
+    .agentsmd .display { font-size: clamp(40px, 5.4vw, 68px); }
+
+    /* file-stack mockup */
+    .filestack {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 28px;
+      font-family: var(--mono);
+      font-size: 13px;
+    }
+    .filestack-source {
+      display: flex; align-items: center; gap: 12px;
+      padding: 14px 16px;
+      background: var(--accent-dim);
+      border: 1px solid rgba(61,220,132,0.25);
+      border-radius: 8px;
+      color: var(--accent);
+      margin-bottom: 12px;
+    }
+    .filestack-source .badge {
+      font-size: 10px; padding: 2px 7px; border-radius: 4px;
+      background: var(--accent); color: #062812; letter-spacing: 0.08em;
+    }
+    .filestack-fan {
+      margin-left: 18px; padding-left: 22px;
+      border-left: 1px dashed var(--border-hover);
+    }
+    .filestack-out {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 11px 14px; margin-top: 8px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px; color: var(--text-secondary);
+    }
+    .filestack-out .name { color: var(--text); }
+    .filestack-out .arrow { color: var(--text-dim); font-size: 11px; }
+    .filestack-foot {
+      margin-top: 18px; font-size: 11px; color: var(--text-dim);
+      text-align: right;
+    }
+
+    /* stripesig block */
+    .stripesig {
+      background: #0f0d09;
+      position: relative;
+    }
+    .stripesig::before {
+      content: ""; position: absolute; inset: 0;
+      background: radial-gradient(circle at 85% 20%, var(--amber-dim), transparent 50%);
+      pointer-events: none;
+    }
+    .stripesig .block-inner { position: relative; }
+    .stripesig .grid-2 { grid-template-columns: 1fr 1.05fr; }
+    .stripesig .display { font-size: clamp(40px, 5.4vw, 68px); }
+
+    /* terminal mockup */
+    .term {
+      background: #0a0908;
+      border: 1px solid #1f1a12;
+      border-radius: 12px;
+      font-family: var(--mono); font-size: 13px;
+      overflow: hidden;
+    }
+    .term-bar {
+      display: flex; align-items: center; gap: 6px;
+      padding: 10px 14px;
+      border-bottom: 1px solid #1f1a12;
+      background: #100d08;
+    }
+    .term-bar span {
+      width: 10px; height: 10px; border-radius: 50%;
+      background: var(--border-hover);
+    }
+    .term-bar .title {
+      width: auto; height: auto; background: transparent;
+      margin-left: 10px; font-size: 11px; color: var(--text-dim);
+    }
+    .term-body { padding: 18px 20px; line-height: 1.7; }
+    .term-body .prompt { color: var(--text-dim); }
+    .term-body .cmd { color: var(--text); }
+    .term-body .out { color: var(--text-secondary); }
+    .term-body .label { color: var(--text-dim); margin-right: 6px; }
+    .term-body .verdict-fail {
+      color: var(--amber); font-weight: 500;
+    }
+    .term-body .ok { color: var(--accent); }
+    .term-body .hr { border-top: 1px dashed #1f1a12; margin: 10px 0; }
+
+    /* philosophy block */
+    .philosophy { background: #0f0f0f; text-align: center; }
+    .philosophy::before {
+      content: ""; position: absolute; inset: 0;
+      background: radial-gradient(ellipse at 50% 50%, var(--accent-dim), transparent 70%);
+      pointer-events: none;
+    }
+    .philosophy .block-inner { position: relative; max-width: 760px; }
+    .philosophy .display { font-size: clamp(40px, 5.6vw, 64px); }
+    .philosophy .lede { margin: 0 auto; }
+
+    /* closing CTA */
+    .closing { background: var(--bg); padding: 96px 28px 64px; border-top: 1px solid var(--border); }
+    .closing-head {
+      max-width: 1080px; margin: 0 auto 56px;
+    }
+    .closing-head h2 {
+      font-family: var(--serif); font-size: clamp(32px, 4.4vw, 52px);
+      margin: 0 0 14px; letter-spacing: -0.01em; line-height: 1.1;
+    }
+    .closing-grid {
+      max-width: 1080px; margin: 0 auto;
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      gap: 28px;
+    }
+    .closing-col h3 {
+      font-family: var(--mono); font-size: 12px;
+      text-transform: uppercase; letter-spacing: 0.1em;
+      color: var(--accent);
+      margin: 0 0 10px;
+    }
+    .closing-col p {
+      margin: 0; color: var(--text-secondary);
+      font-size: 14px; line-height: 1.55;
+    }
+
+    /* footer */
     footer {
-      margin-top: 80px; padding-top: 24px;
-      border-top: 1px solid #e5e4e2;
-      color: #78716c; font-size: 13px;
+      max-width: 1080px; margin: 80px auto 0;
+      padding: 24px 28px;
+      border-top: 1px solid var(--border);
       display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+      font-family: var(--mono); font-size: 12px;
+      color: var(--text-dim);
     }
-    footer a { color: #78716c; }
-    footer a:hover { color: #b45309; }
+    footer a { color: var(--text-secondary); }
+    footer a:hover { color: var(--accent); }
+
+    @media (max-width: 760px) {
+      .block { padding: 72px 22px; }
+      .grid-2 { grid-template-columns: 1fr; gap: 40px; }
+      .closing-grid { grid-template-columns: 1fr 1fr; gap: 28px; }
+      .hero { padding-top: 80px; padding-bottom: 100px; }
+    }
   </style>
 </head>
 <body>
 
-  <header>
-    <span class="logo">apimesh</span>
-    <nav class="nav-links">
-      <a href="https://github.com/mbeato/conway">github</a>
-      <a href="https://www.npmjs.com/package/@mbeato/apimesh-mcp-server">npm</a>
-    </nav>
-  </header>
+  <!-- NAV -->
+  <nav class="nav">
+    <div class="nav-inner">
+      <div class="nav-brand">
+        <img src="/logo-nav.svg" alt="apimesh" width="32" height="32" style="border-radius:6px" />
+        <span>apimesh</span>
+      </div>
+      <div class="nav-links">
+        <a href="https://github.com/mbeato/conway">github</a>
+        <a href="https://www.npmjs.com/package/@mbeato/apimesh-mcp-server">npm</a>
+      </div>
+    </div>
+  </nav>
 
-  <h1>apimesh ships single-purpose dev tools.</h1>
-  <p class="lede">small things that solve one specific pain. each one stands alone — its own URL, its own demo, no signup.</p>
+  <!-- HERO -->
+  <section class="block hero">
+    <div class="block-inner">
+      <div class="eyebrow">// single-purpose dev tools</div>
+      <h1 class="display">small things that <em>solve one</em> specific pain.</h1>
+      <p class="lede">apimesh ships single-purpose dev tools. each one stands alone — its own URL, its own demo, no signup.</p>
+      <div class="hero-cta-row" style="margin-top: 44px;">
+        <a class="hero-cta" href="#wedges">browse wedges →</a>
+        <a class="hero-cta ghost" href="https://github.com/mbeato/conway">read the source</a>
+      </div>
+    </div>
+  </section>
 
-  <div class="wedges">
-    <a class="wedge" href="https://agentsmd.apimesh.xyz">
-      <h2>agentsmd</h2>
-      <p>maintain <code>AGENTS.md</code>, <code>CLAUDE.md</code>, <code>.cursorrules</code>, <code>.clinerules</code>, <code>.windsurfrules</code> from one source. cli + mcp server.</p>
-      <span class="wedge-arrow">agentsmd.apimesh.xyz →</span>
-    </a>
-    <a class="wedge" href="https://stripesig.apimesh.xyz">
-      <h2>stripesig</h2>
-      <p>paste a failing stripe (or github / slack / shopify) webhook. get a plain-english answer in 5 seconds — <em>why</em> it failed, not just that it failed.</p>
-      <span class="wedge-arrow">stripesig.apimesh.xyz →</span>
-    </a>
-  </div>
+  <!-- wave: hero(#0a0a0a) -> agentsmd(#111) -->
+  <svg class="wave" viewBox="0 0 1440 60" preserveAspectRatio="none" aria-hidden="true">
+    <path d="M0,30 C360,60 720,0 1080,30 C1260,45 1380,40 1440,30 L1440,60 L0,60 Z" fill="#111111" />
+  </svg>
 
-  <p class="more">more wedges coming. the pattern: spot a specific dev pain, build the smallest tool that fixes it, ship it.</p>
+  <!-- AGENTSMD -->
+  <section class="block agentsmd" id="wedges">
+    <div class="block-inner">
+      <div class="grid-2">
+        <div>
+          <div class="eyebrow">wedge 01 · agentsmd</div>
+          <h2 class="display">one source. every agent file, in sync.</h2>
+          <p class="lede">maintain <code style="font-family:var(--mono);font-size:14px;color:var(--accent);">AGENTS.md</code> as the source of truth. agentsmd fans it out to <code style="font-family:var(--mono);font-size:14px;color:var(--text);">CLAUDE.md</code>, <code style="font-family:var(--mono);font-size:14px;color:var(--text);">.cursorrules</code>, <code style="font-family:var(--mono);font-size:14px;color:var(--text);">.clinerules</code>, <code style="font-family:var(--mono);font-size:14px;color:var(--text);">.windsurfrules</code> — cli + mcp server, no copy-paste tax.</p>
+          <p style="margin-top: 28px;">
+            <a href="https://agentsmd.apimesh.xyz" style="font-family: var(--mono); font-size: 13px; color: var(--accent); border-bottom: 1px solid var(--accent); padding-bottom: 2px;">agentsmd.apimesh.xyz →</a>
+          </p>
+        </div>
+        <div class="filestack" aria-hidden="true">
+          <div class="filestack-source">
+            <span class="badge">SRC</span>
+            <span style="flex:1;">AGENTS.md</span>
+            <span style="color: var(--text-dim); font-size: 11px;">edited 2m ago</span>
+          </div>
+          <div class="filestack-fan">
+            <div class="filestack-out">
+              <span class="name">CLAUDE.md</span>
+              <span class="arrow">↳ generated</span>
+            </div>
+            <div class="filestack-out">
+              <span class="name">.cursorrules</span>
+              <span class="arrow">↳ generated</span>
+            </div>
+            <div class="filestack-out">
+              <span class="name">.clinerules</span>
+              <span class="arrow">↳ generated</span>
+            </div>
+            <div class="filestack-out">
+              <span class="name">.windsurfrules</span>
+              <span class="arrow">↳ generated</span>
+            </div>
+          </div>
+          <div class="filestack-foot">$ agentsmd sync — 4 files written</div>
+        </div>
+      </div>
+    </div>
+  </section>
 
-  <footer>
-    <span>made by max — <a href="https://mbeato.dev">mbeato.dev</a></span>
-    <span>part of <a href="https://github.com/mbeato/conway">apimesh/conway</a> · MIT</span>
-  </footer>
+  <!-- wave: agentsmd(#111) -> stripesig(#0f0d09) -->
+  <svg class="wave" viewBox="0 0 1440 60" preserveAspectRatio="none" aria-hidden="true">
+    <path d="M0,30 C240,5 480,55 720,30 C960,5 1200,55 1440,30 L1440,60 L0,60 Z" fill="#0f0d09" />
+  </svg>
+
+  <!-- STRIPESIG -->
+  <section class="block stripesig">
+    <div class="block-inner">
+      <div class="grid-2">
+        <div class="term" aria-hidden="true">
+          <div class="term-bar">
+            <span></span><span></span><span></span>
+            <span class="title">~/work · stripesig debug</span>
+          </div>
+          <div class="term-body">
+            <div><span class="prompt">$</span> <span class="cmd">stripesig debug --source stripe payload.json</span></div>
+            <div class="out"><span class="label">event</span>charge.failed · evt_3OqK2pL...</div>
+            <div class="out"><span class="label">sig</span>t=1730284800,v1=a3e91...</div>
+            <div class="hr"></div>
+            <div><span class="label">verdict</span><span class="verdict-fail">SIGNATURE_INVALID</span></div>
+            <div class="out" style="margin-top:6px;"><span class="label">likely</span>your endpoint is using the <span style="color:var(--text);">test mode</span> webhook secret while stripe is signing this with <span style="color:var(--amber);">live mode</span>.</div>
+            <div class="hr"></div>
+            <div><span class="label">fix</span><span class="ok">use whsec_live_… from dashboard → developers → webhooks</span></div>
+            <div class="out" style="margin-top:10px;color:var(--text-dim);">5.2s · 1 reason found</div>
+          </div>
+        </div>
+        <div>
+          <div class="eyebrow amber">wedge 02 · stripesig</div>
+          <h2 class="display">why it failed. not just <em style="font-style:italic;color:var(--amber);">that</em> it failed.</h2>
+          <p class="lede">paste a failing stripe (or github / slack / shopify) webhook. get a plain-english answer in 5 seconds — the actual reason, the actual fix, no spelunking through dashboards.</p>
+          <p style="margin-top: 28px;">
+            <a href="https://stripesig.apimesh.xyz" style="font-family: var(--mono); font-size: 13px; color: var(--amber); border-bottom: 1px solid var(--amber); padding-bottom: 2px;">stripesig.apimesh.xyz →</a>
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- wave: stripesig(#0f0d09) -> philosophy(#0f0f0f) -->
+  <svg class="wave" viewBox="0 0 1440 60" preserveAspectRatio="none" aria-hidden="true">
+    <path d="M0,30 C300,55 600,5 900,30 C1140,50 1320,15 1440,30 L1440,60 L0,60 Z" fill="#0f0f0f" />
+  </svg>
+
+  <!-- PHILOSOPHY -->
+  <section class="block philosophy">
+    <div class="block-inner">
+      <div class="eyebrow">// the pattern</div>
+      <h2 class="display">spot a specific pain. build the smallest tool that fixes it. ship.</h2>
+      <p class="lede">no marketplaces. no platforms. no signup walls. each wedge gets its own subdomain, its own demo, its own honest scope. more wedges land when the pain is real.</p>
+    </div>
+  </section>
+
+  <!-- wave: philosophy(#0f0f0f) -> closing(#0a0a0a) -->
+  <svg class="wave" viewBox="0 0 1440 60" preserveAspectRatio="none" aria-hidden="true">
+    <path d="M0,30 C360,5 720,55 1080,30 C1260,15 1380,40 1440,30 L1440,60 L0,60 Z" fill="#0a0a0a" />
+  </svg>
+
+  <!-- CLOSING -->
+  <section class="closing">
+    <div class="closing-head">
+      <div class="eyebrow">// the apimesh way</div>
+      <h2>built for the way real devs hit real walls.</h2>
+    </div>
+    <div class="closing-grid">
+      <div class="closing-col">
+        <h3>standalone</h3>
+        <p>each wedge has its own URL and demo. no umbrella signup, no platform tax.</p>
+      </div>
+      <div class="closing-col">
+        <h3>honest scope</h3>
+        <p>one pain, one tool. if it grows past that, it becomes a new wedge.</p>
+      </div>
+      <div class="closing-col">
+        <h3>cli + mcp</h3>
+        <p>works in your terminal and in your agent. no bespoke clients.</p>
+      </div>
+      <div class="closing-col">
+        <h3>open source</h3>
+        <p>conway is public on github. read the code, fork the wedge, ship your own.</p>
+      </div>
+    </div>
+
+    <footer>
+      <span>made by max — <a href="https://mbeato.dev">mbeato.dev</a></span>
+      <span>part of <a href="https://github.com/mbeato/conway">apimesh/conway</a> · MIT</span>
+    </footer>
+  </section>
 
 </body>
 </html>
