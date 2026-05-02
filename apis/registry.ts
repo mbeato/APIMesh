@@ -98,6 +98,8 @@ import { app as subdomainRiskAssessment } from "./subdomain-risk-assessment/inde
 import { app as sslTlsVulnerabiltyScorer } from "./ssl-tls-vulnerabilty-scorer/index";
 import { app as privacyPolicyDrift } from "./privacy-policy-drift/index";
 import { app as subdomainSecurityAudit } from "./subdomain-security-audit/index";
+import { app as domainSecurityReport } from "./domain-security-report/index";
+
 
 
 
@@ -279,4 +281,5 @@ export const registry: Record<string, Hono> = {
   "ssl-tls-vulnerabilty-scorer": sslTlsVulnerabiltyScorer,
   "privacy-policy-drift": privacyPolicyDrift,
   "subdomain-security-audit": subdomainSecurityAudit,
+  "domain-security-report": domainSecurityReport,
 };
