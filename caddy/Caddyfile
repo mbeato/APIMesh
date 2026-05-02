@@ -57,6 +57,11 @@ apimesh.xyz {
         file_server
     }
 
+    handle /llms-full.txt {
+        root * /opt/conway-agent/public
+        file_server
+    }
+
     handle /logo*.svg {
         root * /opt/conway-agent/public
         file_server
