@@ -37,7 +37,7 @@ const TARGET_DIRECTORIES: Omit<DirectoryEntry, "lastChecked">[] = [
   { name: "Smithery", url: "https://smithery.ai", category: "mcp-registry", status: "listed", submissionUrl: "https://smithery.ai/submit", notes: "7,000+ servers" },
   { name: "mcp.so", url: "https://mcp.so", category: "mcp-registry", status: "listed" },
   { name: "Glama.ai", url: "https://glama.ai/mcp/servers", category: "mcp-registry", status: "listed", notes: "21,845+ servers (2026-04). Largest directory in ecosystem." },
-  { name: "PulseMCP", url: "https://pulsemcp.com", category: "mcp-registry", status: "not-submitted", notes: "11,840+ servers, hand-reviewed daily by founder since MCP launch week. Missing from our list." },
+  { name: "PulseMCP", url: "https://pulsemcp.com", category: "mcp-registry", status: "not-submitted", notes: "11,840+ servers. NO direct submission form — they ingest from the official MCP Registry weekly. Submit to registry.modelcontextprotocol.io and PulseMCP picks it up automatically. (Confirmed via /submit page 2026-05-02.)" },
   { name: "mcpserver.dev", url: "https://mcpserver.dev", category: "mcp-registry", status: "submitted", notes: "Pending review" },
   { name: "modelcontextprotocol/servers (examples)", url: "https://github.com/modelcontextprotocol/servers", category: "mcp-registry", status: "not-submitted", submissionUrl: "https://github.com/modelcontextprotocol/servers/issues", notes: "Examples repo, NOT the official registry. Lower priority than registry.modelcontextprotocol.io above." },
   { name: "Cline MCP Marketplace", url: "https://github.com/cline/cline", category: "mcp-registry", status: "submitted", notes: "Issue #1104 filed" },
@@ -50,7 +50,7 @@ const TARGET_DIRECTORIES: Omit<DirectoryEntry, "lastChecked">[] = [
   { name: "Postman API Network", url: "https://www.postman.com/explore", category: "api-marketplace", status: "not-submitted", submissionUrl: "https://www.postman.com/api-network", notes: "Generate Postman collections from OpenAPI" },
 
   // x402 / MPP ecosystem
-  { name: "x402.org/ecosystem", url: "https://www.x402.org/ecosystem", category: "api-marketplace", status: "not-submitted", notes: "Official Linux Foundation ecosystem page (2026-04). Founding members: Google, Visa, Stripe, AWS, Mastercard, Circle, Microsoft, Shopify, Amex. TOP PRIORITY." },
+  { name: "x402.org/ecosystem", url: "https://www.x402.org/ecosystem", category: "api-marketplace", status: "submitted", submissionUrl: "https://docs.google.com/forms/d/e/1FAIpQLSc2rlaeH31rZpJ_RFNL7egxi9fYTEUjW9r2kwkhd2pMae2dog/viewform", notes: "Submitted 2026-05-02 via Coinbase x402 Foundation Contact Google Form (max beato / maximus.beato@gmail.com / APIMesh / no marketing). Linux Foundation ecosystem page; submission flow is interest-registration not direct listing — watch for follow-up email." },
   { name: "x402scan.com", url: "https://x402scan.com", category: "api-marketplace", status: "not-submitted", notes: "Canonical x402 leaderboard. Real txn data. Submit after verifying our /.well-known/x402 lists all paid endpoints." },
   { name: "x402-list.com", url: "https://x402-list.com", category: "api-marketplace", status: "not-submitted", notes: "2026 directory of x402 API services. Agent-first JSON feed, live uptime." },
   { name: "x402.direct", url: "https://x402.direct", category: "api-marketplace", status: "not-submitted", notes: "Search engine for agent economy. 4,000+ x402 APIs, trust-scored by category/network/quality." },
@@ -67,7 +67,7 @@ const TARGET_DIRECTORIES: Omit<DirectoryEntry, "lastChecked">[] = [
   { name: "A2A Registry", url: "https://a2aregistry.org", category: "a2a-registry", status: "blocked", submissionUrl: "https://a2aregistry.org/api/agents/register", notes: "Global A2A registry. Health-checks every 30 min. Submission = POST with our well-known URI. BLOCKED on us publishing /.well-known/agent-card.json first." },
 
   // llms.txt directories
-  { name: "llmstxt.site", url: "https://llmstxt.site", category: "llms-directory", status: "not-submitted", submissionUrl: "https://llmstxt.site/submit", notes: "Central /llms.txt directory. We already serve /llms.txt — just need to fill the form." },
+  { name: "llmstxt.site", url: "https://llmstxt.site", category: "llms-directory", status: "submitted", submissionUrl: "https://llmstxt.site/submit", notes: "Submitted 2026-05-02 (max beato / maximus.beato@gmail.com / both /llms.txt + /llms-full.txt). /llms-full.txt 401 fixed same day via Caddyfile static handler." },
   { name: "directory.llmstxt.cloud", url: "https://directory.llmstxt.cloud", category: "llms-directory", status: "not-submitted", notes: "Alternate llms.txt directory" },
 
   // AI Tool Directories
