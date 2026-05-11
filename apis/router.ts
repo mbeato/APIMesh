@@ -18,29 +18,12 @@ function resolvePort(envVar: string, defaultPort: number): number {
 
 const PORT = resolvePort("ROUTER_PORT", 3001);
 
-// Per-subdomain paid route mapping for .well-known/x402 discovery
-const subdomainRoutes: Record<string, string[]> = {
-  check:                        ["GET /check"],
-  "http-status-checker":        ["GET /check"],
-  "favicon-checker":            ["GET /check"],
-  "microservice-health-check":  ["POST /check"],
-  "status-code-checker":        ["GET /check"],
-  "regex-builder":              ["POST /build", "POST /test"],
-  "user-agent-analyzer":        ["GET /analyze"],
-  "robots-txt-parser":          ["GET /analyze"],
-  "mock-jwt-generator":         ["POST /generate"],
-  "yaml-validator":             ["POST /validate"],
-  "swagger-docs-creator":       ["POST /generate"],
-  "core-web-vitals":            ["GET /check"],
-  "security-headers":           ["GET /check"],
-  "redirect-chain":             ["GET /check"],
-  "email-security":             ["GET /check"],
-  "seo-audit":                  ["GET /check"],
-  "indexability":               ["GET /check"],
-  "brand-assets":               ["GET /check"],
-  "email-verify":               ["GET /check"],
-  "tech-stack":                  ["GET /check"],
-};
+// Per-subdomain paid route mapping for .well-known/x402 discovery.
+// Emptied 2026-05 after the marketplace prune — the 21 hand-authored APIs that
+// lived here all retired (see apis/RETIRED.md). Wedges (agentsmd, stripesig)
+// are currently free with no paid routes wired. Future paid wedges add entries
+// here so .well-known/x402 advertises their priced endpoints.
+const subdomainRoutes: Record<string, string[]> = {};
 
 // Router health check (no subdomain needed)
 router.get("/health", (c) => {
