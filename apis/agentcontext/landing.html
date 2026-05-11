@@ -103,11 +103,41 @@
       transition: transform 0.15s;
     }
     .hero-cta:hover { transform: translateY(-1px); }
-    .hero-cta-row { display: flex; justify-content: center; gap: 14px; flex-wrap: wrap; }
+    .hero-cta-row { display: flex; justify-content: center; align-items: center; gap: 14px; flex-wrap: wrap; }
     .hero-cta.ghost {
       background: transparent; color: var(--text);
       border: 1px solid var(--border-hover);
     }
+    .hero-install {
+      display: inline-flex; align-items: center; gap: 10px;
+      padding: 13px 18px;
+      background: var(--surface);
+      border: 1px solid var(--border-hover);
+      border-radius: 999px;
+      font-family: var(--mono); font-size: 13px;
+      color: var(--text);
+      cursor: pointer;
+      user-select: all;
+      transition: border-color 0.15s, color 0.15s;
+    }
+    .hero-install:hover { border-color: var(--accent); }
+    .hero-install .cmd-prompt { color: var(--text-dim); user-select: none; }
+    .hero-install .cmd-hint {
+      font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--text-dim); user-select: none;
+      margin-left: 4px;
+    }
+    .hero-install:hover .cmd-hint { color: var(--accent); }
+    .source-link {
+      display: block; text-align: center; margin-top: 18px;
+      font-family: var(--mono); font-size: 12px;
+      color: var(--text-secondary);
+    }
+    .source-link a {
+      border-bottom: 1px solid var(--border-hover);
+      padding-bottom: 1px;
+    }
+    .source-link a:hover { color: var(--accent); border-bottom-color: var(--accent); }
 
     /* wave dividers */
     .wave { display: block; width: 100%; height: 60px; }
@@ -322,7 +352,14 @@
       <p class="lede">maintain <code>AGENTS.md</code> once. sync <code>CLAUDE.md</code>, <code>.cursorrules</code>, <code>.clinerules</code>, <code>.windsurfrules</code> and the rest. cli + mcp server, no copy-paste tax.</p>
       <div class="hero-cta-row" style="margin-top: 44px;">
         <a class="hero-cta" href="#demo">try the demo →</a>
-        <a class="hero-cta ghost" href="https://github.com/mbeato/conway">view the source →</a>
+        <button class="hero-install" data-cmd="bunx @mbeato/agentcontext sync" type="button" aria-label="copy install command">
+          <span class="cmd-prompt">$</span>
+          <span class="cmd-text">bunx @mbeato/agentcontext sync</span>
+          <span class="cmd-hint">copy</span>
+        </button>
+      </div>
+      <div class="source-link">
+        <a href="https://github.com/mbeato/conway">view the source on github →</a>
       </div>
     </div>
   </section>
@@ -546,7 +583,7 @@ npx @mbeato/agentcontext convert \
   </section>
 
   <footer>
-    <span>made by max — <a href="https://mbeato.dev">mbeato.dev</a></span>
+    <span>made by max — <a href="https://mbeato.dev">mbeato.dev</a> · also building <a href="https://tonos.fyi">tonos.fyi</a> (voice profile api)</span>
     <span>part of <a href="https://github.com/mbeato/conway">apimesh/conway</a> · MIT</span>
   </footer>
 
@@ -557,6 +594,19 @@ npx @mbeato/agentcontext convert \
     const srcTa = document.getElementById('src');
     const out = document.getElementById('out');
     const status = document.getElementById('status');
+
+    // Click-to-copy on hero install pill.
+    document.querySelectorAll('.hero-install').forEach((el) => {
+      el.addEventListener('click', async () => {
+        const cmd = el.getAttribute('data-cmd') || '';
+        const hint = el.querySelector('.cmd-hint');
+        try {
+          await navigator.clipboard.writeText(cmd);
+          if (hint) hint.textContent = 'copied';
+          setTimeout(() => { if (hint) hint.textContent = 'copy'; }, 1400);
+        } catch {}
+      });
+    });
 
     // Fire-and-forget event tracking — sendBeacon survives page unload,
     // fetch keepalive is the fallback. Failures are silent by design.

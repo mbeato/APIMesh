@@ -67,13 +67,13 @@ apimesh.xyz {
         file_server
     }
 
+    # apex root → 301 to mbeato.dev/work/apimesh
+    # apimesh.xyz is no longer a marketing surface; it remains as the DNS chassis
+    # for wedge subdomains (agentsmd, stripesig, etc). The maker page lives on
+    # mbeato.dev where it doesn't compete with the personal portfolio.
     @landing path /
     handle @landing {
-        import dashboard_headers
-        reverse_proxy localhost:3000 {
-            header_up X-Real-IP {remote_host}
-            header_up -X-Forwarded-For
-        }
+        redir https://mbeato.dev/work/apimesh 301
     }
 
     handle /dashboard {

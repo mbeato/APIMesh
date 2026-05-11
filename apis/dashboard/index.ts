@@ -219,21 +219,11 @@ for (const page of LEGAL_PAGES) {
   });
 }
 
-// Landing page — public, no auth (served at apimesh.xyz root)
-app.get("/", publicLimit, async (c) => {
-  const file = Bun.file(join(import.meta.dir, "../landing/landing.html"));
-  if (await file.exists()) {
-    return new Response(await file.text(), {
-      headers: {
-        "Content-Type": "text/html; charset=utf-8",
-        "Content-Security-Policy": "default-src 'none'; script-src 'self'; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'",
-        "X-Frame-Options": "DENY",
-        "X-Content-Type-Options": "nosniff",
-      },
-    });
-  }
-  return c.text("Landing page not found", 404);
-});
+// Apex root → 301 to mbeato.dev/work/apimesh.
+// apimesh.xyz is no longer a marketing surface (April 2026 pivot — see
+// MEMORY.md). The maker page lives on mbeato.dev. Caddy handles this in
+// production; this handler is the fallback for staging and local dev.
+app.get("/", publicLimit, (c) => c.redirect("https://mbeato.dev/work/apimesh", 301));
 
 // Dashboard UI — public, no auth
 app.get("/dashboard", publicLimit, async (c) => {
