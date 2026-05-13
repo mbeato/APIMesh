@@ -11,6 +11,7 @@
 [![MCP Tools](https://img.shields.io/badge/MCP%20tools-67-blue)](https://www.npmjs.com/package/@mbeato/apimesh-mcp-server)
 [![License: MIT](https://img.shields.io/badge/license-MIT-yellow)](LICENSE)
 [![Payments](https://img.shields.io/badge/payments-x402%20%7C%20MPP%20%7C%20API%20key-orange)](#payment-methods)
+[![SafeSkill 20/100](https://img.shields.io/badge/SafeSkill-20%2F100_Blocked-red)](https://safeskill.dev/scan/mbeato-apimesh)
 
 **Pay-per-call web analysis APIs for AI agents and developers.** Security audits, performance monitoring, SEO analysis, email verification, tech stack detection, and more -- no signup required, just pay with USDC on Base and get your response.
 
